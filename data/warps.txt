@@ -1,0 +1,47 @@
+# Passages entre zones du remake (voir src/warps.h pour le format).
+# zone x y largeur hauteur -> zone_dest x_dest y_dest direction [objet_ou_evenement]
+# Le dernier mot, optionnel, est un objet/evenement indispensable pour franchir le passage.
+# Ton passage de test (desactive : il se trouvait sur le chemin des PNJ) :
+# 011 26 48 1 1 -> 011 25 50 bas
+
+# Village Paco (grotte sous l'arbre) <-> Foret Kindra
+011 25 45 3 1 -> 013 8 54 haut
+013 8 57 5 1 -> 011 26 47 bas
+
+# Village Paco (porte de la maison a l est de la place, acces par l est (39,47) : le rebord (37..39,48) est bloque et le coffre rm_ironwood occupe (37,47)) <-> Maison du chef (facultatif, B04)
+011 38 47 2 1 -> 139 5 15 haut
+139 5 16 1 2 -> 011 38 47 bas
+
+# Foret Kindra : la carte A1 comporte trois fragments de terrain isolés ; deux passes internes
+# relient l'entree, la clairiere de Finrod et le retour du Mont Epervier.
+013 14 50 1 1 -> 013 41 54 haut
+013 31 54 1 1 -> 013 14 52 haut
+
+# Foret Kindra (pres de Finrod) <-> Mont Epervier (haut de l'epave)
+013 41 53 1 1 -> 019 10 12 haut
+019 13 50 1 1 -> 013 31 54 bas
+
+# Mont Epervier (pied de l'epave) <-> Toroledo
+019 14 52 1 1 -> 119 25 50 bas
+119 25 49 1 1 -> 019 14 52 haut
+
+# Toroledo <-> Vallee de Mithra : il faut l'epee que Jeehan remet avec les ordres de Diaz
+119 26 44 2 1 -> 026 26 52 haut epee_supreme
+026 26 52 2 1 -> 119 26 44 bas
+
+# Vallee de Mithra <-> Ruines d'Eden : la Lampe de Lumiere éclaire le passage souterrain
+026 26 22 2 1 -> 042 21 51 haut lampe
+042 21 51 2 1 -> 026 26 22 bas
+
+# Ruines d'Eden <-> Puerto Medusa : le Prisme d'Etoile ouvre la porte de l'île
+042 26 13 2 1 -> 050 26 52 haut prisme
+050 26 52 2 1 -> 042 21 51 bas
+
+# Puerto Medusa <-> Manoir de Milena : le capitaine de la garde barre la route
+050 44 28 1 2 -> 086 8 30 droite boss_medusa
+086 8 30 1 2 -> 050 44 28 gauche
+
+# Manoir <-> Salle du trone : le Cristal d'Etoile révèle l'entree du palais
+# Arrivee decalee d'une case : Milena se tient en (26,8), on ne peut pas marcher sur un PNJ.
+086 26 8 2 1 -> 120 14 52 haut cristal
+120 14 52 2 1 -> 086 27 8 bas

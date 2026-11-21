@@ -1,0 +1,8 @@
+# Ajouts du remake (tranche 3) : materiaux de forge ABSENTS d'Alundra 2.
+# Format : id|nom|description|source
+# Les quantites restent dans l'inventaire (std::map g.items) ; aucun champ de sauvegarde dedie.
+rm_ember_shard|Éclat de braise|Fragment encore tiède d'un feu ancien.|cache de l'énigme de Paco, coffres
+rm_frost_core|Cœur de givre|Noyau de glace qui ne fond jamais.|coffres de la forêt Kindra
+rm_rift_fragment|Fragment de faille|Éclat de pierre veiné d'énergie.|cache de l'énigme de Paco, coffres
+rm_ironwood|Bois de fer|Bois dense, dur comme le métal.|coffres de Paco et de la forêt Kindra
+rm_rune_dust|Poussière runique|Poudre gravée de signes oubliés.|coffres de l'épave

@@ -1,0 +1,14 @@
+version 4
+zone 011 33 51 0
+vie 10 10
+energie 40 200
+boss 0
+arme 0
+equip rm_rift_hammer - - 6
+objet long_sword 1
+objet rm_rift_hammer 1
+evenement rm_forgeron
+evenement rm_demo_gate
+ameliore rm_rift_hammer_quake_1
+interaction rm_demo_brazier 1
+interaction rm_demo_pillar 1

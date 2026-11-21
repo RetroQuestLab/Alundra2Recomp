@@ -1,0 +1,690 @@
+# Dialogues du remake (UTF-8). Une ligne = une page. "Nom: texte".
+# La trame suit celle d'Alundra 2 (lieux, personnages, événements : voir tools/a2_text.py, qui extrait
+# le script français du jeu en local pour s'y référer). Les répliques, elles, sont écrites pour le remake.
+# Un dialogue "<id>_apres" remplace "<id>" une fois l'ogre du Mont Épervier vaincu.
+
+# Prologue joué après « Nouvelle partie » (src/title.cpp). Une page = une carte ; le « nom » choisit le décor :
+# un numéro de zone (la caméra la traverse lentement), « ciel » (nuit et nuages), « navire » (le navire volant
+# des pirates passe devant la lune) ou « chute ». « décor/Personnage » : la carte est une réplique.
+# C'est l'ouverture d'Alundra 2 : Flint à bord du navire, le pirate Zeppo et ses enfants Ruby et Albert qui
+# convoient les créatures « Gi Gi » pour Lady Milena, le combat, la chute, le réveil sur la plage de Paco.
+[prologue]
+042: Royaume de Varuna. Le roi a disparu sans laisser de trace. Sur son trône, un pantin obéit au baron Diaz.
+018: Sur les mers, les pirates de Lady Milena font la loi. On murmure qu'ils ont aidé le baron à prendre le pouvoir.
+navire: Cette nuit-là, un de leurs navires volants fend les nuages. À son bord, un clandestin : Flint, chasseur de pirates.
+navire/Zeppo: Jouer les nourrices pour une cargaison de boîtes de conserve ! Milena me le paiera.
+navire/Ruby: Du calme, papa. Mais ces créatures qui pilotent... « Gi Gi », c'est tout ce qu'elles savent dire ?
+navire/Albert: Chut ! Vous avez entendu ? Il y a quelqu'un sur le pont !
+navire/Zeppo: Un chasseur de pirates ! Il est à moi, les enfants. Voyons s'il encaisse mon « écrase-crâne » !
+chute: Le coup l'envoie par-dessus bord. Flint tombe. Longtemps. Puis la mer se referme sur lui.
+026: Trois jours plus tard, la marée le dépose sur une plage, tout près du Village Paco.
+
+[intro]
+Flint: Ma tête... Le navire des pirates n'a pas pu aller bien loin. Quelqu'un ici l'a peut-être vu passer.
+
+[prunewell]
+Prunewell: Enfin debout ! Je suis Lord Prunewell, conseiller de la princesse Alexia, l'héritière du trône de Varuna.
+Prunewell: Son père a disparu, et le baron Diaz règne à sa place. La princesse pense que les pirates sont ses complices.
+Prunewell: Elle est partie seule vers le Mont Épervier, par la Forêt Kindra. Un « oiseau de fer » y est tombé du ciel...
+Prunewell: Vous chassez les pirates, elle traque Diaz : même ennemi. Rejoignez-la, je vous en prie.
+Flint: Un oiseau de fer... Le navire volant. J'y vais.
+
+[prunewell_apres]
+Prunewell: Une lettre du baron Diaz à Lady Milena, la chef des pirates ? Voilà la preuve que la princesse cherchait !
+Prunewell: Mais ce « nouveau partenaire » dont parle Diaz m'inquiète. Qui peut bien tirer les ficelles ?
+Prunewell: La princesse voudra suivre cette piste jusqu'à Toroledo, près de la Vallée de Mithra. Reposez-vous d'abord.
+
+[villageoise]
+! si prime_annulee villageoise_prime_annulee
+! si prime_maintenue villageoise_prime_maintenue
+Villageoise: Vous marchez déjà ? Il y a trois jours, vous étiez échoué sur la plage, plus mort que vif !
+Villageoise: Si vous allez en forêt, méfiez-vous des tortues de roche : leur carapace arrête tout. Frappez de dos ou de côté !
+Villageoise: Et les gelées se divisent quand on les tranche. Ne vous laissez pas encercler.
+
+[villageoise_apres]
+Villageoise: Vous êtes revenu de la Forêt Kindra en un seul morceau ? Vous êtes notre héros !
+Villageoise: On raconte que les pirates préparent quelque chose du côté de Toroledo. Soyez prudent...
+
+[garde]
+! si prime_annulee garde_prime_annulee
+! si prime_maintenue garde_prime_maintenue
+Garde: Halte ! Personne ne quitte Paco. L'autre jour, un monstre de fer a traversé le ciel avant de s'écraser vers le Mont Épervier.
+Garde: Vous avez une épée ? Bon... Alors passez. Mais écoutez un ancien de la garde : enchaînez trois coups sans vous arrêter.
+Garde: Le troisième frappe bien plus fort. Et si on vous encercle, roulez ! (touche C ou bouton Carré)
+Garde: Pour les rebords, sautez (touche V ou bouton Triangle). Et gardez votre épée armée une bonne seconde avant de relâcher : le coup part bien plus fort.
+Garde: Un ogre rôde là-haut. Quand il charge, il ne voit plus rien : faites-le foncer dans un mur, il restera étourdi.
+
+[garde_apres]
+Garde: L'ogre est tombé ? Le grand maître d'armes Jeehan lui-même n'aurait pas fait mieux !
+Garde: Passez saluer le vieux Finrod si vous retournez en forêt. Il vit seul là-bas, et je ne peux pas quitter mon poste.
+
+[victoire]
+Flint: L'ogre gardait quelque chose... Un coffre, tombé de l'épave du navire volant !
+
+# Objets trouvés dans les coffres : dialogue "objet_<objet>"
+[objet_lettre]
+Narrateur: Flint trouve une lettre frappée du sceau du baron Diaz.
+Narrateur: « À Lady Milena : assignez quelques hommes à la surveillance des droïdes. Soyons prudents avec notre nouveau partenaire. Diaz. »
+Flint: Diaz et les pirates travaillent ensemble. Et ce « nouveau partenaire »... Il faut montrer ça au Village Paco.
+
+[objet_coeur]
+Narrateur: Flint trouve une fiole de vie ! Sa vitalité augmente d'un cœur.
+
+[objet_herbe]
+Narrateur: Flint trouve une herbe médicinale. Elle rend deux cœurs. (touche H ou bouton LB)
+
+[objet_cle]
+Narrateur: Flint trouve une clé.
+
+# --- Foret Kindra : Finrod, l'ermite ---
+[finrod]
+Finrod: Qui va par là ? Un chasseur de pirates ?
+Finrod: Je suis Finrod. Je vis ici, loin du vacarme de Paco.
+Finrod: Le vieux Prunewell m'a parlé de toi. La princesse Alexia est partie vers le Mont Épervier.
+Finrod: Un oiseau de fer s'est écrasé là-bas. Les pirates de Milena n'ont pas dû le laisser sans garde.
+Finrod: Reviens quand tu auras la lettre du baron. Alors je te dirai où poursuivre.
+
+[finrod_apres]
+Finrod: Tu l'as trouvée ! Diaz écrit à Milena, et il parle de ses droïdes.
+Finrod: Alexia a suivi l'épave jusqu'au Mont Épervier. Elle doit être là-bas.
+Finrod: Prends le sentier au sud de la clairière. Et surtout, méfie-toi des machines de la garde.
+Finrod: Toroledo, près de la Vallée de Mithra... C'est là que mène cette piste, je le sens.
+
+# --- Mont Épervier : l'épave ---
+[epave_arrivee]
+Narrateur: Le mont s'est ouvert. Des restes de métal brillent entre les arbres.
+Flint: L'oiseau de fer... C'est bien le navire des pirates.
+Alexia: Flint ! Je savais que Prunewell finirait par te convaincre.
+Alexia: Regarde ces machines. Elles obéissent encore aux ordres de Diaz.
+
+[alexia_epave]
+! si objet_strange_key alexia_epave_cle
+Alexia: Je suis Alexia, héritière du trône de Varuna.
+Alexia: Mon père a disparu, et Diaz règne à sa place. Cette lettre est la preuve qu'il me faut.
+Alexia: L'épave garde sûrement autre chose. Cherche dans les débris, je te couvre.
+
+[alexia_epave_objet_gantelet]
+Alexia: Un gantelet d'éclair ! Les pirates l'utilisaient sans doute contre les Gi Gi.
+Alexia: Essaie-le : la décharge traverse les carapaces. Touche Q pour l'équiper ou reprendre ton épée.
+Alexia: Maintenant, rejoignons Toroledo. Les ordres de Diaz doivent y être cachés.
+
+[objet_gantelet]
+Narrateur: Flint récupère le gantelet d'éclair des pirates.
+Narrateur: « Gantelet permettant de lancer l'attaque Éclair. » (touche Q pour changer d'arme)
+Flint: L'épée d'Alundra... et maintenant la foudre de Milena. Drôle de butin.
+
+# --- Toroledo ---
+[toroledo_arrivee]
+Narrateur: Toroledo. La ville vit encore, mais des droïdes patrouillent dans les rues.
+Flint: Diaz a envoyé sa garde jusqu'ici. Les ordres ne doivent pas être loin.
+
+[garde_toroledo]
+Garde: Tu viens du Mont Épervier ? Alors tu as vu les machines de Diaz.
+Garde: Elles tirent de loin. Approche-toi par les côtés, ou utilise une arme qui les fait court-circuiter.
+Garde: Lady Milena et son « partenaire » ont envoyé des ordres au manoir. Cherche dans la haute ville.
+
+[garde_toroledo_objet_ordre]
+Garde: Ces ordres portent le sceau du baron ! Tu dois les montrer à Alexia.
+Garde: Le peuple de Varuna ne suivra plus Diaz quand il saura la vérité.
+
+[alexia_toroledo]
+Alexia: J'ai reconnu les droïdes de l'épave. Diaz les a envoyés devant nous.
+Alexia: Si nous trouvons ses ordres, je pourrai soulever Varuna contre lui.
+
+[alexia_toroledo_objet_ordre]
+Alexia: « Assignez quelques hommes à la surveillance des droïdes. Soyons prudents avec notre nouveau partenaire. »
+Alexia: Ce « nouveau partenaire »... Diaz cache quelque chose de bien plus grave que les pirates.
+Alexia: Nous n'en sommes qu'au début, Flint. Mais Varuna aura enfin des preuves.
+
+[dame_toroledo]
+Dame: Le grand maître d'armes Jeehan disait : une arme ne vaut que par celui qui la porte.
+Dame: On raconte qu'il a disparu... mais son épée est peut-être encore quelque part.
+
+# --- Toroledo : Jeehan, le maitre d'armes (combos et epee supreme) ---
+[jeehan]
+Jeehan: Tu as l'oeil vif, mais ta garde est encore trop ouverte.
+Jeehan: Reviens quand tu en sauras plus sur Diaz.
+
+[jeehan_apres]
+Jeehan: J'ai vu ton combat sur l'epave. Trois coups, bien enchaines : le dernier porte plus lourd.
+Jeehan: Garde l'arme armee une seconde avant de relacher : la terre elle-meme repondra.
+Jeehan: La foudre est utile, mais une lame bien menee reste une lame. Apporte-moi les ordres de Diaz.
+
+[jeehan_objet_ordre]
+Jeehan: Ces ordres... Milena n'est que le bras. Le « partenaire » tire les ficelles.
+Jeehan: Alors prends ceci. Elle appartenait aux rois de Varuna avant que Diaz ne la cache.
+Jeehan: Epee supreme. Quatre coups dans la meme fenetre, et les carapaces cederont. Touche Q pour la sortir.
+
+[jeehan_epee_supreme]
+Jeehan: Une arme ne vaut que par celui qui la porte.
+Jeehan: Ne la laisse pas devenir un symbole. Fais-en une promesse.
+
+[objet_ordre]
+Narrateur: Flint trouve des ordres scellés par le baron Diaz.
+Narrateur: « À Lady Milena : assignez quelques hommes à la surveillance des droïdes. Soyons prudents avec notre nouveau partenaire. »
+Flint: Le même mot, encore. Qui est ce « partenaire » ?
+
+# --- Vallée de Mithra : premier passage, premier golem, première relique ---
+[vallee_arrivee]
+Narrateur: La Vallée de Mithra s'ouvre derrière les remparts de Toroledo. L'air sent la pierre chaude et l'éclair.
+Flint: Jeehan m'a confié son épée. Si ce passage s'ouvre enfin, c'est que j'ai choisi le bon chemin.
+Alexia: Les habitants parlaient d'un col gardé par une statue. Elle veille encore sur une lampe.
+
+[guide_vallee]
+Pierre: Un joueur sans un sou, voilà ce que je suis. Ma femme Emma me cherche partout. Tu viens pour la Lampe ?
+Pierre: Le col est barré par un golem. Il ne comprend pas les ordres, seulement les chocs. Roulez sous sa charge, puis frappez son dos.
+Pierre: Quand il tombera, son coffre s'ouvrira. La Lampe de Lumière éclaire les souterrains jusqu'aux Ruines d'Eden.
+
+[boss_026]
+Narrateur: Le golem s'effondre, ses runes s'éteignent une à une.
+Flint: Une relique était cachée là. Diaz la voulait... ou plutôt celui qui tire ses ficelles.
+
+[objet_lampe]
+Narrateur: Flint récupère la Lampe de Lumière.
+Narrateur: Sa flamme ne brûle pas : elle révèle les passages que la nuit a avalés.
+Flint: Trois reliques, trois serrures. La suite est dans les Ruines d'Eden.
+
+# --- Ruines d'Eden : Roswell et le Prisme ---
+[eden_arrivee]
+Narrateur: Les Ruines d'Eden veillent sur la vallée. Leurs couloirs sont trop réguliers pour être l'oeuvre du temps.
+Flint: Un autre golem... et des machines de Diaz. Ils fouillent les mêmes ruines que nous.
+
+[roswell]
+Roswell: Oméga m'avait prévenu : un porteur d'épée viendrait chercher les reliques.
+Roswell: La Lampe éclaire, le Prisme dévie la lumière, le Cristal la garde. Réunis, ils ne font pas une arme. Ils font une clé.
+Roswell: Diaz n'est que le masque. Méphisto, le « nouveau partenaire », veut rouvrir les portes de l'Église de la Clé. Ne les laisse pas partir.
+
+[boss_042]
+Narrateur: Le second golem se brise sur le dallage. Derrière lui, le couloir s'éclaire.
+Flint: Le Prisme. Encore une pièce du puzzle de Méphisto.
+
+[objet_prisme]
+Narrateur: Flint récupère le Prisme d'Etoile.
+Narrateur: La lumière de la Lampe s'y réfracte en sept couleurs, et le chemin de la côte apparaît.
+Flint: Puerto Medusa. La dernière relique doit être là-bas.
+
+# --- Puerto Medusa ---
+[medusa_arrivee]
+Narrateur: Puerto Medusa. Les mâts des navires pirates se balancent au-dessus des toits.
+Flint: Milena... On a bombardé Paco sous l'emblème de ses pirates, mais je doute que ce soit son œuvre. Méphisto tire les ficelles.
+
+[marin_puerto]
+Marin: Le capitaine de la garde surveille la sortie est. Il a juré que personne n'irait au manoir sans l'affronter.
+Marin: Les ordres de Diaz lui sont parvenus ce matin. Il parle d'un invité, d'un sorcier et d'une princesse à ramener à Varuna.
+
+[diseuse_puerto]
+Diseuse: Je vois une épée, une lampe, un prisme... et une lumière qui n'est pas encore née.
+Diseuse: Va au phare, voyageur. La vérité aime les endroits où l'on croit être seul.
+
+[boss_medusa]
+Narrateur: Le capitaine tombe. Son sifflet roule encore sur le quai.
+Flint: Le passage est libre. Le Cristal d'Etoile ne doit pas rester entre leurs mains.
+
+[objet_cristal]
+Narrateur: Flint récupère le Cristal d'Etoile.
+Narrateur: Lampe, Prisme, Cristal : la lumière prend une forme, et le chemin du manoir se dessine.
+Flint: Milena reçoit un invité ce soir. Nous allons être cet invité.
+
+# --- Manoir de Milena ---
+[manoir_arrivee]
+Narrateur: Le manoir de Lady Milena. Les pirates y ont installé leur quartier général.
+Flint: Alexia est ici. Je la sens. Et Méphisto aussi.
+
+[garde_manoir]
+Garde: Alerte rouge. Lady Milena ne reçoit personne... sauf le sorcier.
+Garde: On dit qu'il est arrivé par la mer, avec des hommes à crochet et des prêtres de la Clé.
+
+[garde_manoir_boss_medusa]
+Garde: Le capitaine est tombé ? Alors la porte du nord n'est plus gardée.
+Garde: Mais le Cristal vous sera demandé. Sans lui, l'escalier du trône reste invisible.
+
+[alexia_manoir]
+Alexia: Flint ! J'ai réussi à entrer. Milena croit que je suis encore prisonnière de ses pirates.
+Alexia: Le baron Diaz est à Varuna, mais le vrai maître est ici. Méphisto veut les trois reliques pour ouvrir la salle du trône.
+Alexia: Il a besoin de moi, aussi. Il veut que je signe l'acte qui donne le royaume à l'Église.
+
+[alexia_manoir_objet_cristal]
+Alexia: Le Cristal ! Avec la Lampe et le Prisme, tu peux révéler l'escalier caché.
+Alexia: Je reste ici pour retenir les gardes. Va, Flint. Varuna attend.
+
+[milena]
+Milena: Enfin, le chasseur de pirates. Tu as détruit mon dirigeable, saboté mon ToroTank et perdu mes droïdes.
+Milena: Je reconnais un homme dangereux quand j'en vois un. Mais le vrai danger, c'est le sorcier que le Baron s'est choisi pour partenaire.
+Milena: Tu ne passeras pas son escalier sans les trois reliques. Et même avec elles... bonne chance.
+
+[milena_objet_cristal]
+Milena: Tu les as toutes les trois. Tu es donc le juge que Méphisto attendait.
+Milena: Va. Et si tu le rencontres, dis-lui que Milena ne pardonne pas les dettes impayées.
+
+[milena_boss_medusa]
+Milena: Mon capitaine est mort ? Tu te crois invincible, petit chasseur ?
+Milena: Méphisto t'attend au trône. Il a déjà préparé ton accueil.
+
+# --- Salle du trône : Méphisto ---
+[mephisto_arrivee]
+Narrateur: La salle du trône de Varuna. Le pantin de Diaz est assis sur le siège vide, mais une autre voix parle.
+Méphisto: Les reliques sont là. La princesse est presque là. Il ne manquait plus que toi, Flint.
+Flint: Toi, le « partenaire ». L'Église de la Clé n'était pas un bruit de couloir.
+Méphisto: Un royaume ne se prend pas. Il s'hérite. Et Varuna m'a déjà choisi.
+
+[alexia_finale]
+Alexia: Flint ! Le roi n'est pas sur ce trône. Diaz n'est qu'un pantin, Méphisto est la main.
+Alexia: Frappe, et ne laisse pas l'épée devenir un symbole entre ses mains.
+Alexia: Quand tout sera fini, je reprendrai ma place. Pas pour le pouvoir. Pour ceux qui n'ont plus de voix.
+
+# --- Suite de la reconstitution : personnages et scenes de la trame d'Alundra 2 ---
+
+[navire_milena]
+Milena: Zeppo, livre les Gi Gi à Lady Milena. Le baron Diaz a payé la moitié d'avance.
+Milena: Et surtout, ramène-moi la princesse. Elle seule peut ouvrir les portes que je cherche.
+
+[prunewell_couronne]
+Prunewell: Il existe un groupe, les Enfants de la Couronne. Des princes et des princesses liés par un serment.
+Prunewell: Sans Alexia, ce serment n'est plus qu'un jeu d'enfants. Et Diaz le sait.
+Prunewell: Si tu la retrouves, dis-lui que Paco tient encore debout.
+
+[enfants_paco]
+Messager: Nous sommes les Enfants de la Couronne. Notre serment : défendre le roi et l'héritière.
+Messager: Le roi a disparu, Alexia court seule... Le baron Diaz croit avoir gagné. Il se trompe.
+Messager: Cherche l'épave au Mont Épervier. C'est là que notre princesse a vu l'oiseau de fer tomber.
+
+[enfants_paco_objet_lettre]
+Messager: Cette lettre ! Diaz écrit à la chef des pirates et parle d'un « nouveau partenaire ».
+Messager: Va la montrer à Alexia. Elle comprendra ce que nous soupçonnions.
+Messager: Et méfie-toi : un partenaire invisible est plus dangereux qu'un ennemi visible.
+
+[enfants_paco_objet_ordre]
+Messager: Des ordres scellés ! Le peuple suivra Alexia quand il les aura vus.
+Messager: Va voir Jeehan à Toroledo. Il sait ce que vaut une lame entre de bonnes mains.
+
+[enfants_paco_mephisto_vaincu]
+Messager: Tu as vaincu Méphisto ! La Couronne te doit plus que des remerciements.
+Messager: Alexia peut rentrer. Le roi aussi. Varuna est sauvée.
+
+[villageoise_objet_lettre]
+Villageoise: Une lettre du baron ? Alors les pirates ne sont pas ses ennemis... Ses complices !
+Villageoise: Emporte-la. Et fais attention aux droïdes. Ce sont des hommes, dit-on... transformés en machines.
+
+[garde_objet_lettre]
+Garde: Tu as la preuve ? Alors Alexia avait raison depuis le début.
+Garde: Le « nouveau partenaire » inquiète même les pirates. Va au Mont Épervier, et que ta lame fasse le reste.
+
+[finrod_objet_lettre]
+Finrod: La voilà, la preuve. Diaz et Milena travaillent main dans la main.
+Finrod: Mais ce partenaire dont il parle... je ne l'ai jamais vu. Méphisto, dis-tu ? Ce nom ne présage rien de bon.
+
+[epave_arrivee_2]
+Narrateur: Le vent tourne autour de l'épave. Des câbles pendent encore, comme des veines coupées.
+Alexia: Flint, regarde les insignes. Ces machines portent le sceau de Diaz.
+Flint: Alors la lettre n'était qu'un début. Il y a quelque chose de plus gros derrière tout ça.
+
+[belgar_epave]
+Belgar: Je suis Belgar, le compagnon de Lady Milena. J'ai vu ton navire volant s'écraser.
+Belgar: Milena ne pardonne pas. Mais je ne suis pas là pour te combattre. C'est la princesse qu'elle veut, pas toi.
+Belgar: Retourne à Paco pendant qu'il en est temps.
+
+[alexia_epave_objet_lettre]
+Alexia: La lettre ! Elle confirme tout ce que je soupçonnais.
+Alexia: Va chercher dans l'épave ce que les pirates ont laissé. Je te couvre.
+
+[toroledo_natasha]
+Natasha: Je m'appelle Natasha. Je suis la fille du baron Diaz.
+Natasha: Mon père est devenu fou. cette Alexia... il l'a transformée en otage.
+Natasha: Je ne dirai à personne que je t'ai parlé. Suis le quai sud, les gardes ne le surveillent pas.
+
+[toroledo_natasha_objet_ordre]
+Natasha: Ces ordres portent son sceau. Tu peux les montrer à Jeehan, il saura quoi en faire.
+Natasha: S'il te remet son épée, ne la regarde pas comme un trophée. Regarde-la comme une promesse.
+
+[toroledo_natasha_epee_supreme]
+Natasha: L'épée suprême... Mon père la croyait perdue depuis des années.
+Natasha: Fais-la servir à libérer Alexia. Pas à venger qui que ce soit.
+
+[enfants_toroledo]
+Messager: Toroledo est notre dernier refuge avant la vallée. Les Enfants de la Couronne s'y rassemblent.
+Messager: Jeehan, le maître d'armes, a été emprisonné par Diaz. Mais il n'a pas perdu son savoir.
+Messager: Apporte-lui les ordres du baron. Il te jugera.
+
+[enfants_toroledo_objet_ordre]
+Messager: Ces ordres parlent de droïdes et d'un partenaire. Le peuple doit savoir.
+Messager: Jeehan te remettra l'épée des rois. Tu en auras besoin plus loin, dans la vallée.
+
+[prisonnier_toroledo]
+Prisonnier: Le vieux Prunewell a été jeté en prison pour avoir défendu Alexia.
+Prisonnier: Le roi, lui, est détenu quelque part au manoir de Milena. Méphisto le garde sous surveillance.
+Prisonnier: Si tu vois le roi, dis-lui que Toroledo n'a pas oublié son serment.
+
+[jeehan_objet_lettre]
+Jeehan: Une lettre de Diaz... Tu as Apporté la première preuve, mais il me faut les ordres.
+Jeehan: Va les chercher en haut de la ville. Ensuite, reviens me voir.
+
+[guide_vallee_objet_lampe]
+Pierre: La Lampe éclaire le chemin. Le Prisme le dévie. Le Cristal le retient.
+Pierre: Méphisto veut réunir les trois pour ouvrir une porte. Ne laisse pas la lumière entre ses mains.
+
+[objet_idole]
+Narrateur: Flint récupère l'idole à trois yeux. Les pirates l'avaient volée sur le Mont Vulcain.
+Flint: Trois yeux pour trois reliques. Je ne sais pas encore ce que ça ouvre, mais Méphisto la réclame.
+
+[idole_cache]
+Narrateur: Au fond du col, une statue à trois yeux veille sur un coffre oublié.
+Flint: On dirait qu'elle attendait quelqu'un. Méphisto disait avoir perdu cette idole... menteur.
+
+[roswell_objet_idole]
+Roswell: L'idole à trois yeux ! Alors Méphisto n'a pas tout perdu sur le Mont Vulcain.
+Roswell: Il lui manque encore la Lampe, le Prisme et le Cristal. S'il les réunit, l'Église de la Clé s'ouvrira.
+
+[roswell_objet_lampe]
+Roswell: Tu as la Lampe. Bien. Mais n'oublie pas : ce n'est pas une arme, c'est une clé.
+Roswell: Le Prisme est gardé dans ces ruines. Le Cristal, sur la côte, à Puerto Medusa.
+
+[roswell_objet_prisme]
+Roswell: Le Prisme ! La lumière de la Lampe s'y décompose.
+Roswell: La dernière pièce est à Puerto Medusa. Va vite : Méphisto a déjà envoyé son capitaine.
+
+[ome]
+Oméga: Je suis Oméga, prophétesse de ces ruines. Le Livre des Rois parle de trois reliques.
+Oméga: Lampe, Prisme, Cristal. Réunies, elles montrent le chemin vers le manoir de Milena.
+Oméga: Et Méphisto... il est plus vieux que le roi lui-même. Ne le sous-estime pas.
+
+[ome_objet_idole]
+Oméga: L'idole ! Le Livre dit qu'elle doit être placée avec les trois reliques.
+Oméga: Méphisto croit pouvoir acheter le trône avec ces objets. Il se trompe : les reliques jugent celui qui les porte.
+
+[medusa_baleine]
+Narrateur: Une baleine monstrueuse bloque l'entrée du port. Ses flancs portent des cicatrices de droïdes.
+Marin: On dit que deux enfants vivent encore dans son ventre. Ruby et Albert, les enfants de Zeppo.
+Marin: Le capitaine garde le quai est. Défais-le, et le Cristal sera à toi.
+
+[ruby_puerto]
+Ruby: Flint ! Tu n'es pas mort ! Je savais que le vieux chasseur de pirates s'en sortirait.
+Ruby: Albert et moi, on a été avalés par la baleine. On a suivi les battements de son coeur pour sortir.
+Ruby: Le Cristal d'Étoile est là-bas. Méphisto veut s'en servir pour ouvrir la salle du trône.
+
+[albert_puerto]
+Albert: On a trouvé des passages dans l'estomac de la baleine. Des ponts, des portes...
+Albert: Ruby dit que c'était comme un labyrinthe. Moi, je crois que c'était un ventre de machine.
+Albert: Prends le Cristal. Et fais attention au capitaine : il ne laisse personne passer.
+
+[ruby_puerto_objet_cristal]
+Ruby: Tu l'as ! Avec la Lampe et le Prisme, tu peux révéler l'escalier du manoir.
+Ruby: Je vais prévenir Zeppo. Dis à Alexia que les enfants de la Couronne ne l'oublient pas.
+
+[albert_puerto_objet_cristal]
+Albert: Le Cristal brille comme le coeur de la baleine. Tu es vraiment le héros qu'Alexia attendait.
+
+[marin_puerto_objet_cristal]
+Marin: Le Cristal est entre tes mains. Le manoir de Milena est à l'est. Méphisto y attend la princesse.
+
+[belgar_manoir]
+Belgar: Flint. Je t'ai vu tomber du navire. Milena croyait que tu étais mort.
+Belgar: J'ai connu ton père, autrefois. Il chassait déjà les pirates. Mais ce n'était pas un chasseur comme toi.
+Belgar: Ne te fais pas avoir pour autant. Milena ne pardonne jamais une dette.
+
+[belgar_manoir_mephisto_vaincu]
+Belgar: Méphisto est tombé... Milena ne dira rien, mais je crois qu'elle est soulagée.
+Belgar: Retourne à Paco. Le navire de Zeppo t'y attend, je l'ai vu amarré.
+
+[natasha_manoir]
+Natasha: Papa est ici, avec Méphisto. Il croit encore qu'il va épouser Alexia.
+Natasha: Va voir le trône. C'est là que tout va se jouer. Je fermerai les yeux sur ton passage.
+
+[natasha_manoir_objet_cristal]
+Natasha: Le Cristal ! Tu as toutes les reliques. Maintenant, Méphisto n'a plus d'excuse.
+Natasha: Sauve Alexia. Et dis à mon père que je suis partie.
+
+[diaz_manoir]
+Diaz: Ah, Flint. Tu viens pour la princesse ? Trop tard. Elle est à moi, devant Dieu et devant Varuna.
+Diaz: Méphisto m'a aidé à prendre le trône. Je croyais être l'homme le plus puissant du royaume.
+Diaz: Mais ce n'est pas toi que je dois craindre. C'est lui. Il n'a jamais voulu d'un roi. Il veut un trône vide.
+
+[diaz_manoir_objet_cristal]
+Diaz: Tu as les reliques... et pourtant tu ne sens pas le pouvoir monter en toi, n'est-ce pas ?
+Diaz: C'est que reliques ne donnent rien à qui les vole. Va au trône. Méphisto t'attendait.
+
+[milena_objet_ordre]
+Milena: Des ordres scellés par Diaz ? Si le peuple les lit, il se soulèvera. Voilà ce que je voulais éviter.
+Milena: Garde-les. C'est avec le sorcier du Baron que j'ai des comptes à régler, pas avec toi.
+
+[mephisto_trone]
+Méphisto: Regarde le trône. Il est vide depuis toujours. Ce n'est pas un siège, c'est une porte.
+Méphisto: Diaz croyait me commander. Le baron n'était que mon masque, rien de plus.
+Flint: Le roi n'est pas mort. Tu l'as gardé pour ouvrir cette porte à sa place.
+
+[roi_trone]
+Roi: Flint... J'ai entendu tes pas dans le couloir. Méphisto m'a gardé vivant pour le serment du sang.
+Roi: Ne laisse pas l'Église de la Clé hériter de Varuna. Aide Alexia, et je reprendrai ma place.
+Roi: Et si tu revois Prunewell... dis-lui que son vieux roi n'a pas perdu la mémoire.
+
+[roi_trone_mephisto_vaincu]
+Roi: La porte est fermée. Le trône est à sa place. Merci, Flint.
+Roi: Alexia est venue. Elle t'attend dehors. Va, le royaume n'a plus besoin de toi, mais elle si.
+
+[alexia_finale_mephisto_vaincu]
+Alexia: Tu as gagné. Pas pour moi. Pour tous ceux qui n'ont pas pu se défendre.
+Alexia: Rentre à Paco, Flint. Le navire de Zeppo est là-bas. Je te promets que je saurai régner.
+
+# --- Gwaba, Fort Noir et les dernieres pistes ---
+
+[nunugi_gwaba]
+Nunugi: Je suis Nunugi. Le baron Diaz m'a envoyé ici, à Gwaba, pour retrouver l'homme à la main de crochet.
+Nunugi: Mais entre nous, ce qu'il veut vraiment, c'est l'idole à trois yeux. Le Livre des Rois en parle.
+Nunugi: Si tu travailles pour le baron, apporte-moi ses ordres. Ensuite, nous parlerons de l'idole.
+
+[nunugi_gwaba_objet_ordre]
+Nunugi: Voilà les ordres. « Trouver l'homme à la main de crochet. » Drôle de façon de demander une relique.
+Nunugi: Va au Mont Vulcain. C'est là que l'idole a été vue pour la dernière fois.
+Nunugi: Et surtout, ne dis pas à Diaz que c'est moi qui t'ai envoyé là-bas.
+
+[nunugi_gwaba_objet_idole]
+Nunugi: Tu l'as trouvée ! Alors le baron ne pourra plus prétendre qu'il ne sait rien.
+Nunugi: Méphisto veut l'idole autant que les trois reliques. Il veut refaire le geste des anciens rois.
+Nunugi: Retourne à Toroledo. Jeehan saura te dire comment l'utiliser.
+
+[nunugi_gwaba_objet_cristal]
+Nunugi: Le Cristal... Tu as donc toutes les pièces. Le manoir de Milena n'est plus qu'une question de temps.
+Nunugi: Je retourne à Gwaba prévenir les Enfants de la Couronne. Bonne chance, chasseur.
+
+[zach_fort]
+Zach: Zach le Borgne. Je cherche la Maison du Bonheur, sous Fort Noir. On dit qu'on peut y recommencer sa vie.
+Zach: J'ai déjà poussé une porte, mais on m'a fait comprendre que mon bonheur n'intéressait personne. Je dois m'être trompé de couloir.
+Zach: Si tu vois un droïde avec une main de crochet, dis-lui que je cherche toujours.
+
+[zach_fort_objet_lettre]
+Zach: Une lettre de Diaz ? Ces types de l'Église de la Clé sont partout maintenant.
+Zach: Méfie-toi d'eux. Ils ont même attaqué un navire pirate. Le bonheur, c'est peut-être de les arrêter.
+
+[gwaba_habitant]
+Habitant: Bienvenue à Gwaba. La ville vit des dons de l'Église de la Clé depuis que le pont est cassé.
+Habitant: On raconte qu'un homme avec une main de crochet est passé par ici. Personne ne l'a vu repartir.
+Habitant: Madame Oméga prédit qu'un jeune homme venu de la mer sauvera Alexia. Tu ne serais pas ce jeune homme ?
+
+[gwaba_habitant_objet_ordre]
+Habitant: Des ordres du baron ? Alors l'Église de la Clé n'est pas là pour aider Gwaba... Elle prépare autre chose.
+Habitant: Va voir Nunugi. C'est lui qui reçoit les Instructions de Diaz.
+
+[medusa_minerai]
+Mineur: Ce port sert à transporter le minerai du Fort Noir vers Puerto Medusa. J'en ai assez de le trimballer.
+Mineur: Les Gi Gi chargent les chariots jour et nuit. Méphisto paie bien, mais il ne dit jamais ce qu'il fait du minerai.
+Mineur: Si tu trouves la réponse, fais-la savoir. J'aimerais retourner à Toroledo voir les corridas.
+
+
+# --- Equipage de Zeppo et habitants de la cote ---
+[zeppo_puerto]
+Zeppo: Ruby et Albert me disaient que tu étais mort. Je n'ai jamais cru cette rumeur.
+Zeppo: J'ai conduit le dirigeable de Milena jusqu'à ce fichu navire volant. Diaz nous payait, mais le « partenaire » donnait les ordres.
+Zeppo: Ce Gi Gi... ce n'était pas un homme. Une clé, et il devenait une machine. Si tu vois Méphisto, demande-lui ce qu'il a fait de mes enfants.
+
+[zeppo_puerto_objet_cristal]
+Zeppo: Le Cristal ! Mes enfants avaient raison : tu es bien le chasseur qui sait rendre la lumière.
+Zeppo: La mer est à toi, Flint. Et si Milena te tend la main, méfie-toi : elle n'a jamais su perdre.
+
+[georges_puerto]
+Habitant: Tu as entendu la chanteuse Axelya ? Tout le port en parle, et pourtant il y a une prime sur sa tête.
+Habitant: Son petit frère Georges ne la quitte pas d'une semelle. Un gamin discret... Tu lui ressembles un peu, non ?
+Habitant: Les gardes de Milena cherchent un chasseur de pirates. À ta place, j'éviterais les regards trop curieux.
+
+[berger_toroledo]
+Berger: Mon cher taureau Lao s'est volatilisé. Ces temps-ci, les bêtes disparaissent, et les gens aussi.
+Berger: Même l'argent s'évapore des poches. Quant à Pierre, le parieur, on l'a vu filer vers la Grotte Hurlante.
+Berger: Jeehan nous a déjà sauvés une fois. Si tu le revois, salue-le de ma part.
+
+[berger_toroledo_objet_ordre]
+Berger: Ces ordres que tu portes... c'est le Baron qui les a écrits, n'est-ce pas ? Il ne sait même pas traire une vache.
+
+# --- Ajouts du remake (tranche 3, absents d'Alundra 2) ---
+# Orvan, forgeron itinérant installé à Paco, est un personnage ORIGINAL du remake.
+[rm_forgeron]
+Orvan: Orvan, forgeron itinérant. Je me suis installé à Paco. Apporte-moi des matériaux, et je renforcerai tes armes.
+Orvan: Éclats de braise, cœurs de givre, fragments de faille, bois de fer, poussière runique : avec ça, je travaille trois armes peu communes.
+Orvan: Prends ce Marteau de faille. Éprouve-le sur l'énigme du vieux mécanisme, au sud du village.
+Orvan: Brasero, chemin gelé, pilier fêlé : deux sur trois suffisent pour ouvrir la cache.
+
+[rm_forgeron_forge]
+Orvan: Mon enclume est chaude. Qu'est-ce qu'on forge aujourd'hui ?
+
+[objet_rm_rift_hammer]
+Narrateur: Flint reçoit le Marteau de faille. Il brise la pierre fragile et actionne les mécanismes.
+
+[objet_rm_ember_blade]
+Narrateur: Flint obtient l'Épée de braise. Sa lame brûlante enflamme ce qu'elle touche.
+
+[objet_rm_frost_lance]
+Narrateur: Flint obtient la Lance de givre. Sa portée est longue et son givre ralentit l'ennemi.
+
+[objet_rm_ember_shard]
+Narrateur: Flint ramasse un éclat de braise. Orvan saura sûrement l'utiliser.
+
+[objet_rm_frost_core]
+Narrateur: Flint trouve un cœur de givre. Il est glacial au toucher.
+
+[objet_rm_rift_fragment]
+Narrateur: Flint trouve un fragment de faille. La roche vibre faiblement.
+
+[objet_rm_ironwood]
+Narrateur: Flint récupère du bois de fer. Il est lourd et d'une densité surprenante.
+
+[objet_rm_rune_dust]
+Narrateur: Flint recueille de la poussière runique. Elle brille d'une lueur pâle.
+
+[rm_brasero_allume]
+Narrateur: Le brasero s'embrase, et sa chaleur gagne la pierre du mécanisme.
+
+[rm_chemin_gele]
+Narrateur: Le chemin se couvre de givre. On peut y marcher sans glisser.
+
+[rm_pilier_brise]
+Narrateur: Le pilier fêlé cède sous le coup et s'effondre en morceaux.
+
+[rm_mecanisme_ouvert]
+Narrateur: Un déclic résonne : la cache du vieux mécanisme s'ouvre.
+
+[rm_mecanisme_reinit]
+Narrateur: Le mécanisme grince et retrouve sa position de départ.
+
+[rm_interaction_sans_effet]
+Narrateur: Rien ne se passe. Cette arme n'a aucun effet ici.
+
+[rm_forge_ok]
+Orvan: Voilà, c'est fait ! Prends-en soin, elle est plus redoutable qu'avant.
+
+[rm_forge_manque]
+Orvan: Il me manque des matériaux. Reviens quand tu en auras assez.
+
+[rm_forge_deja]
+Orvan: Celle-ci est déjà renforcée. Je ne peux pas faire mieux.
+
+[rm_forge_sans_arme]
+Orvan: Tu n'as aucune arme que je puisse renforcer pour l'instant.
+
+# --- Forêt Kindra : marchand dépouillé par les pirates (fait attesté A2, bloc 33 ; répliques du remake) ---
+# Premier usage des choix (B02) : « ? » propose les réponses, « ! » applique des actions atomiques.
+[marchand_kindra]
+! si marchand_kindra_echange marchand_kindra_merci
+Marchand: Ne me regarde pas comme ça... Les pirates m'ont tout pris, jusqu'à mes vêtements !
+Marchand: Il me reste ma boussole. Je te l'échange contre une herbe, une seule. Marché conclu ?
+? Échanger > marchand_kindra_oui | Refuser > marchand_kindra_non
+
+[marchand_kindra_oui]
+! prend herbe 1
+! donne compass 1
+! evenement marchand_kindra_echange
+! sinon marchand_kindra_sans_herbe
+Marchand: Merci, merci ! Voici la boussole. Avec elle, on ne se perd jamais dans cette forêt.
+
+[marchand_kindra_sans_herbe]
+Marchand: Tu n'as pas d'herbe sur toi... Reviens quand tu en auras trouvé une.
+
+[marchand_kindra_non]
+Marchand: Tant pis. Je reste ici à grelotter, alors.
+
+[marchand_kindra_merci]
+Marchand: Cette herbe m'a requinqué. Bonne route, et méfie-toi des pirates !
+
+# --- Mont Épervier, épave : la clé étrange (A2 : début de la chaîne d'échange ; B06, répliques du remake) ---
+[objet_strange_key]
+Narrateur: Flint trouve une clé étrange. Personne n'a jamais vu de serrure qui lui corresponde.
+
+[alexia_epave_cle]
+Alexia: Cette clé... elle a la forme de la fente qu'on voit dans le dos des Gi Gi.
+Alexia: On raconte qu'un simple animal a été changé en monstre de cette façon. Garde-la bien.
+
+# --- Forêt Kindra : pièce de puzzle dans un coffre (A2, bloc 11 ; B05, réplique du remake) ---
+[objet_puzzle_piece]
+Narrateur: Flint trouve une pièce de puzzle gravée de motifs étranges. On dit qu'à Toroledo, Jeehan en recherche.
+
+# --- Village Paco : maison du chef et prime sur Flint (B04 ; fait attesté A2, bloc 22 : le chef peut livrer Flint
+# pour toucher la récompense ou annuler la prime ; scène FACULTATIVE, répliques et issues du remake) ---
+# Deux issues posent chacune un événement, sans effet sur la route : prime_annulee / prime_maintenue.
+# Le choix est unique : une fois l'événement posé, « chef_paco » ouvre directement la variante de visite.
+[chef_paco]
+! si prime_annulee chef_paco_annulee_suite
+! si prime_maintenue chef_paco_maintenue_suite
+Chef: Donc c'est toi, Flint, que la mer a recraché sur notre plage. Entre, ne reste pas sur le seuil.
+Chef: Je dois te prévenir : un avis de prime circule, et c'est ta tête qu'on y met à prix. Une grosse somme pour qui te livrera.
+Chef: L'avis porte l'emblème des pirates de Milena. Mais juste dessous, il y a un sceau que je connais : celui du baron Diaz.
+Chef: Je suis le chef de Paco. Je peux te livrer et toucher la somme, ou déchirer cet avis. À toi de me dire ce que tu préfères.
+? Annuler > chef_paco_annulee | Laisser > chef_paco_maintenue | Plus tard > chef_paco_plus_tard
+
+[chef_paco_annulee]
+! evenement prime_annulee
+Chef: Voilà, c'est en morceaux. Je le dirai à tout le village : à Paco, on ne vend pas un naufragé.
+Chef: Mais un papier déchiré n'arrête pas des pirates. Ceux qui l'ont placardé l'apprendront, et ils n'en seront pas ravis.
+Chef: Va, Flint. Et si tu croises la princesse, dis-lui que le chef de Paco a choisi son camp.
+
+[chef_paco_maintenue]
+! evenement prime_maintenue
+Chef: Tu veux que l'avis reste affiché ? Tu as la tête plus dure que je ne croyais.
+Chef: Soit. Les pirates te croiront terré quelque part, et ceux qui te cherchent finiront par se montrer. Mais ne compte pas sur la gentillesse de tout le village.
+Chef: Une chose est sûre : je ne te livrerai pas. Si quelqu'un doit t'attraper, ce ne sera pas sous mon toit.
+
+[chef_paco_plus_tard]
+Chef: Réfléchis tant que tu veux. L'avis reste dans mon tiroir, et moi je garde ma langue. Reviens me dire.
+
+[chef_paco_annulee_suite]
+Chef: L'avis a fini dans le poêle. Paco respire un peu mieux, même si les pirates rôdent toujours.
+Chef: Va, Flint. Ce que tu cherches n'est pas dans mon village.
+
+[chef_paco_maintenue_suite]
+Chef: L'avis est toujours accroché. Chaque fois que je passe devant, j'ai l'impression qu'il me regarde.
+Chef: Fais vite ce que tu as à faire, Flint, avant que quelqu'un de moins scrupuleux que moi ne s'y intéresse.
+
+# Réactions des villageois (variantes `! si` ajoutées en tête de « villageoise » et « garde » ; leurs répliques
+# d'origine sont inchangées. Les conseils de combat du garde et de la villageoise sont repris en fin de variante.)
+[villageoise_prime_annulee]
+Villageoise: On dit que le chef a déchiré l'avis qui te visait ! Tout Paco en parle, et personne ne s'en plaint.
+Villageoise: En forêt, frappe les tortues de roche de dos ou de côté, et ne te laisse pas encercler par les gelées.
+
+[villageoise_prime_maintenue]
+Villageoise: Tu as laissé l'avis sur ta tête ? Mon mari dit que tu cherches les ennuis. Moi, je dis que tu les amènes chez nous.
+Villageoise: Fais attention à ce qui te suit. Et en forêt, frappe les tortues de roche de dos, et méfie-toi des gelées qui se divisent.
+
+[garde_prime_annulee]
+Garde: Le chef a déchiré l'avis ? Tant mieux. Je n'aurais pas aimé lever mon arme sur un blessé de la plage.
+Garde: Un conseil d'ancien quand même : trois coups sans t'arrêter, et le troisième frappe fort. Si on t'encercle, roule (C ou Carré).
+Garde: Pour les rebords, saute (V ou Triangle). Et garde l'épée armée une bonne seconde avant de relâcher : le coup part plus fort.
+
+[garde_prime_maintenue]
+Garde: Le chef laisse l'avis en place ? Moi, je ne toucherai pas à toi. D'autres, attirés par la somme, ne se gêneront pas. Surveille tes arrières.
+Garde: Un conseil d'ancien quand même : trois coups sans t'arrêter, et le troisième frappe fort. Si on t'encercle, roule (C ou Carré).
+Garde: Pour les rebords, saute (V ou Triangle). Et garde l'épée armée une bonne seconde avant de relâcher : le coup part plus fort.

@@ -1,0 +1,11 @@
+version 4
+zone 019 10 12 1
+vie 10 10
+energie 0 200
+boss 0
+arme 0
+equip long_sword - - 1
+objet long_sword 1
+objet strange_key 1
+evenement arrivee_epave
+evenement objet_strange_key

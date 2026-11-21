@@ -1,0 +1,66 @@
+# Icones d'inventaire : objet du remake/A2 -> icone.
+# Presentation A1 : chaque objet A2 recoit l'icone A1 NATIVE d'un objet de meme nature (epee, herbe,
+# fiole, anneau, cle...), lue dans assets/sprites/a1_icons.a1s (noms de assets/ui/a1_menu/banks.txt,
+# extraits localement de ressources A1 par tools/a1_menu_assets.py). Le contenu reste celui d'A2 :
+# seule l'image vient d'A1. Les ajouts du remake utilisent leurs icones ORIGINALES (rm:<index> de
+# assets/sprites/rm_icons.a1s, tools/rm_assets.py). Un objet absent de cette table n'a pas d'icone.
+# Format : id|icone
+long_sword|icon.sword_long
+bronze_sword|icon.sword_short
+broad_sword|icon.sword_gold_b
+rune_sword|icon.sword_gold
+shining_sword|icon.sword_ice
+rising_sword|icon.sword_legend
+epee_supreme|icon.sword_legend
+herb|icon.herb
+herbe|icon.herb
+tonic|icon.flask_green
+elixir|icon.flask_red
+panacea|icon.flask_blue
+lorien_nuts|icon.seed_gold
+grapes_of_eru|icon.seed_red
+pixie_ring|icon.ring_small_gold
+siren_ring|icon.ring_small_silver
+dryad_ring|icon.ring_gold
+newt_ring|icon.ring_silver
+compass|icon.map_green
+elemental_charm|icon.amulet_gold
+elemental_ring|icon.gem_red_oval
+wonder_orb|icon.orb_gold
+elf_ring|icon.gem_green
+sp_elf_ring|icon.gem_blue
+guard_ring|icon.gem_silver
+sp_guard_ring|icon.gem_white
+amulet|icon.amulet_blue
+gauntlet|icon.glove_green
+gantelet|icon.glove_green
+star_prism|icon.crystal_cluster
+prisme|icon.crystal_cluster
+star_crystal|icon.crystal_ball
+cristal|icon.crystal_ball
+lamp_of_lumiere|icon.lamp_white
+lampe|icon.lamp_white
+strange_key|icon.key_silver
+cle|icon.key_silver
+hand_carved_cow|icon.urn_silver
+hammer|icon.flail2
+red_statue|icon.urn_gold
+idole|icon.urn_gold
+pirate_earring|icon.gem_small_red
+cow_princess_autograph|icon.card_blue
+vanilla_wafer|icon.book_silver_b
+goo_goo_bird|icon.jar_gray
+crimson_cape|icon.cape_gold
+barons_orders|icon.scroll_gold
+ordre|icon.scroll_gold
+lettre|icon.scroll_blue
+coeur|icon.vial_blue
+rm_ember_blade|rm:0
+rm_frost_lance|rm:1
+rm_rift_hammer|rm:2
+rm_ember_shard|rm:3
+rm_frost_core|rm:4
+rm_rift_fragment|rm:5
+rm_ironwood|rm:6
+rm_rune_dust|rm:7
+puzzle_piece|icon.scroll_pink

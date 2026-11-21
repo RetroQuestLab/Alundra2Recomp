@@ -1,0 +1,89 @@
+# data/items.txt — contenu A2 (wiki List_of_Alundra_2_items et pages d'epees).
+# Format : id|nom|description|kind|maxQty|consumable|power
+# kind : Consumable, Key, Weapon, Ring, Pocket. maxQty 0 = limite non attestee.
+# power : 1..6 pour les six epees A2 ; 0 = aucune statistique attestee.
+# Aucune arme d'Alundra 1 (Dagger, Fiend Blade, Iron Flail...) n'est presente ici.
+# Les noms et descriptions affiches en jeu sont en francais ; sources et notes sont en commentaires.
+
+# --- Epees A2 : puissances 1 a 6 (pages wiki Long Sword ... Rising Sword) ------
+# Long Sword : epee de depart de Flint, transmise par son pere Ratcliff.
+# Bronze Sword : vendue 500 G a Paco. Broad Sword : 1000 G a Puerto Medusa.
+# Rune Sword : 2000 G a Eden/Mako. Shining Sword : coffre a Dragonia.
+# Rising Sword : obtenue en donnant la Crimson Cape a Belgar.
+long_sword|Épée longue|L'épée de Flint, léguée par son père Ratcliff.|Weapon|1|0|1
+bronze_sword|Épée de bronze|Une lame solide, forgée pour les voyageurs de Paco.|Weapon|1|0|2
+broad_sword|Épée large|Large et lourde, elle fend les armures.|Weapon|1|0|3
+rune_sword|Épée runique|Des runes courent sur sa lame et la rendent plus tranchante.|Weapon|1|0|4
+shining_sword|Épée brillante|Sa lame étincelle, même dans l'obscurité des ruines.|Weapon|1|0|5
+rising_sword|Épée ascendante|Une épée rare, qui n'obéit qu'à un guerrier déterminé.|Weapon|1|0|6
+
+# --- Consommables A2 : PV 100/300/600 (max 9) ; EP 200/500 et Panacea (limite non attestee) ---
+herb|Herbe|Rend un peu de vigueur.|Consumable|9|1|0
+tonic|Tonique|Rend une bonne part de vigueur.|Consumable|9|1|0
+elixir|Élixir|Rend presque toute la vigueur perdue.|Consumable|9|1|0
+lorien_nuts|Noix de Lorien|Redonne de l'énergie magique.|Consumable|0|1|0
+grapes_of_eru|Raisins d'Eru|Redonne beaucoup d'énergie magique.|Consumable|0|1|0
+panacea|Panacée|Rend toute la vigueur et toute l'énergie magique.|Consumable|0|1|0
+
+# --- Anneaux elementaires A2 (Pixie : projectile vert, statues et cristaux verts ; les autres : effet wiki A2) ---
+pixie_ring|Anneau de Pixie|Tire un projectile vert et réveille les cristaux verts.|Ring|1|0|0
+siren_ring|Anneau de Sirène|Un anneau élémentaire lié aux eaux.|Ring|1|0|0
+dryad_ring|Anneau de Dryade|Un anneau élémentaire lié aux forêts.|Ring|1|0|0
+newt_ring|Anneau de Triton|Un anneau élémentaire lié aux marais.|Ring|1|0|0
+
+# --- Objets de poche A2 (effets decrits dans le wiki A2) ---------------------------
+compass|Boussole|Fait apparaître une boussole translucide.|Pocket|1|0|0
+elemental_charm|Charme élémentaire|Réduit le coût des tirs élémentaires.|Pocket|1|0|0
+elemental_ring|Anneau élémentaire|Recharge l'énergie magique quand Flint reste immobile.|Pocket|1|0|0
+wonder_orb|Orbe prodige|Rend de la vigueur quand Flint reste immobile.|Pocket|1|0|0
+elf_ring|Anneau d'elfe|Renforce l'attaque de Flint.|Pocket|1|0|0
+sp_elf_ring|Anneau d'elfe SP|Renforce fortement l'attaque de Flint.|Pocket|1|0|0
+guard_ring|Anneau de garde|Renforce la défense de Flint.|Pocket|1|0|0
+sp_guard_ring|Anneau de garde SP|Renforce fortement la défense de Flint.|Pocket|1|0|0
+amulet|Amulette|Permet de tirer deux projectiles élémentaires.|Pocket|1|0|0
+
+# --- Objets cles A2 -------------------------------------------------------------
+# Gauntlet : attaque Sunburst, obtenu de l'apprenti de Jeehan.
+# Chaine d'echange (wiki A2) : Strange Key -> Hand-Carved Cow -> Hammer -> Red Statue
+# -> Pirate Earring -> Cow Princess Autograph -> Vanilla Wafer -> Goo Goo Bird -> Crimson Cape
+# (la cape se donne a Belgar contre Rising Sword). Baron's Orders : trame du remake.
+gauntlet|Gantelet|Permet de lancer l'attaque Éclat solaire.|Key|1|0|0
+star_prism|Prisme stellaire|Une relique brillante venue des étoiles.|Key|1|0|0
+star_crystal|Cristal stellaire|Une relique qui garde la lueur des étoiles.|Key|1|0|0
+lamp_of_lumiere|Lampe de Lumière|Une relique ancienne qui chasse les ténèbres.|Key|1|0|0
+strange_key|Clé étrange|Une clé d'un type que personne ne reconnaît.|Key|1|0|0
+hand_carved_cow|Vache sculptée|Une petite vache taillée à la main, avec soin.|Key|1|0|0
+hammer|Marteau|Un vieux marteau d'artisan, bien usé.|Key|1|0|0
+red_statue|Statue rouge|Une statuette rouge qui plairait à un collectionneur.|Key|1|0|0
+pirate_earring|Boucle d'oreille de pirate|Un bijou de pirate, qui a vu la mer.|Key|1|0|0
+cow_princess_autograph|Autographe de la Princesse Vache|Signé d'une main enthousiaste.|Key|1|0|0
+vanilla_wafer|Gaufrette à la vanille|Une gaufrette croustillante et parfumée.|Key|1|0|0
+goo_goo_bird|Oiseau Gou-Gou|Un drôle d'oiseau qui piaille sans cesse.|Key|1|0|0
+crimson_cape|Cape écarlate|Une cape rouge vif, très convoitée par Belgar.|Key|1|0|0
+barons_orders|Ordres du baron|Des ordres du baron Diaz, à remettre à Jeehan.|Key|1|0|0
+
+# --- Identifiants historiques du remake : descriptions compatibles A2 -----------
+coeur|Cœur de vie|Une fiole de vie qui augmente la vie maximale.|Key|1|0|0
+herbe|Herbe médicinale|Une herbe qui rend deux cœurs.|Consumable|9|1|0
+lettre|Lettre|Une lettre scellée, à remettre à Jeehan.|Key|1|0|0
+cle|Clé étrange|Une clé trouvée au fond d'un coffre.|Key|1|0|0
+gantelet|Gantelet d'éclair|Permet de lancer l'attaque Éclair.|Key|1|0|0
+ordre|Ordres du baron|Des ordres signés du baron Diaz.|Key|1|0|0
+epee_supreme|Épée suprême|L'épée que Jeehan offre en remerciement.|Weapon|1|0|0
+lampe|Lampe de Lumière|Une relique ancienne qui chasse les ténèbres.|Key|1|0|0
+prisme|Prisme stellaire|Une relique brillante venue des étoiles.|Key|1|0|0
+cristal|Cristal stellaire|Une relique qui garde la lueur des étoiles.|Key|1|0|0
+idole|Idole à trois yeux|Une idole étrange dont les trois yeux semblent vous suivre.|Key|1|0|0
+
+# --- Pièces de puzzle (A2, blocs 11, 186, 219, 274 : Jeehan en réunit pour ses énigmes ; B05) ---
+puzzle_piece|Pièce de puzzle|Un fragment gravé de motifs. Jeehan en rassemble pour ses énigmes.|Key|0|0|0
+
+# --- Ajouts du remake (tranche 3, absents d'Alundra 2) ---
+rm_ember_blade|Épée de braise|Une lame brûlante qui enflamme ce qu'elle frappe.|Weapon|1|0|3
+rm_frost_lance|Lance de givre|Longue portée ; son givre gèle et ralentit l'ennemi.|Weapon|1|0|2
+rm_rift_hammer|Marteau de faille|Lourd : brise la pierre fragile et actionne les mécanismes.|Weapon|1|0|5
+rm_ember_shard|Éclat de braise|Un éclat encore chaud, prisé des forgerons.|Key|0|0|0
+rm_frost_core|Cœur de givre|Un noyau glacé qui ne fond jamais.|Key|0|0|0
+rm_rift_fragment|Fragment de faille|Un éclat de roche venu d'une faille ancienne.|Key|0|0|0
+rm_ironwood|Bois de fer|Un bois dur comme le métal, idéal pour les manches.|Key|0|0|0
+rm_rune_dust|Poussière runique|Une poudre fine qui garde la trace de vieilles runes.|Key|0|0|0

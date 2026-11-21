@@ -1,0 +1,33 @@
+# Ressources commerciales : ne jamais publier
+*.bin
+*.cue
+*.iso
+*.img
+*.chd
+extracted/
+assets/
+images/
+pb/
+gp/
+*.mp4
+
+# Compilation et caches
+build/
+ps1/build/
+__pycache__/
+*.pyc
+
+# Outils et bibliothèques téléchargés
+external/
+
+# Captures, journaux et donnees de diagnostic locales
+captures/
+qa/ps1_logs/
+.sentry-native/
+memcard*.mcd
+
+# Fichiers générés à partir de ressources locales
+# src/a1_font.h est versionné : la build PC et les tests en dépendent.
+src/ps1/a1_font_ps1.h
+ps1/assets/*.dat
+ps1/a_graver/

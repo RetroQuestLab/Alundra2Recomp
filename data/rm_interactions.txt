@@ -1,0 +1,19 @@
+# Ajouts du remake (tranche 3) : enigme a solutions multiples du village Paco (zone 011).
+# Format : zone|x|y|id|type|solutions|reset|resultat
+#   type      : flammable | ice_surface | fragile | mechanism | lever
+#   solutions : effets acceptes separes par des virgules (fire,ice,heavy) ;
+#               mechanism : countN = s'ouvre quand N de ses entrees sont resolues ;
+#               lever : reset (remet a zero les entrees du mecanisme vise)
+#   reset     : puzzle = remis a zero par le levier ; none = jamais
+#   resultat  : mecanisme alimente (entrees), evenement ouvert (mecanisme), mecanisme vise (levier)
+# Adaptation du plan : la liste de solutions utilise des virgules, car « fire|heavy » se
+# confondait avec le separateur de champs. Coordonnees en cases (F1 en jeu).
+# Aucune de ces interactions ne touche aux gates historiques (epee_supreme, lampe, prisme,
+# boss_medusa, cristal) ni aux passages de la route A -> Z.
+# Rive sud du village : brasero, chemin gele et pilier sur la rangee 50 (l'eau commence
+# rangee 51) ; vieux mecanisme rangee 52 ; levier en (35,51), degage (en 29,52 une colonne du decor le masquait).
+011|23|50|rm_demo_brazier|flammable|fire,heavy|puzzle|rm_demo_gate
+011|25|50|rm_demo_ice_path|ice_surface|ice,heavy|puzzle|rm_demo_gate
+011|27|50|rm_demo_pillar|fragile|heavy|puzzle|rm_demo_gate
+011|30|52|rm_demo_gate|mechanism|count2|none|rm_demo_gate
+011|35|51|rm_demo_reset|lever|reset|none|rm_demo_gate

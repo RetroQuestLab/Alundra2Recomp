@@ -1,0 +1,11 @@
+# Ajouts du remake (tranche 3) : recettes du forgeron Orvan (personnage original du remake).
+# Deux branches par arme, un rang par branche dans cette premiere tranche (six recettes).
+# Identifiant d'amelioration : <arme>_<branche>_<rang>.
+# Format : arme|branche|rang|nom|description|materiaux|degats|vitesse|portee|recul|coutEp|effet|contrepartie
+#   materiaux : id:quantite,id:quantite ; statistiques = valeurs APRES amelioration (toutes renseignees).
+rm_ember_blade|flame|1|Lame ardente|Le feu mord plus fort.|rm_ember_shard:2,rm_ironwood:1|5|14|16|2|6|fire|portée réduite
+rm_ember_blade|ember|1|Braise vive|Brûle plus longtemps, coûte plus d'énergie.|rm_ember_shard:1,rm_rune_dust:1|4|14|20|2|12|fire|coût EP accru
+rm_frost_lance|glacier|1|Lance glaciaire|Le gel frappe plus fort.|rm_frost_core:2,rm_ironwood:1|4|11|28|1|14|ice|coût EP accru
+rm_frost_lance|shard|1|Pointe d'éclat|Porte encore plus loin.|rm_frost_core:1,rm_rune_dust:1|2|11|34|4|10|ice|recul accru
+rm_rift_hammer|quake|1|Marteau sismique|Frappe à ébranler le sol.|rm_rift_fragment:2,rm_ironwood:1|7|20|16|5|4|heavy|vitesse réduite
+rm_rift_hammer|shatter|1|Marteau brise-roc|Plus précis, plus destructeur.|rm_rift_fragment:1,rm_rune_dust:1|6|18|12|5|4|heavy|portée réduite

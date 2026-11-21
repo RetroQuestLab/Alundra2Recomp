@@ -1,0 +1,4 @@
+version 5
+zone 011 26 47 0
+vie 10 10
+objet long_sword 1

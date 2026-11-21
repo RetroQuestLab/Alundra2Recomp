@@ -1,0 +1,13 @@
+# Ajouts du remake (tranche 3) : armes d'exploration ABSENTES d'Alundra 2.
+# Plan de la tranche 3, tâche 1.
+# Format : id|nom|description|degats|vitesse|portee|recul|coutEp|effet
+#   degats  : degats d'un coup normal (remplace la puissance A2 1..6 quand l'arme est equipee)
+#   vitesse : duree de la fenetre active du coup, en ticks (plus grand = plus lent ; epee : 14)
+#   portee  : distance de la zone de frappe devant le heros, en pixels (epee : 18)
+#   recul   : poussee infligee a l'ennemi touche (epee : 2.5 a 4.5)
+#   coutEp  : energie consommee par le coup charge elementaire (zone d'effet)
+#   effet   : effet generique none | fire | ice | heavy (aucun traitement par arme dans le code)
+# Le nom et la description affiches en jeu viennent de data/items.txt.
+rm_ember_blade|Épée de braise|Lame brûlante : enflamme ce qu'elle frappe.|3|14|20|2|6|fire
+rm_frost_lance|Lance de givre|Longue portée, gèle et ralentit.|2|11|28|1|10|ice
+rm_rift_hammer|Marteau de faille|Lourd : brise, ébranle et actionne.|5|18|16|5|4|heavy

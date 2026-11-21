@@ -1,0 +1,180 @@
+/*
+ * Backend PS1 de l'interface minimale pf (PSn00bSDK 0.24).
+ *
+ * Sous-ensemble C++ sans STL : tableaux statiques, POD, aucun destructeur
+ * global (le libc du SDK n'a pas atexit). Couleurs BGR555 15 bits.
+ */
+#include "../platform/pf.h"
+
+#include <psxapi.h>
+#include <psxgpu.h>
+#include <psxpad.h>
+#include <psxsio.h>
+
+#include <stdio.h>
+
+namespace {
+
+constexpr int kOtLength = 64;
+constexpr int kPrimBytes = 65536;
+
+DISPENV g_disp[2];
+DRAWENV g_draw[2];
+uint32_t g_ot[2][kOtLength];
+uint8_t g_prims[2][kPrimBytes];
+uint8_t* g_next = 0;
+int g_db = 0;
+uint32_t g_frame = 0;
+uint8_t g_pad_buf[2][34];
+uint32_t g_pad = 0;
+
+uint8_t bgr5_red(uint32_t c) { return (uint8_t)(((c & 0x1fu) * 255u) / 31u); }
+uint8_t bgr5_green(uint32_t c) { return (uint8_t)((((c >> 5) & 0x1fu) * 255u) / 31u); }
+uint8_t bgr5_blue(uint32_t c) { return (uint8_t)((((c >> 10) & 0x1fu) * 255u) / 31u); }
+
+}  // namespace
+
+void pfInit(void) {
+	// NTSC explicite : 320x240 a 59,82 Hz, meme si la console est PAL.
+	SetVideoMode(MODE_NTSC);
+	ResetGraph(0);
+
+	// Deux framebuffers 320x240 places l'un au-dessus de l'autre en VRAM.
+	// Chaque buffer a sa propre adresse de dessin et d'affichage (voir hellocpp).
+	SetDefDispEnv(&g_disp[0], PF_FB0_X, PF_FB0_Y, PF_W, PF_H);
+	SetDefDrawEnv(&g_draw[0], PF_FB0_X, PF_FB0_Y, PF_W, PF_H);
+	SetDefDispEnv(&g_disp[1], PF_FB1_X, PF_FB1_Y, PF_W, PF_H);
+	SetDefDrawEnv(&g_draw[1], PF_FB1_X, PF_FB1_Y, PF_W, PF_H);
+
+	for (int i = 0; i < 2; ++i) {
+		setRGB0(&g_draw[i], 8, 12, 32);
+		g_draw[i].isbg = 1;
+		g_draw[i].dtd = 1;
+	}
+
+	g_db = 0;
+	g_frame = 0;
+	g_next = g_prims[g_db];
+	ClearOTagR(g_ot[g_db], kOtLength);
+
+	// Manette : le driver BIOS remplit les deux buffers en permanence.
+	InitPAD(&g_pad_buf[0][0], 34, &g_pad_buf[1][0], 34);
+	StartPAD();
+
+	PutDrawEnv(&g_draw[g_db]);
+	PutDispEnv(&g_disp[g_db]);
+	SetDispMask(1);
+}
+
+void pfUpload4bpp(int x, int y, int w, int h, const uint8_t* data) {
+	if (!data || w <= 0 || h <= 0) return;
+	DrawSync(0);
+	RECT r;
+	// x,y,w sont en demi-mots VRAM (4 pixels 4bpp par demi-mot). Le blob
+	// P1ZM stocke deja w dans cette unite, comme le champ RECT de LoadImage.
+	setRECT(&r, x, y, w, h);
+	LoadImage(&r, reinterpret_cast<const uint32_t*>(data));
+}
+
+void pfUpload16(int x, int y, int w, int h, const uint16_t* data) {
+	if (!data || w <= 0 || h <= 0) return;
+	DrawSync(0);
+	RECT r;
+	setRECT(&r, x, y, w, h);
+	LoadImage(&r, reinterpret_cast<const uint32_t*>(data));
+}
+
+void pfDrawSprite16(int x, int y, int uVram, int vVram, int w, int h, int clutX, int clutY, int z) {
+	if (w <= 0 || h <= 0) return;
+	const int need = (int)sizeof(SPRT) + (int)sizeof(DR_TPAGE);
+	if (g_next + need > g_prims[g_db] + kPrimBytes) {
+		pfLog("PF_CAP primbuf overflow");
+		return;
+	}
+	if (z < 0) z = 0;
+	if (z >= kOtLength) z = kOtLength - 1;
+
+	// uVram,vVram sont en demi-mots VRAM. getTPage arrondit a l'origine de
+	// page (64 demi-mots en X, 256 lignes en Y) ; les UV du primitif sont en
+	// pixels reels relatifs a cette page (4 pixels par demi-mot en 4bpp).
+	const int pageX = uVram & ~63;
+	const int pageY = vVram & ~255;
+	const int u = (uVram - pageX) * 4;
+	const int v = vVram - pageY;
+
+	SPRT* s = reinterpret_cast<SPRT*>(g_next);
+	setSprt(s);  // taille variable : contrairement a SPRT_16, SPRT a w et h
+	setXY0(s, x, y);
+	setWH(s, w, h);
+	setUV0(s, u & 0xff, v & 0xff);
+	s->clut = getClut(clutX, clutY);
+	setRGB0(s, 128, 128, 128);  // 0x80 = modulation neutre pour une texture 4bpp
+	addPrim(&g_ot[g_db][z], s);
+
+	// addPrim() insere en tete : ajouter la page APRES le sprite la place avant
+	// lui dans la chaine, donc le GPU applique la bonne texture page.
+	DR_TPAGE* tp = reinterpret_cast<DR_TPAGE*>(g_next + sizeof(SPRT));
+	setDrawTPage(tp, 0, 0, getTPage(0, 0, uVram, vVram));
+	addPrim(&g_ot[g_db][z], tp);
+	g_next += need;
+}
+
+void pfDrawRect(int x, int y, int w, int h, uint32_t bgr555, int z) {
+	if (g_next + (int)sizeof(TILE) > g_prims[g_db] + kPrimBytes) {
+		pfLog("PF_CAP primbuf overflow");
+		return;
+	}
+	if (w <= 0 || h <= 0) return;
+
+	TILE* tile = reinterpret_cast<TILE*>(g_next);
+	// setTile() ecrit len=3 ET code=0x60 dans le mot d'en-tete. addPrim() ne
+	// remplit que le champ addr : sans len, le GPU recoit un primitif de
+	// longueur 0 et ne dessine rien (ecran de fond seul, observe en capture).
+	setTile(tile);
+	setRGB0(tile, bgr5_red(bgr555), bgr5_green(bgr555), bgr5_blue(bgr555));
+	tile->x0 = (int16_t)x;
+	tile->y0 = (int16_t)y;
+	tile->w = (int16_t)w;
+	tile->h = (int16_t)h;
+	if (z < 0) z = 0;
+	if (z >= kOtLength) z = kOtLength - 1;
+	addPrim(&g_ot[g_db][z], tile);
+	g_next += sizeof(TILE);
+}
+
+void pfPresent(void) {
+	DrawSync(0);
+	VSync(0);
+
+	// On affiche le buffer precedemment dessine pendant qu'on execute la liste
+	// du buffer courant (double buffering, voir hellocpp::flip).
+	PutDispEnv(&g_disp[g_db ^ 1]);
+	DrawOTagEnv(&g_ot[g_db][kOtLength - 1], &g_draw[g_db]);
+
+	// Lecture pad : btn est actif a l'etat bas sur PS1, on le convertit en masque
+	// actif en haut pour respecter le contrat de pf.h.
+	PADTYPE* pad = reinterpret_cast<PADTYPE*>(&g_pad_buf[0][0]);
+	g_pad = (uint32_t)(~(uint32_t)pad->btn) & 0xffffu;
+
+	g_db ^= 1;
+	g_next = g_prims[g_db];
+	ClearOTagR(g_ot[g_db], kOtLength);
+	++g_frame;
+}
+
+uint32_t pfPad(void) { return g_pad; }
+
+uint32_t pfFrame(void) { return g_frame; }
+
+void pfLog(const char* line) {
+	if (!line) return;
+	// Le driver TTY du BIOS est un "dummy" par defaut : sans AddSIO(), puts()
+	// n'atteint jamais la console (voir psxsio.h, AddSIO).
+	static bool s_tty_ready = false;
+	if (!s_tty_ready) {
+		AddSIO(115200);
+		s_tty_ready = true;
+	}
+	// puts() est la sortie TTY brute du libc PSn00bSDK (pas de stdout/fflush ici).
+	puts(line);
+}

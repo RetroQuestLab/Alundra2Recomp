@@ -1,0 +1,173 @@
+﻿# Monde du remake : assemble a partir des zones d'Alundra 1.
+#   start <zone> <x> <y> <direction>
+#   intro <dialogue>                                  (lance apres l'ecran titre)
+#   spawn <zone> <x> <y> <monstre>                    (gelee, minigelee, tortue, gobelin, ogre, droide,
+#                                                      golem, capitaine, mephisto)
+#   npc <zone> <x> <y> <sprite> <direction> <dialogue>   ("<dialogue>_apres" une fois l'ogre vaincu)
+#   name <zone> <nom du lieu>                         (bandeau affiche a l'entree)
+#   chest <zone> <x> <y> <objet>[:n] [besoin]         (coffre : coeur, herbe, lettre, cle, gantelet, ordre,
+#                                                      lampe, prisme, cristal ; "besoin" = objet/evenement requis)
+#   event <zone> <id> <dialogue>                      (dialogue joue une seule fois a l'entree de la zone)
+# Coordonnees en cases (F1 en jeu pour les lire).
+
+start 011 26 47 bas
+intro intro
+
+# --- Village Paco (zone 011) : Flint s'y reveille, echoue sur la plage ---
+name 011 Village Paco
+npc 011 31 47 ancien gauche prunewell
+npc 011 38 50 villageoise bas villageoise
+npc 011 34 49 villageois gauche garde
+npc 011 32 52 villageoise bas enfants_paco
+chest 011 29 50 herbe
+# Ajouts du remake (tranche 3) : Orvan le forgeron (personnage original) et la cache du vieux
+# mecanisme (enigme de data/rm_interactions.txt, ouverte par l'evenement rm_demo_gate).
+npc 011 36 47 villageois bas rm_forgeron
+chest 011 33 52 rm_ember_blade rm_demo_gate
+chest 011 34 52 rm_ember_shard:2 rm_demo_gate
+chest 011 37 47 rm_ironwood
+
+# Maison du chef (A2, bloc 22 ; B04) : scene FACULTATIVE hors route A -> Z. Interieur = piece nord-ouest
+# de la carte A1 139 (parquet, tapis, armures), porte de la maison en (38,46) ; passages dans data/warps.txt.
+name 139 Maison du chef
+npc 139 10 11 ancien bas chef_paco
+
+# --- Foret Kindra, sur le chemin du Mont Epervier (zone 013) ---
+name 013 Forêt Kindra
+spawn 013 6 51 gelee
+spawn 013 11 50 gelee
+spawn 013 4 31 tortue
+spawn 013 13 41 tortue
+spawn 013 16 40 gobelin
+spawn 013 21 33 gobelin
+spawn 013 22 29 ogre
+# Fiole de vie sur les ruines surelevees : il faut sauter pour l'atteindre (rebord de 2 niveaux)
+chest 013 26 48 coeur
+# La lettre du baron Diaz, dans le coffre que gardait l'ogre
+chest 013 22 31 lettre ogre
+# Finrod, l'ermite de la foret : il indique l'epave une fois la lettre recuperee
+npc 013 41 55 ancien haut finrod
+# Marchand dépouillé par les pirates (A2, bloc 33) : échange herbe -> boussole (choix B02)
+npc 013 10 57 villageois haut marchand_kindra
+# Pièce de puzzle (A2, bloc 11 ; B05)
+chest 013 13 48 puzzle_piece
+# Ajouts du remake (tranche 3) : Lance de givre et materiaux, recoins de l'aile ouest (hors chemin principal)
+chest 013 2 43 rm_frost_lance
+chest 013 2 34 rm_frost_core:2
+chest 013 12 54 rm_ironwood
+
+# --- Mont Epervier, l'epave de l'oiseau de fer (zone 019) ---
+name 019 Mont Epervier - Epave
+event 019 arrivee_epave epave_arrivee
+spawn 019 10 15 droide
+spawn 019 13 28 droide
+spawn 019 13 40 gobelin
+npc 019 10 11 alexia droite alexia_epave
+npc 019 12 12 belgar gauche belgar_epave
+# Le gantelet d'eclair, trouve dans les deplis du dirigeable (objet des menus d'Alundra 2)
+chest 019 10 10 gantelet
+# Clé étrange (A2 : début de la chaîne d'échange, B06)
+chest 019 7 16 strange_key
+# Ajouts du remake (tranche 3) : materiaux dans les recoins de la grande salle ouest
+chest 019 3 13 rm_rune_dust:3
+chest 019 3 24 rm_rift_fragment:2
+chest 019 3 31 rm_ironwood
+
+# --- Toroledo, pres de la Vallee de Mithra (zone 119) ---
+name 119 Toroledo
+event 119 arrivee_toroledo toroledo_arrivee
+spawn 119 25 12 droide
+spawn 119 25 2 droide
+npc 119 26 50 villageois gauche garde_toroledo
+npc 119 24 12 alexia droite alexia_toroledo
+npc 119 23 12 jeehan droite jeehan
+npc 119 26 1 villageoise bas dame_toroledo
+npc 119 10 34 natasha gauche toroledo_natasha
+npc 119 14 34 villageoise bas enfants_toroledo
+npc 119 18 34 ancien haut prisonnier_toroledo
+npc 119 22 34 nunugi haut nunugi_gwaba
+npc 119 25 34 villageois haut berger_toroledo
+chest 119 25 1 ordre
+
+# --- Vallee de Mithra (zone 026) : le passe de l'epee de Jeehan, le golem et la Lampe ---
+name 026 Vallée de Mithra
+event 026 arrivee_vallee vallee_arrivee
+spawn 026 26 28 golem
+spawn 026 26 27 gelee
+spawn 026 8 35 tortue
+spawn 026 44 30 gobelin
+npc 026 25 22 villageois gauche guide_vallee
+# L'idole a trois yeux, rapportee du Mont Vulcain : elle sert au rituel de Méphisto.
+chest 026 37 36 idole ordre
+chest 026 26 29 lampe boss_026
+
+# --- Ruines d'Eden (zone 042) : Roswell, le second golem et le Prisme d'Etoile ---
+# La carte A1 d'origine etait presque entierement noire (top tuile 0) : la zone 028,
+# plus claire et de meme taille, garde tous les points d'interet accessibles.
+map 042 028
+name 042 Ruines d'Eden
+event 042 arrivee_eden eden_arrivee
+spawn 042 25 30 golem
+spawn 042 28 30 droide
+spawn 042 8 34 gobelin
+npc 042 20 51 ancien haut roswell
+npc 042 40 44 villageoise haut ome
+chest 042 26 31 prisme boss_042
+
+# --- Puerto Medusa (zone 050) : le capitaine garde le chemin du manoir ---
+# Meme correction que pour Eden : la carte 029 est lumineuse et accueille tous les points.
+map 050 029
+name 050 Puerto Medusa
+event 050 arrivee_medusa medusa_arrivee
+spawn 050 34 28 capitaine
+spawn 050 43 28 droide
+spawn 050 8 28 gobelin
+npc 050 8 27 villageois droite marin_puerto
+npc 050 12 26 villageois droite medusa_baleine
+npc 050 16 26 zach droite zach_fort
+npc 050 14 30 villageois haut medusa_minerai
+npc 050 40 26 ruby bas ruby_puerto
+npc 050 42 26 albert bas albert_puerto
+npc 050 26 9 villageoise bas diseuse_puerto
+npc 050 47 26 capitaine gauche zeppo_puerto
+npc 050 15 27 villageois droite georges_puerto
+chest 050 34 29 cristal boss_medusa
+
+# --- Manoir de Lady Milena (zone 086) : le Cristal ouvre la salle du trone ---
+# La carte 316 remplace un interieur trop sombre ; les coordonnees restent identiques.
+map 086 316
+name 086 Manoir de Milena
+event 086 arrivee_manoir manoir_arrivee
+spawn 086 28 28 droide
+spawn 086 28 30 gobelin
+npc 086 7 30 villageois droite garde_manoir
+npc 086 32 30 belgar droite belgar_manoir
+npc 086 36 30 natasha bas natasha_manoir
+npc 086 40 30 diaz gauche diaz_manoir
+npc 086 44 30 villageois haut gwaba_habitant
+npc 086 25 8 alexia droite alexia_manoir
+npc 086 26 8 milena bas milena
+chest 086 28 29 coeur
+
+# --- Salle du trone de Varuna (zone 120) : affrontement avec Méphisto ---
+name 120 Salle du trône
+event 120 arrivee_trone mephisto_arrivee
+spawn 120 20 26 mephisto
+spawn 120 22 26 droide
+npc 120 13 52 alexia bas alexia_finale
+npc 120 13 42 roi haut roi_trone
+
+# --- Musiques d'Alundra 2 (assets/music/NN.wav) ---
+# Chaque zone a une categorie ; sa musique est prise UNIQUEMENT dans cette categorie (data/music.txt).
+# En jeu, M / N parcourent les morceaux de la categorie, F6 garde le morceau pour la zone.
+zone 011 village
+zone 139 village
+zone 013 donjon
+zone 019 donjon
+zone 119 village
+zone 026 plaine
+zone 042 donjon
+zone 050 village
+zone 086 donjon
+zone 120 boss
+music titre 1

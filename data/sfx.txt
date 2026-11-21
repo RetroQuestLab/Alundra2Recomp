@@ -1,0 +1,32 @@
+# Bruitages : <evenement> <id> [hauteur] [volume]
+# <id> = identifiant de l'effet dans le jeu original (assets/sfx/NN.wav, banque systeme d'Alundra 2,
+# rendue par tools/a2_sfx.py ; liste dans assets/sfx/sfx.txt). F7 / F8 en jeu : ecoute un par un.
+#
+# Certains d'apres le code du jeu (appels de PlaySe depuis tous les menus) :
+#   1 = curseur, 2 = valider, 3 = annuler, 63 = ouverture de menu
+# Les actions (epee, coups...) passent par des tables de donnees : choix d'apres la famille de l'effet
+# (groupe de la banque) et son analyse acoustique (duree, bruit, evolution du timbre).
+epee1      12 1.0  0.8
+epee2      13 1.0  0.8
+epee3      15 0.9  1.0
+coup       70 1.0  0.9
+coup_fort  66 1.0  1.0
+bloque     20 1.0  0.9
+mort       36 1.0  0.9
+ogre_mort  41 0.9  1.0
+degats     71 1.0  1.0
+esquive    29 1.0  0.6
+coeur      33 1.0  0.8
+dialogue    2 1.0  0.6
+page        1 1.0  0.5
+# Menus (identifiants surs : ce sont ceux des menus d'Alundra 2)
+curseur     1 1.0  0.5
+valider     2 1.0  0.6
+annuler     3 1.0  0.6
+# Saut : memes echantillons que l'esquive, plus aigus (a affiner a l'oreille avec F7 / F8)
+saut       29 1.35 0.5
+atterrir   29 0.7  0.35
+coffre     63 1.0  0.7
+charge     33 1.4  0.6
+eclair     15 1.3  0.8
+gantelet   33 1.2  0.7

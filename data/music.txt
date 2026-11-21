@@ -1,0 +1,14 @@
+# Categories des musiques d'Alundra 2 (assets/music/NN.wav), classees d'apres leurs partitions
+# (mode majeur/mineur, tempo, densite de notes, duree). Une zone n'utilise QUE les morceaux de sa
+# categorie (voir "zone <zone> <categorie>" dans world.txt) : M / N en jeu restent dans la categorie.
+#   doublons ignores : 18 = 00, 34 = 02, 38 = 01
+village 17 2 3 28 36 37 19 29
+plaine  1 9 15 23 35
+donjon  25 5 10 11 12 13 14 20 22 24 26 27 31 32 6 8
+boss    21 16 33
+jingles 0 4 30 39 7
+# jingles joues une seule fois (puis retour a la musique de la zone) ; changer le numero pour essayer
+victoire 0
+liberee  4
+gameover 39
+objet    7
