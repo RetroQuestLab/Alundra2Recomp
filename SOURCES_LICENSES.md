@@ -10,7 +10,7 @@ Les éléments suivants ne sont pas distribués dans ce dépôt :
 
 - sprites, cartes, polices, fenêtres de dialogue, musiques et effets provenant des jeux Alundra ;
 - images de référence, vidéos et captures de travail ;
-- en-têtes générés à partir de ces ressources ;
+- blobs PS1 générés à partir de ces ressources ;
 - exécutables, bibliothèques, BIOS, images BIN/CUE et ISO.
 
 Ces fichiers doivent être fournis localement par chaque personne disposant des droits nécessaires. Ils restent la propriété de leurs ayants droit respectifs.
@@ -27,4 +27,4 @@ Aucune de ces dépendances n’est copiée dans le dépôt.
 
 ## Génération locale
 
-Les en-têtes de police et les blobs PS1 sont générés par les scripts présents dans `tools/`, à partir de ressources locales non versionnées. Les commandes de génération sont documentées dans `README.md` et `CONTRIBUTING.md`.
+Le blob de police PS1 et les blobs de zone sont générés par les scripts présents dans `tools/`, à partir de ressources locales non versionnées. Les commandes de génération sont documentées dans `README.md` et `CONTRIBUTING.md`.

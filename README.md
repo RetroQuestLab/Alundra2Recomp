@@ -19,7 +19,7 @@ Le portage PS1 n’est **pas** une émulation ni un filtre « rétro » appliqu�
 
 Ce dépôt ne contient **aucune ressource commerciale** provenant des jeux Alundra : ni sprites, ni cartes, ni polices, ni musiques, ni vidéos, ni image disque. Pour compiler les cibles, il faut fournir localement ses propres copies des ressources et des outils dans les dossiers ignorés `assets/`, `extracted/`, `gp/`, `images/` et `external/`.
 
-Les en-têtes générés à partir de ces ressources sont également exclus du dépôt et doivent être régénérés localement.
+L’en-tête `src/a1_font.h` est fourni afin que la build PC et les tests démarrent dès le clonage. Les blobs PS1 sont régénérés localement par les scripts de `tools/`.
 
 ## Prérequis
 
