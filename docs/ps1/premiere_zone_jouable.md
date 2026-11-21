@@ -1,66 +1,66 @@
-# Design doc — première version jouable sur PS1 (tranche 1)
+# Design doc — first playable version on PS1 (slice 1)
 
-Date : 2026-11-21.
-Option retenue : **prototype jouable rapide** (approche 1), pas la tranche fidèle complète.
+Date: 2026-11-21.
+Selected option: **fast playable prototype** (approach 1), not the full faithful slice.
 
-## Objectif
+## Objective
 
-Fournir une ISO NTSC/60 Hz gravable contenant un vrai début de jeu : décor de la zone 011
-(Village Paco), héros contrôlable au Pad, caméra, saut, attaque et HUD de vie. La cible PC SDL3
-reste inchangée.
+Provide a burnable NTSC/60 Hz ISO containing a real game start: zone 011 scenery
+(Paco Village), a hero controllable with the Pad, camera, jump, attack and health HUD. The SDL3 PC
+target remains unchanged.
 
-## Périmètre
+## Scope
 
-**Inclus**
-- Décor A1 de `assets/maps/011.a1m` : vraies tuiles 24×16, murs empilés, hauteurs de cases.
-- Héros A1 issu de `assets/sprites/hero.a1s` : repos, marche, course, saut, attaque (groupes 0,1,3,2,16).
-- Déplacement 8 directions**, course (R1), saut (Croix), attaque (Carré), collisions identiques à `canStand()`.
-- Caméra integer suivant le héros, bornée à la carte.
-- HUD : cœurs en haut à gauche reflétant les points de vie du héros ; texte minimal « ZONE 011 ».
-- Sortie ISO 2048 + BIN/CUE, `MODE_NTSC` forcé, boot CD vérifié en émulateur.
+**Included**
+- A1 scenery from `assets/maps/011.a1m`: real 24×16 tiles, stacked walls, cell heights.
+- A1 hero from `assets/sprites/hero.a1s`: idle, walk, run, jump, attack (groups 0,1,3,2,16).
+- 8-direction movement**, running (R1), jumping (Cross), attacking (Square), collisions identical to `canStand()`.
+- Integer camera following the hero, bounded to the map.
+- HUD: hearts in the top left reflecting the hero's health; minimal text « ZONE 011 ».
+- ISO 2048 + BIN/CUE output, `MODE_NTSC` forced, CD boot verified in emulator.
 
-**Exclus de cette tranche** (prochaines tranches du plan)
-- Dialogues/police A1/fenêtres WIND, PNJ, coffres, objets, musique, sauvegarde, changement de zone.
+**Excluded from this slice** (later slices of the plan)
+- Dialogues/A1 font/WIND windows, NPCs, chests, items, music, save, zone changes.
 
-## Contraintes
+## Constraints
 
-- C++20 MIPS **sans STL, sans allocation dynamique**, gcc PSn00bSDK 0.24.
-- VRAM 1 Mo : 2 framebuffers 320×240×2 = 307 200 o, tuiles 4bpp ≈ 157 632 o,
-  héros 4bpp ≈ 64 352 o, CLUT ≈ 26 ko → ~555 ko, marge confortable.
-- RAM 2 Mo : données statiques embarquées dans l'EXE via `.incbin` (pas de lecteur CD à écrire).
-- OT par ligne de balayage (64 entrées), primitives `SPRT_16` pour tuiles/sprites, `TILE` pour le HUD.
-- Texel 4bpp d'indice 0 = transparent (contrainte GPU PS1), donc alpha A1 → index 0.
+- C++20 MIPS **without STL, without dynamic allocation**, PSn00bSDK 0.24 gcc.
+- VRAM 1 Mo: 2 framebuffers 320×240×2 = 307 200 o, 4bpp tiles ≈ 157 632 o,
+  4bpp hero ≈ 64 352 o, CLUT ≈ 26 ko → ~555 ko, comfortable margin.
+- RAM 2 Mo: static data embedded in the EXE via `.incbin` (no CD reader to write).
+- OT per scanline (64 entries), `SPRT_16` primitives for tiles/sprites, `TILE` for the HUD.
+- 4bpp texel with index 0 = transparent (PS1 GPU constraint), so A1 alpha → index 0.
 
-## Pipeline de données (offline)
+## Data pipeline (offline)
 
-Nouvel outil `tools/ps1_export_zone.py` (non publié) :
-1. Lit `A1MP` ( Built-in ) : 821 tuiles RGBA 24×16, 3 120 cases, 8 202 murs.
-2. Quantifie chaque tuile sur **16 couleurs max** (alpha=0 → index 0), déduplique les palettes
-   en CLUT 16×BGR555.
-3. Lit `A1SP` (`hero.a1s`) : ne garde que les groupes [0 repos, 1 marche, 3 course, 6 saut, 2 épée]
-   (`src/sprite.h` : `IDLE, WALK, RUN, JUMP, ATTACK`), quantifie chaque frame en 4bpp + CLUT dédupliquée.
-   L'ancien choix [0, 1, 3, 2, 16] prenait le groupe ATTACK comme saut et le groupe 16 (vide) comme épée.
-   Les directions A1SP sont `0=haut, 1=gauche, 2=droite, 3=bas` (voir `src/platform/pf.h`).
-4. Écrit `ps1/assets/zone011.dat` et `ps1/assets/hero.dat` (formats P1ZM / P1SP détaillés dans le plan).
+New tool `tools/ps1_export_zone.py` (unpublished):
+1. Reads `A1MP` ( Built-in ): 821 24×16 RGBA tiles, 3 120 cells, 8 202 walls.
+2. Quantizes each tile to **16 colors max** (alpha=0 → index 0), deduplicates palettes
+   into 16×BGR555 CLUTs.
+3. Reads `A1SP` (`hero.a1s`): keeps only groups [0 idle, 1 walk, 3 run, 6 jump, 2 sword]
+   (`src/sprite.h`: `IDLE, WALK, RUN, JUMP, ATTACK`), quantizes each frame to 4bpp + deduplicated CLUT.
+   The old choice [0, 1, 3, 2, 16] used the ATTACK group as jump and group 16 (empty) as sword.
+   A1SP directions are `0=up, 1=left, 2=right, 3=down` (see `src/platform/pf.h`).
+4. Writes `ps1/assets/zone011.dat` and `ps1/assets/hero.dat` (P1ZM / P1SP formats detailed in the plan).
 
-## Exécution (PS1)
+## Execution (PS1)
 
-- `src/ps1/pf_ps1.cpp` étendu : `pfUpload4bpp()`, `pfTexPage()`, `pfDrawSprite16()`, OT 64.
-- `src/ps1/zone011.cpp` : chargeur P1ZM + dessin des tuiles/murs avec `camX/camY` entiers.
-- `src/ps1/hero_ps1.cpp` : animation (ticks 1/60), physique entièrement en fixed-point 16.16
-  (pas de FPU garanti), `canStand` porté sur les cases.
-- `src/ps1/boot.cpp` remplacé par la boucle de jeu ; le diagnostic reste disponible via `__PS1_DIAG__`.
-- Entrées : flèches/Pad, Croix = saut, Carré = attaque, R1 = course ; mêmes fronts montants que le PC.
+- `src/ps1/pf_ps1.cpp` extended: `pfUpload4bpp()`, `pfTexPage()`, `pfDrawSprite16()`, OT 64.
+- `src/ps1/zone011.cpp`: P1ZM loader + tile/wall drawing with integer `camX/camY`.
+- `src/ps1/hero_ps1.cpp`: animation (1/60 ticks), physics entirely in 16.16 fixed-point
+  (no FPU guaranteed), `canStand` ported to cells.
+- `src/ps1/boot.cpp` replaced by the game loop; diagnostics still available via `__PS1_DIAG__`.
+- Inputs: arrows/Pad, Cross = jump, Square = attack, R1 = run; same rising edges as PC.
 
-## Vérification
+## Verification
 
 1. `powershell -File tools/build_ps1.ps1` → `PS1_BUILD: PASS`.
-2. `powershell -File tools/ps1_smoke.ps1` → boot CD et hits `_start/main/pfInit/pfPresent/pfDrawRect`.
-3. Capture native 320×240 via `docs/ps1/lua/capture_boot.lua`, inspection visuelle réelle.
-4. Boot de l'ISO 2048 dans PCSX-Redux (log horodaté dans `qa/ps1_logs/`).
-5. Régression PC : build OK, validateur `ERR: 0 | WARN: 0`, CTest 81/81, `git diff --check`.
-6. Aucun fichier binaire/commit d'image ; seule la version locale dans `ps1/a_graver/`.
+2. `powershell -File tools/ps1_smoke.ps1` → CD boot and hits `_start/main/pfInit/pfPresent/pfDrawRect`.
+3. Native 320×240 capture via `docs/ps1/lua/capture_boot.lua`, real visual inspection.
+4. Boot of the ISO 2048 in PCSX-Redux (timestamped log in `qa/ps1_logs/`).
+5. PC regression: build OK, validator `ERR: 0 | WARN: 0`, CTest 81/81, `git diff --check`.
+6. No binary file or image commit; only the local version in `ps1/a_graver/`.
 
-## Livrable
+## Deliverable
 
-`ps1/a_graver/alundra2_ntsc.iso` régénéré, gravable, avec `SHA256.txt` mis à jour.
+`ps1/a_graver/alundra2_ntsc.iso` regenerated, burnable, with `SHA256.txt` updated.
