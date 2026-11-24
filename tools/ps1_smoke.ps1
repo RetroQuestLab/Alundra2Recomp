@@ -12,11 +12,12 @@
 
 [CmdletBinding()]
 param(
-	[int]$Seconds = 120,
+	[int]$Seconds = 300,
 	[switch]$SkipBuild,
 	[string]$SdkRoot,
 	[string]$PcsxExe,
-	[string]$BiosFile
+	[string]$BiosFile,
+	[string]$Cue
 )
 
 $ErrorActionPreference = 'Stop'
@@ -35,7 +36,8 @@ $nmExe = Join-Path $sdkBin 'mipsel-none-elf-nm.exe'
 $ps1Dir = Join-Path $repo 'ps1'
 $elf = Join-Path $ps1Dir 'build\alundra2.elf'
 $exe = Join-Path $ps1Dir 'build\alundra2.exe'
-$cue = Join-Path $ps1Dir 'build\alundra2_ps1.cue'
+if (-not $Cue) { $Cue = Join-Path $ps1Dir 'build\alundra2_ps1.cue' }
+$cue = $Cue
 $lua = Join-Path $repo 'docs\ps1\lua\trace_boot.lua'
 
 if (-not $PcsxExe) { $PcsxExe = Join-Path $repo 'external\tools\pcsx-redux\pcsx-redux.main' }
@@ -96,7 +98,7 @@ $env:PS1_PFINIT_ADDR     = $pfInitAddr
 $env:PS1_PFPRESENT_ADDR  = $pfPresentAddr
 $env:PS1_PFDRAW_ADDR     = $pfDrawRectAddr
 $env:PS1_SUMMARY_FRAME   = '400'
-$env:PS1_QUIT_FRAME      = '500'
+$env:PS1_QUIT_FRAME      = '2500'
 
 # --- 4. Fichiers de log horodatés + .meta ---------------------------------
 $ts = Get-Date -Format 'yyyyMMdd_HHmmss'
@@ -108,6 +110,7 @@ $metaFile   = Join-Path $logDir ("redux_ps1_smoke_" + $ts + ".meta.txt")
 
 $exeHash   = (Get-FileHash -Algorithm SHA256 -LiteralPath $exe).Hash
 $elfHash   = (Get-FileHash -Algorithm SHA256 -LiteralPath $elf).Hash
+$isoHash   = (Get-FileHash -Algorithm SHA256 -LiteralPath $cue).Hash
 
 $emuVersion = 'inconnue'
 $versionJson = Join-Path (Split-Path -Parent $PcsxExe) 'version.json'
@@ -138,8 +141,9 @@ BIOS=$BiosFile
 EMULATOR=$PcsxExe ($emuVersion)
 LUA=$lua
 CUE=$cue
+ISO_SHA256=$isoHash
 PS1_SUMMARY_FRAME=400
-PS1_QUIT_FRAME=500
+PS1_QUIT_FRAME=2500
 "@ | Set-Content -LiteralPath $metaFile -NoNewline
 
 # --- 5. Lancement PCSX-Redux sur notre BIN/CUE (froid, instance unique) ---

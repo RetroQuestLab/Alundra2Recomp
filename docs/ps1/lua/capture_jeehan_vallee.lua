@@ -1,0 +1,349 @@
+-- Parcours "ordres de Diaz -> epee de Jeehan -> Vallee de Mithra" (v0.8.26).
+-- La sonde ne fait que PLACER le heros (x, y, direction) sur des cases reelles
+-- et appuyer sur la manette emulee. Elle n'ecrit AUCUN champ QuestState ni
+-- inventaire : zones, cartes, gates et objets viennent du jeu.
+-- Etapes :
+--   1. Nouvelle partie, passages reels 011 -> 013 -> 019 -> 119.
+--   2. Passage 119 -> 026 SANS l'epee : doit etre refuse.
+--   3. Coffre des ordres (CROIX), puis coffre deja vide (CROIX) : un seul objet.
+--   4. Jeehan (CROIX) : dialogue 22, gate epee_supreme, +1 objet.
+--   5. Passage 119 -> 026 : carte lue depuis le CD, narration 23 une fois.
+--   6. SELECT (sauvegarde) -> titre -> Continuer : reprise en 026, carte 026.
+-- Env : SESSION_OUT, PS1_MAIN_ADDR, PS1_HERO_X/Y, PS1_DIR_ADDR, PS1_QUEST_ADDR,
+-- PS1_DLG_ACTIVE_ADDR, PS1_MENU_DRAW_ADDR, PS1_INTRO_DRAW_ADDR, PS1_MENU_ADDR,
+-- PS1_INV_ADDR, PS1_ZONE_W_ADDR.
+
+local outdir = os.getenv('SESSION_OUT') or '.'
+local mainAddr = tonumber(os.getenv('PS1_MAIN_ADDR'))
+local heroXAddr = tonumber(os.getenv('PS1_HERO_X_ADDR'))
+local heroYAddr = tonumber(os.getenv('PS1_HERO_Y_ADDR'))
+local dirAddr = tonumber(os.getenv('PS1_DIR_ADDR'))
+local questAddr = tonumber(os.getenv('PS1_QUEST_ADDR'))
+local dlgActiveAddr = tonumber(os.getenv('PS1_DLG_ACTIVE_ADDR'))
+local menuDrawAddr = tonumber(os.getenv('PS1_MENU_DRAW_ADDR') or '0')
+local introDrawAddr = tonumber(os.getenv('PS1_INTRO_DRAW_ADDR') or '0')
+local menuAddr = tonumber(os.getenv('PS1_MENU_ADDR'))
+local invAddr = tonumber(os.getenv('PS1_INV_ADDR'))
+local zoneWAddr = tonumber(os.getenv('PS1_ZONE_TILES_ADDR'))  -- g_nTiles
+local pad = PCSX.SIO0.slots[1].pads[1]
+local B = PCSX.CONSTS.PAD.BUTTON
+local mem = PCSX.getMemPtr()
+
+local gameFrame = 0
+local started = false
+local phase = 'title'
+local phaseFrame = 0
+local active = nil
+local menuDraws = 0
+local introDraws = 0
+local captured = {}
+
+local function read32(addr)
+	local off = addr - 0x80000000
+	return mem[off] + mem[off + 1] * 256 + mem[off + 2] * 65536 + mem[off + 3] * 16777216
+end
+local function write32(addr, value)
+	local off = addr - 0x80000000
+	local v = math.floor(value) % 4294967296
+	mem[off] = v % 256
+	mem[off + 1] = math.floor(v / 256) % 256
+	mem[off + 2] = math.floor(v / 65536) % 256
+	mem[off + 3] = math.floor(v / 16777216) % 256
+end
+local function stage() return read32(questAddr) end
+local function dialogueId() return read32(questAddr + 8) end
+local function zone() return read32(questAddr + 56) end
+local function gates() return read32(questAddr + 64) end
+local function zoneW() return read32(zoneWAddr) end
+local function dlgIsActive() return read32(dlgActiveAddr) == 1 end
+-- PSIItemEntry = { uint8 def ; int16 qty } (4 octets), 64 entrees, 0xFF = vide.
+local function invList()
+	local n, total, s = 0, 0, {}
+	for i = 0, 63 do
+		local off = invAddr - 0x80000000 + i * 4
+		local def = mem[off]
+		if def ~= 255 then
+			local q = mem[off + 2] + mem[off + 3] * 256
+			n = n + 1
+			total = total + q
+			s[#s + 1] = def .. 'x' .. q
+		end
+	end
+	return n, total, table.concat(s, ',')
+end
+
+local function state(tag)
+	local n, total, list = invList()
+	print(string.format('%s zone=%d tuiles=%d stage=%d dlg=%d gates=0x%x inv=%d/%d [%s] hero=%d,%d',
+		tag, zone(), zoneW(), stage(), dialogueId(), gates(), n, total, list,
+		math.floor(read32(heroXAddr) / 65536), math.floor(read32(heroYAddr) / 65536)))
+end
+
+local function teleport(x, y, dir)
+	write32(heroXAddr, x * 65536)
+	write32(heroYAddr, y * 65536)
+	write32(dirAddr, dir)
+end
+local function tileCenter(cx, cy) return cx * 24 + 12, cy * 16 + 8 end
+
+local function shot(name)
+	local ss = PCSX.GPU.takeScreenShot()
+	local w, h = ss.width, ss.height
+	if ss.data.size ~= w * h * 2 then print('shot ' .. name .. ': skipped') return end
+	local p = ffi.cast('const uint16_t*', ss.data.data)
+	local px = {}
+	for i = 0, w * h - 1 do
+		local c = p[i]
+		px[#px + 1] = string.char(bit.band(c, 31) * 8,
+			bit.band(bit.rshift(c, 5), 31) * 8, bit.band(bit.rshift(c, 10), 31) * 8)
+	end
+	local file = io.open(outdir .. '/' .. name .. '.ppm', 'wb')
+	file:write(string.format('P6\n%d %d\n255\n', w, h))
+	file:write(table.concat(px))
+	file:close()
+	captured[#captured + 1] = name
+	print(string.format('shot %s frame=%d zone=%d dlg=%d', name, gameFrame, zone(), dialogueId()))
+end
+
+local function fail(message)
+	state('JEEHAN_VALLEE_ETAT')
+	print('JEEHAN_VALLEE: FAIL ' .. message)
+	PCSX.quit(1)
+end
+local function waitUntil(cond, maxFrames, cb)
+	active = { mode = 'until', cond = cond, cb = cb, doneAt = gameFrame + maxFrames }
+end
+local function waitFrames(frames, cb)
+	active = { mode = 'wait', cb = cb, doneAt = gameFrame + frames }
+end
+local function tap(button, cb)
+	pad.setOverride(button)
+	active = { button = button, mode = 'tap', cb = cb,
+		releaseAt = gameFrame + 1, doneAt = gameFrame + 2 }
+end
+local function pulse(button, cb)
+	pad.setOverride(button)
+	active = { button = button, mode = 'pulse', cb = cb, stage = 1,
+		releaseAt = gameFrame + 14, doneAt = gameFrame + 28 }
+end
+local function closeDialogue(n, cb)
+	if not dlgIsActive() then waitFrames(4, cb) return end
+	if n <= 0 then fail('dialogue non ferme') return end
+	tap(B.START, function() waitFrames(6, function() closeDialogue(n - 1, cb) end) end)
+end
+-- Place le heros sur la case de depart d'un passage et attend le changement.
+local function warpVia(cx, cy, want, cb)
+	local x, y = tileCenter(cx, cy)
+	teleport(x, y, 0)
+	waitFrames(30, function()
+		if zone() ~= want then fail(string.format('passage (%d,%d) -> %d non pris', cx, cy, want)) return end
+		state('PASSAGE_' .. want)
+		cb()
+	end)
+end
+
+local inv0 = 0
+local w119 = 0
+
+local function reload()
+	phase = 'reload_title'
+	print('RELOAD SELECT frame=' .. gameFrame)
+	pulse(B.SELECT, function() end)
+end
+
+local function inValley()
+	local n = invList()
+	local x, y = tileCenter(26, 44)
+	teleport(x, y, 0)
+	local t0 = gameFrame
+	waitUntil(function() return zone() == 26 and dlgIsActive() end, 600, function()
+		print('VALLEE_CHARGEMENT images=' .. (gameFrame - t0))
+		if zone() ~= 26 then fail('passage vers la vallee refuse avec l epee') return end
+		if zoneW() == w119 or zoneW() == 0 then fail('carte 026 non chargee (w=' .. zoneW() .. ')') return end
+		if dialogueId() ~= 23 then fail('narration de la vallee absente: dlg=' .. dialogueId()) return end
+		state('VALLEE_ARRIVEE')
+		waitFrames(20, function() shot('vallee_arrivee')
+		closeDialogue(20, function()
+			if bit.band(gates(), 0x200) == 0 then fail('narration non marquee lue') return end
+			-- Quitter la case d'arrivee (verrou) sans reprendre le passage retour.
+			local vx, vy = tileCenter(26, 49)
+			teleport(vx, vy, 0)
+			waitFrames(30, function()
+				if zone() ~= 26 then fail('rebond hors de la vallee') return end
+				state('VALLEE_CARTE')
+				shot('vallee_carte')
+				reload()
+			end)
+		end) end)
+	end)
+end
+
+local function talkJeehan()
+	local n0 = invList()
+	teleport(564 - 14, 200, 2)
+	waitFrames(10, function()
+		tap(B.CROSS, function() waitFrames(6, function()
+			if dialogueId() ~= 22 then fail('Jeehan ne remet pas l epee: dlg=' .. dialogueId()) return end
+			if bit.band(gates(), 1) ~= 0 then fail('epee avant la fin du dialogue') return end
+			state('JEEHAN_ORDRE_VU')
+			shot('jeehan_epee')
+			closeDialogue(20, function()
+				local n1 = invList()
+				if bit.band(gates(), 1) == 0 then fail('gate epee_supreme absent') return end
+				if n1 ~= n0 + 1 then fail('epee supreme non ajoutee a l inventaire') return end
+				state('EPEE_SUPREME_RECUE')
+				-- Reparler a Jeehan : plus de remise ni d'objet.
+				tap(B.CROSS, function() waitFrames(6, function()
+					closeDialogue(20, function()
+						local n2 = invList()
+						if n2 ~= n1 then fail('epee remise deux fois') return end
+						if dialogueId() ~= 4294967295 then fail('dialogue residuel') return end
+						state('JEEHAN_SANS_DOUBLE')
+						inValley()
+					end)
+				end) end)
+			end)
+		end) end)
+	end)
+end
+
+local function openChest()
+	local x, y = tileCenter(25, 1)
+	teleport(x, y + 10, 0)  -- PF_DIR_UP : point d'interaction = centre du coffre
+	waitFrames(10, function()
+		tap(B.CROSS, function() waitFrames(6, function()
+			if dialogueId() ~= 21 then fail('coffre des ordres: dlg=' .. dialogueId()) return end
+			state('ORDRES_TROUVES')
+			shot('ordres_diaz')
+			closeDialogue(20, function()
+				local n1 = invList()
+				if n1 ~= inv0 + 1 then fail('ordres non ajoutes a l inventaire') return end
+				if bit.band(gates(), 0x100) == 0 then fail('drapeau ordres absent') return end
+				tap(B.CROSS, function() waitFrames(6, function()
+					if dialogueId() ~= 4294967295 or invList() ~= n1 then
+						fail('coffre des ordres rouvert') return
+					end
+					state('COFFRE_VIDE')
+					talkJeehan()
+				end) end)
+			end)
+		end) end)
+	end)
+end
+
+local function refusedWithoutSword()
+	w119 = zoneW()
+	inv0 = invList()
+	local x, y = tileCenter(26, 44)
+	teleport(x, y, 0)
+	waitFrames(40, function()
+		if zone() ~= 119 then fail('vallee ouverte SANS l epee') return end
+		print('VALLEE_REFUSEE_SANS_EPEE zone=119')
+		openChest()
+	end)
+end
+
+local function route()
+	state('DEPART')
+	if zone() ~= 11 then fail('nouvelle partie hors de Paco') return end
+	warpVia(25, 45, 13, function()
+		warpVia(41, 53, 19, function()
+			warpVia(14, 52, 119, refusedWithoutSword)
+		end)
+	end)
+end
+
+bps = {}
+local function addBp(addr, label, cb)
+	if addr == 0 then return end
+	bps[#bps + 1] = PCSX.addBreakpoint(addr, 'Exec', 4, label, cb, label)
+end
+addBp(menuDrawAddr, 'jv: menuDrawPS1', function() menuDraws = menuDraws + 1 return true end)
+addBp(introDrawAddr, 'jv: introDrawPS1', function() introDraws = introDraws + 1 return true end)
+addBp(mainAddr, 'jv: main', function()
+	started = true
+	gameFrame = 0
+	return false
+end)
+
+listener = PCSX.Events.createEventListener('GPU::Vsync', function()
+	if not started then return end
+	gameFrame = gameFrame + 1
+	if active then
+		if active.mode == 'until' then
+			if active.cond() or gameFrame >= active.doneAt then
+				local cb = active.cb
+				active = nil
+				if cb then cb() end
+			end
+			return
+		end
+		if active.mode == 'wait' then
+			if gameFrame >= active.doneAt then
+				local cb = active.cb
+				active = nil
+				if cb then cb() end
+			end
+			return
+		end
+		if active.mode == 'pulse' then
+			if active.stage == 1 and gameFrame >= active.releaseAt then
+				pad.clearOverride(active.button)
+				active.stage = 2
+			elseif active.stage == 2 and gameFrame >= active.doneAt then
+				local cb = active.cb
+				active = nil
+				if cb then cb() end
+			end
+			return
+		end
+		if active.mode == 'tap' then
+			if gameFrame >= active.releaseAt then pad.clearOverride(active.button) end
+			if gameFrame >= active.doneAt then
+				local cb = active.cb
+				active = nil
+				if cb then cb() end
+			end
+			return
+		end
+	end
+	if phase == 'title' and menuDraws >= 2 then
+		phase = 'menu'
+		pulse(B.START, function() end)
+	elseif phase == 'menu' and read32(menuAddr) == 1 then
+		phase = 'intro'
+		phaseFrame = gameFrame
+		pulse(B.CROSS, function() end)
+	elseif phase == 'intro' and introDraws >= 2 and gameFrame >= phaseFrame + 45 then
+		phase = 'game'
+		phaseFrame = gameFrame
+		pulse(B.START, function() end)
+	elseif phase == 'game' and gameFrame >= phaseFrame + 60 then
+		phase = 'route'
+		route()
+	elseif phase == 'reload_title' and read32(menuAddr + 20) == 1 and read32(menuAddr) == 0 then
+		phase = 'reload_wait'
+		phaseFrame = gameFrame
+	elseif phase == 'reload_wait' and gameFrame >= phaseFrame + 240 then  -- ecriture carte terminee
+		phase = 'reload_menu'
+		phaseFrame = gameFrame
+		pulse(B.START, function() end)
+	elseif phase == 'reload_menu' and read32(menuAddr) == 1 then
+		phase = 'reload_go'
+		phaseFrame = gameFrame
+		pulse(B.CROSS, function() end)
+	elseif phase == 'reload_go' and gameFrame >= phaseFrame + 300 then
+		phase = 'done'
+		state('REPRISE')
+		if zone() ~= 26 then fail('reprise hors de la vallee') return end
+		if zoneW() == w119 or zoneW() == 0 then fail('reprise : carte 026 absente') return end
+		if bit.band(gates(), 1) == 0 then fail('reprise : epee perdue') return end
+		if dialogueId() ~= 4294967295 then fail('reprise : narration rejouee') return end
+		shot('reprise_vallee')
+		print(string.format('JEEHAN_VALLEE_CAPTURE: PASS shots=%s', table.concat(captured, ',')))
+		PCSX.quit(0)
+	end
+	if gameFrame > 30000 then fail('timeout phase=' .. phase) end
+end)
+
+print('JEEHAN_VALLEE ready main=0x' .. string.format('%08x', mainAddr) .. ' outdir=' .. outdir)

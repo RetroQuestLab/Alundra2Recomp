@@ -116,7 +116,16 @@ void heroInit(void) {
 	p += g_nFrames * 2;
 	g_clutRects = p;
 	p += g_nCluts * 4;
-	p += g_nCluts * kClutWords * 2;  // CLUT deja televersees par zoneInit
+	const uint8_t* cluts = p;
+	p += g_nCluts * kClutWords * 2;
+
+	// Les CLUT du heros sont dans une region VRAM dédiee : heroInit() les
+	// televerse lui-meme, sans dependre de la zone chargee avant lui.
+	for (int i = 0; i < g_nCluts; ++i) {
+		const uint8_t* cr = g_clutRects + i * 4;
+		pfUpload16(rd16(cr), rd16(cr + 2), kClutWords, 1,
+		           reinterpret_cast<const uint16_t*>(cluts + i * kClutWords * 2));
+	}
 
 	g_frames = p;
 	for (int i = 0; i < g_nFrames && i < 128; ++i) {
@@ -144,6 +153,19 @@ void heroInit(void) {
 void heroPos(int* x, int* y) {
 	if (x) *x = (int)(g_x >> kFp);
 	if (y) *y = (int)(g_y >> kFp);
+}
+
+void heroSetPos(int x, int y) {
+	g_x = (int32_t)x * kOne;
+	g_y = (int32_t)y * kOne;
+	g_jumpY = 0;
+	g_jumpV = 0;
+}
+
+int heroDir(void) { return g_dir; }
+
+void heroSetDirPS1(int dir) {
+	g_dir = (dir >= 0 && dir <= 3) ? dir : PF_DIR_DOWN;
 }
 
 void heroUpdate(uint32_t pad, uint32_t /*frame*/) {
@@ -225,6 +247,8 @@ void heroUpdate(uint32_t pad, uint32_t /*frame*/) {
 	}
 }
 
+int heroElevPS1(void) { return (16 - g_z) * kTileH; }  // 16 = MARGIN_ROWS
+
 void heroDraw(int camX, int camY) {
 	int count = 0;
 	const uint8_t* steps = dirSteps(g_group, g_dir, &count);
@@ -254,8 +278,32 @@ void heroDraw(int camX, int camY) {
 	const uint8_t* cr = g_clutRects + (int)ci * 4;
 
 	const int sx = (int)(g_x >> kFp) - camX - ox;
-	const int sy = (int)(g_y >> kFp) - camY - oy + (int)(g_jumpY >> kFp);
+	const int sy = (int)(g_y >> kFp) + heroElevPS1() - camY - oy + (int)(g_jumpY >> kFp);
 	const int z = 63 - ((((int)(g_y >> kFp)) / kTileH) & 63);
 	pfDrawSprite16(sx, sy, PF_HERO_SCRATCH_X, PF_HERO_SCRATCH_Y, w, h,
 	               rd16(cr), rd16(cr + 2), z > 0 ? z : 0);
+}
+
+void heroDrawPortraitPS1(int x, int y, int scale) {
+	int count = 0;
+	const uint8_t* steps = dirSteps(g_group, g_dir, &count);
+	if (count <= 0) return;
+	int step = g_step;
+	if (step >= count) step = 0;
+	const int frame = rd16(steps + step * 4);
+	if (frame < 0 || frame >= g_nFrames || frame >= 128) return;
+
+	const uint8_t* f = hero_dat + g_frameOff[frame];
+	const int w = rd16(f), h = rd16(f + 2);
+	const int stride = g_frameStride[frame], uploadH = g_frameUploadH[frame];
+	pfUpload4bpp(PF_HERO_SCRATCH_X, PF_HERO_SCRATCH_Y, stride, uploadH, f + 12);
+
+	const uint16_t ci = rd16(g_frameClut + frame * 2);
+	const uint8_t* cr = g_clutRects + (int)ci * 4;
+	pfDrawSprite16(x - (w * scale) / 2, y - (h * scale) / 2,
+	               PF_HERO_SCRATCH_X, PF_HERO_SCRATCH_Y, w * scale, h * scale,
+	               rd16(cr), rd16(cr + 2), 2);
+	// Le scratch VRAM est partage avec heroDraw() : on force un re-upload au
+	// retour au jeu pour eviter d'afficher le heros avec la CLUT du portrait.
+	g_lastUploaded = -1;
 }

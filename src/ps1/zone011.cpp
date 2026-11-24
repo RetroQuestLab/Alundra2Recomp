@@ -11,6 +11,14 @@
 extern "C" {
 extern const uint8_t zone011_bin[];
 extern const uint32_t zone011_bin_size;
+extern const uint8_t zone013_bin[];
+extern const uint32_t zone013_bin_size;
+extern const uint8_t zone019_bin[];
+extern const uint32_t zone019_bin_size;
+extern const uint8_t zone119_bin[];
+extern const uint32_t zone119_bin_size;
+extern const uint8_t zone120_bin[];
+extern const uint32_t zone120_bin_size;
 }
 
 namespace {
@@ -57,8 +65,8 @@ const uint8_t* cellAt(int cx, int cy) {
 
 }  // namespace
 
-void zoneInit(void) {
-	const uint8_t* p = zone011_bin + 4;  // magic P1ZM
+void loadZone(const uint8_t* blob) {
+	const uint8_t* p = blob + 4;  // magic P1ZM
 	g_w = rd16(p);
 	g_h = rd16(p + 2);
 	g_nTiles = rd16(p + 4);
@@ -95,6 +103,31 @@ void zoneInit(void) {
 		pfUpload4bpp(rd16(r), rd16(r + 2), rd16(r + 4), rd16(r + 6), t);
 		t += 192;
 	}
+}
+
+void zoneInit(void) {
+	loadZone(zone011_bin);
+	(void)zone011_bin_size;
+}
+
+void zone013Init(void) {
+	loadZone(zone013_bin);
+	(void)zone013_bin_size;
+}
+
+void zone019Init(void) {
+	loadZone(zone019_bin);
+	(void)zone019_bin_size;
+}
+
+void zone119Init(void) {
+	loadZone(zone119_bin);
+	(void)zone119_bin_size;
+}
+
+void zone120Init(void) {
+	loadZone(zone120_bin);
+	(void)zone120_bin_size;
 }
 
 void zoneDraw(int camX, int camY, int /*z*/) {
@@ -137,6 +170,11 @@ uint8_t zoneAttr(int cx, int cy) {
 int zoneHeight(int cx, int cy) {
 	const uint8_t* c = cellAt(cx, cy);
 	return c ? c[0] : 0;
+}
+
+int zoneElevAt(int px, int py) {
+	const uint8_t* c = cellAt(px / kTileW, py / kTileH);
+	return (kMarginRows - (c ? c[0] : 0)) * kTileH;
 }
 
 uint16_t zoneTop(int cx, int cy) {

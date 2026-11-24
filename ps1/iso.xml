@@ -16,6 +16,55 @@
 			<file name="SYSTEM.CNF"	type="data" source="${PROJECT_SOURCE_DIR}/system.cnf" />
 			<file name="ALUNDRA2.EXE"	type="data" source="alundra2.exe" />
 
+			<dir name="ZONES">
+				<file name="ZONE011.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone011.dat" />
+				<file name="ZONE013.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone013.dat" />
+				<file name="ZONE026.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone026.dat" />
+			</dir>
+
+			<dir name="MUSIC">
+				<file name="00.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/00.VAG" />
+				<file name="01.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/01.VAG" />
+				<file name="02.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/02.VAG" />
+				<file name="03.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/03.VAG" />
+				<file name="04.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/04.VAG" />
+				<file name="05.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/05.VAG" />
+				<file name="06.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/06.VAG" />
+				<file name="07.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/07.VAG" />
+				<file name="08.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/08.VAG" />
+				<file name="09.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/09.VAG" />
+				<file name="10.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/10.VAG" />
+				<file name="11.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/11.VAG" />
+				<file name="12.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/12.VAG" />
+				<file name="13.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/13.VAG" />
+				<file name="14.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/14.VAG" />
+				<file name="15.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/15.VAG" />
+				<file name="16.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/16.VAG" />
+				<file name="17.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/17.VAG" />
+				<file name="18.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/18.VAG" />
+				<file name="19.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/19.VAG" />
+				<file name="20.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/20.VAG" />
+				<file name="21.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/21.VAG" />
+				<file name="22.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/22.VAG" />
+				<file name="23.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/23.VAG" />
+				<file name="24.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/24.VAG" />
+				<file name="25.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/25.VAG" />
+				<file name="26.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/26.VAG" />
+				<file name="27.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/27.VAG" />
+				<file name="28.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/28.VAG" />
+				<file name="29.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/29.VAG" />
+				<file name="30.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/30.VAG" />
+				<file name="31.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/31.VAG" />
+				<file name="32.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/32.VAG" />
+				<file name="33.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/33.VAG" />
+				<file name="34.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/34.VAG" />
+				<file name="35.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/35.VAG" />
+				<file name="36.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/36.VAG" />
+				<file name="37.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/37.VAG" />
+				<file name="38.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/38.VAG" />
+				<file name="39.VAG" type="data" source="${PROJECT_SOURCE_DIR}/assets/music/39.VAG" />
+			</dir>
+
 			<dummy sectors="1024"/>
 		</directory_tree>
 	</track>

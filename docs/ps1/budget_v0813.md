@@ -1,0 +1,76 @@
+# Budgets PS1 — mesures sur la version livrée
+
+ELF mesuré : `ps1\a_graver\v0.8.13-hud-guard\alundra2.elf`
+ISO mesurée : `ps1\a_graver\v0.8.13-hud-guard\alundra2_ntsc.iso`
+
+Reproduction : `py -3.12 tools\ps1_budget_report.py ps1\a_graver\v0.8.13-hud-guard\alundra2.elf --iso ps1\a_graver\v0.8.13-hud-guard\alundra2_ntsc.iso --out docs\ps1\budget_v0813.md`
+
+- SHA256 ELF : `298E2DD9317AEAF9D4D046CEF99F3CD324E9418A57D9E38148306CE4F9677214`
+- SHA256 ISO : `1270AA36E7759B7434B7D7F8164ABB15946B40F6F3871943F87DD217C7DC57E1`
+
+Toutes les valeurs ci-dessous sont des **mesures** obtenues par les commandes
+indiquées. Les quantités non instrumentées sont signalées explicitement.
+
+## 1. RAM principale — limite 2 097 152 octets
+
+Commande : `mipsel-none-elf-size -A <ELF>` (sections chargées uniquement).
+
+| Section | Octets mesurés |
+|---|---:|
+| `.MIPS.abiflags` | 24 |
+| `.bss` | 244,528 |
+| `.ctors` | 8 |
+| `.data` | 1,285,724 |
+| `.dtors` | 8 |
+| `.rodata` | 98,803 |
+| `.sbss` | 452 |
+| `.sdata` | 74 |
+| `.text` | 87,092 |
+| **Total chargé (.text → .bss)** | **1,716,713** |
+
+- Dépassement : **aucun** ; marge **380,439 octets** (81.9 % du budget).
+- Le ring de streaming `0x18000` = 98,304 octets est inclus dans `.bss` (mesure confirmée par `nm` : `s_ring`).
+- **Non instrumenté** : pic heap réel et profondeur de pile. Le code de jeu n'appelle pas `malloc` (ring statique, pas de STL) ; la pile est fixée par le BIOS en haut de RAM.
+
+## 2. VRAM — limite 1 048 576 octets
+
+Méthode : rectangles de `tools/ps1_export_zone.py::RESERVED_RECTS` (synchros `src/platform/pf.h`)
++ rectangles réellement placés dans les en-têtes `P1ZM` des cinq zones embarquées.
+1 demi-mot VRAM = 2 octets.
+
+| Région | Octets mesurés |
+|---|---:|
+| Réservé permanent (framebuffers, police, WIND, HUD, héros, acteurs, icônes) | 465,220 |
+| Tuiles + CLUT `zone011.dat` | 176,288 |
+| Tuiles + CLUT `zone013.dat` | 118,368 |
+| Tuiles + CLUT `zone019.dat` | 102,176 |
+| Tuiles + CLUT `zone119.dat` | 39,968 |
+| Tuiles + CLUT `zone120.dat` | 48,992 |
+| **Pic (réservé + plus grande zone `zone011`)** | **641,508** |
+
+- Dépassement : **aucun** ; marge **407,068 octets** (61.2 % du budget).
+- Les zones se partagent les mêmes rectangles : le pic est `réservé + une zone`, pas la somme.
+
+## 3. Audio SPU — limite 524 288 octets
+
+Méthode : taille réelle de `ps1/assets/audio.vag`, constantes lues dans `src/ps1/audio_ps1.cpp`,
+interleave lu dans l'en-tête VAGi de `ps1/assets/music/00.VAG`.
+
+| Région | Adresse début | Adresse fin | Octets mesurés |
+|---|---|---|---:|
+| Banque VAG résidente | 0x01010 | 0x5D5D0 | 378,304 |
+| Double buffer de flux (2 × interleave) | 0x5D600 | 0x61600 | 16,384 |
+| **Total SPU occupé** | — | — | **394,688** |
+
+- Dépassement : **aucun** ; marge **129,600 octets** (75.3 % du budget).
+- CD : 40 pistes VAG, 49,698,816 octets ; ISO livrée 53,323,776 octets (`tools/ps1_make_iso.py`). Le flux n'occupe pas la RAM SPU au-delà du double buffer.
+
+## 4. Temps d'image — NON MESURÉ ICI
+
+La cible est 16,67 ms (NTSC 60 Hz, p50/p95/pic sur 1000 images). Le compteur Root Timer
+n'est pas encore instrumenté dans le moteur PS1. **Aucune valeur n'est rapportée** :
+un futur rapport devra corréler compteur matériel et `VPS` émulateur (jamais `FPS` en `-nogui`).
+
+## Conclusion
+
+Les trois budgets mesurables sont respectés : RAM 1,716,713/2,097,152, VRAM 641,508/1,048,576, SPU 394,688/524,288 octets. Le temps d'image reste à instrumenter.

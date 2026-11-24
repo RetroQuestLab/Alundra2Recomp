@@ -5,6 +5,10 @@
  * global (le libc du SDK n'a pas atexit). Couleurs BGR555 15 bits.
  */
 #include "../platform/pf.h"
+#include "save_ps1.h"
+#include "spu_diag_ps1.h"
+#include "timing_ps1.h"
+#include "vram_diag_ps1.h"
 
 #include <psxapi.h>
 #include <psxgpu.h>
@@ -25,6 +29,36 @@ uint8_t g_prims[2][kPrimBytes];
 uint8_t* g_next = 0;
 int g_db = 0;
 uint32_t g_frame = 0;
+
+/* Le BIOS doit garder l'auto-ack VBlank actif pendant une operation carte :
+ * sinon sio0Verifier() laisse IREG.VBLANK pose et chaque ACK SIO0 re-entre
+ * firstStageCardAction(), ce qui abort l'operation (statut 0x11). Mais cet
+ * auto-ack empeche le callback VBlank de psxgpu d'incrementer son compteur, donc
+ * VSync() tourne. On remplace le halt par une attente dynamique : on ne rend la
+ * main au driver PAD qu'une fois l'operation reellement terminee cote BIOS. */
+void ps1VsyncHalt(void) {
+	const int before = VSync(-1);
+
+	if (!saveCardOpPendingPS1()) {
+		/* Marche normale : on attend le prochain VBlank compte par le SDK. */
+		for (int i = 0; i < 0x100000; ++i)
+			if (VSync(-1) != before) return;
+		ChangeClearPAD(0);  /* securite : auto-ack eventuellement reste actif */
+		return;
+	}
+
+	/* Operation carte en vol : le compteur du SDK est gele. On scrute le statut
+	 * BIOS jusqu'a la fin (ou une erreur 0x11/0x21), puis on desactive l'auto-ack
+	 * et on attend le VBlank suivant pour que VSync() puisse retourner. */
+	for (int i = 0; i < 500000; ++i) {
+		const int st = saveCardStatusPS1();
+		if (st == 1 || st == 0x11 || st == 0x21) break;
+		if (VSync(-1) != before) return;  /* compteur deja avance : on sort */
+	}
+	ChangeClearPAD(0);
+	for (int i = 0; i < 0x100000; ++i)
+		if (VSync(-1) != before) return;
+}
 uint8_t g_pad_buf[2][34];
 uint32_t g_pad = 0;
 
@@ -34,10 +68,23 @@ uint8_t bgr5_blue(uint32_t c) { return (uint8_t)((((c >> 10) & 0x1fu) * 255u) / 
 
 }  // namespace
 
+/* Defini a la portee globale (pas dans l'anonyme) : la sonde Lua le lit par
+ * symbole ELF. 1024 periodes de 16 bits = 2 Ko, sans allocation. */
+PS1FrameTiming g_ps1FrameTiming = {0u, 0u, 0u, 0u, {0}};
+
 void pfInit(void) {
 	// NTSC explicite : 320x240 a 59,82 Hz, meme si la console est PAL.
 	SetVideoMode(MODE_NTSC);
 	ResetGraph(0);
+	VSyncHaltFunction(&ps1VsyncHalt);
+
+	// Le BIOS configure RCntCNT1 en clock Hblank (bit 8 du mode). Sous
+	// OpenBIOS/PCSX-Redux, GetRCnt(RCntCNT1) rend de plus toujours 0 alors que
+	// le compteur materiel avance (verifie le 2026-11-24). On reprogramme le
+	// mode avec RCntMdFR (registre observe 0x0448, horloge systeme, sans IRQ)
+	// et pfPresent() lit directement 0x1f801110. Aucun effet sur le rendu ni
+	// sur les entrees.
+	SetRCnt(RCntCNT1, 0xffff, RCntMdFR);
 
 	// Deux framebuffers 320x240 places l'un au-dessus de l'autre en VRAM.
 	// Chaque buffer a sa propre adresse de dessin et d'affichage (voir hellocpp).
@@ -57,9 +104,18 @@ void pfInit(void) {
 	g_next = g_prims[g_db];
 	ClearOTagR(g_ot[g_db], kOtLength);
 
+	// Reserve passive des deux framebuffers dans la table de mesure. Aucun
+	// appel GPU n'est ajoute ni modifie : SetDefDispEnv/SetDefDrawEnv ci-dessus
+	// restent seuls responsables du rendu. La frame 1 evite un pic a frame 0.
+	vramDiagTrackPS1(PF_FB0_X, PF_FB0_Y, PF_W, PF_H, 1u);
+	vramDiagTrackPS1(PF_FB1_X, PF_FB1_Y, PF_W, PF_H, 1u);
+
 	// Manette : le driver BIOS remplit les deux buffers en permanence.
+	// ChangeClearPAD(0) est obligatoire apres StartPAD(): le BIOS pose sinon
+	// l'auto-ack SIO0/VBlank et VSync() tourne en timeout (voir LibPSn00b).
 	InitPAD(&g_pad_buf[0][0], 34, &g_pad_buf[1][0], 34);
 	StartPAD();
+	ChangeClearPAD(0);
 
 	PutDrawEnv(&g_draw[g_db]);
 	PutDispEnv(&g_disp[g_db]);
@@ -73,6 +129,7 @@ void pfUpload4bpp(int x, int y, int w, int h, const uint8_t* data) {
 	// x,y,w sont en demi-mots VRAM (4 pixels 4bpp par demi-mot). Le blob
 	// P1ZM stocke deja w dans cette unite, comme le champ RECT de LoadImage.
 	setRECT(&r, x, y, w, h);
+	vramDiagTrackPS1(x, y, w, h, g_frame + 1u);
 	LoadImage(&r, reinterpret_cast<const uint32_t*>(data));
 }
 
@@ -81,6 +138,7 @@ void pfUpload16(int x, int y, int w, int h, const uint16_t* data) {
 	DrawSync(0);
 	RECT r;
 	setRECT(&r, x, y, w, h);
+	vramDiagTrackPS1(x, y, w, h, g_frame + 1u);
 	LoadImage(&r, reinterpret_cast<const uint32_t*>(data));
 }
 
@@ -119,7 +177,7 @@ void pfDrawSprite16(int x, int y, int uVram, int vVram, int w, int h, int clutX,
 	g_next += need;
 }
 
-void pfDrawRect(int x, int y, int w, int h, uint32_t bgr555, int z) {
+static void drawRectImpl(int x, int y, int w, int h, uint32_t bgr555, int z, bool semi) {
 	if (g_next + (int)sizeof(TILE) > g_prims[g_db] + kPrimBytes) {
 		pfLog("PF_CAP primbuf overflow");
 		return;
@@ -131,6 +189,7 @@ void pfDrawRect(int x, int y, int w, int h, uint32_t bgr555, int z) {
 	// remplit que le champ addr : sans len, le GPU recoit un primitif de
 	// longueur 0 et ne dessine rien (ecran de fond seul, observe en capture).
 	setTile(tile);
+	setSemiTrans(tile, semi);
 	setRGB0(tile, bgr5_red(bgr555), bgr5_green(bgr555), bgr5_blue(bgr555));
 	tile->x0 = (int16_t)x;
 	tile->y0 = (int16_t)y;
@@ -142,9 +201,37 @@ void pfDrawRect(int x, int y, int w, int h, uint32_t bgr555, int z) {
 	g_next += sizeof(TILE);
 }
 
+void pfDrawRect(int x, int y, int w, int h, uint32_t bgr555, int z) {
+	drawRectImpl(x, y, w, h, bgr555, z, false);
+}
+
+void pfDrawRectSemi(int x, int y, int w, int h, uint32_t bgr555, int z) {
+	drawRectImpl(x, y, w, h, bgr555, z, true);
+}
+
 void pfPresent(void) {
 	DrawSync(0);
 	VSync(0);
+
+	// Temps d'image : periode entre deux retours de VSync(0), lue avec le
+	// compteur racine 1. Sous OpenBIOS/PCSX-Redux, GetRCnt(RCntCNT1) rend
+	// toujours 0 alors que le registre materiel 0x1f801110 avance : la sonde
+	// lit donc directement le compteur. C'est un MMIO 16 bits ; une soustraction
+	// sur uint16_t suffit. Aucun impact sur le rendu.
+	{
+		const uint16_t now = *(volatile uint16_t*)0x1f801110u;
+		PS1FrameTiming* t = &g_ps1FrameTiming;
+		if (t->lastTicks != 0u) {
+			const uint16_t period = (uint16_t)(now - t->lastTicks);
+			if (period != 0u) {
+				t->samples[t->head] = period;
+				t->head = (t->head + 1u) % PS1_FRAME_TIMING_SAMPLES;
+				if (t->count < PS1_FRAME_TIMING_SAMPLES) ++t->count;
+				t->ready = 1u;
+			}
+		}
+		t->lastTicks = now;
+	}
 
 	// On affiche le buffer precedemment dessine pendant qu'on execute la liste
 	// du buffer courant (double buffering, voir hellocpp::flip).
@@ -160,6 +247,8 @@ void pfPresent(void) {
 	g_next = g_prims[g_db];
 	ClearOTagR(g_ot[g_db], kOtLength);
 	++g_frame;
+	vramDiagStampPS1(g_frame);
+	spuDiagStampPS1(g_frame);
 }
 
 uint32_t pfPad(void) { return g_pad; }

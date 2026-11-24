@@ -1,4 +1,4 @@
-﻿// Alundra 2 Remake - tranche jouable.
+// Alundra 2 Remake - tranche jouable.
 //
 // Commandes :
 //   Fleches / WASD / stick / croix   : marcher (Maj / B = courir)
@@ -27,7 +27,7 @@ namespace fs = std::filesystem;
 
 // --- Initialisation ----------------------------------------------------------------
 static fs::path findAssets() {
-    // SDL3 possede la chaine retournee : ne pas la libérer (contrairement a SDL_GetPrefPath).
+    // SDL3 possede la chaine retournee : ne pas la lib�rer (contrairement a SDL_GetPrefPath).
     const char* path = SDL_GetBasePath();
     const fs::path base = path ? fs::path(path) : fs::path(".");
     for (const fs::path& dir : {base / "assets", base / ".." / "assets", fs::path("assets")}) {
@@ -194,7 +194,7 @@ SDL_AppResult SDL_AppInit(void** state, int argc, char** argv) {
                 return SDL_APP_FAILURE;
             }
         }
-        if (autoEnding) { // test deterministe : le generateur de fin apres la victoire sur Méphisto
+        if (autoEnding) { // test deterministe : le generateur de fin apres la victoire sur M�phisto
             g->seenEvents.insert("mephisto_vaincu");
             g->mode = Mode::Ending;
             g->modeTimer = 0;
@@ -519,7 +519,10 @@ static void updateHero(Game& g) {
             // L'ordre des evenements fait foi : le dernier variant disponible est le plus recent.
             for (const char* ev : {"objet_gantelet", "objet_lettre", "objet_ordre", "objet_idole",
                                    "epee_supreme", "objet_lampe", "objet_prisme", "objet_cristal",
-                                   "boss_medusa"}) {
+                                   "boss_medusa", "prunewell"}) {
+                // Les retrouvailles Prunewell/Finrod sont la scene d'avant la
+                // lettre : apres, Finrod doit reprendre son dialogue "_apres".
+                if (std::string(ev) == "prunewell" && g.items.count("lettre")) continue;
                 const std::string alt = id + "_" + ev;
                 if (g.seenEvents.count(ev) && g.dialogues.count(alt)) {
                     id = alt;
@@ -670,7 +673,7 @@ static void updateHero(Game& g) {
     }
     if (h.combo >= 3 && !h.attacking) h.combo = 0; // le combo repart de zero apres le 3e coup
 
-    if (h.dashTicks > 0) { // esquive : rapide, invulnerable, traÃ®nee
+    if (h.dashTicks > 0) { // esquive : rapide, invulnerable, traînee
         --h.dashTicks;
         const float s = 3.4f;
         if (heroCanStand(g, h.x + h.dashX * s, h.y)) h.x += h.dashX * s;
@@ -886,7 +889,7 @@ static void drawWorld(Game& g, float cx, float cy) {
     auto drawOne = [&](const Drawable& d) {
         if (d.kind == 0) {
             if (g.freeCam) return;
-            if (h.dashTicks > 0) // traÃ®nee de l'esquive
+            if (h.dashTicks > 0) // traînee de l'esquive
                 for (size_t i = 1; i < h.trail.size(); ++i)
                     g.heroSprites.drawFrame(r, h.trailFrame[i], h.trail[i].x - cx, screenY(h.trail[i].y, h.z, cy), 1.f,
                                             255, 255, 255, Uint8(110 - i * 25), true);
@@ -1099,7 +1102,7 @@ static void drawHud(Game& g) {
         SDL_SetRenderDrawColor(r, 41, 49, 16, 255);
         drawTextLatin1(r, std::floor(160.f - (textWidthLatin1(latin1) + 1.f) / 2.f), 188.f, latin1);
     }
-    // Aides au dev/au réglage : invisibles en jeu, comme sur la PS1 d'origine
+    // Aides au dev/au r�glage : invisibles en jeu, comme sur la PS1 d'origine
     if (g.debug) {
         std::string obj;
         if (!g.enemies.empty()) obj = "Monstres : " + std::to_string(g.enemies.size());
@@ -1282,7 +1285,7 @@ SDL_AppResult SDL_AppIterate(void* state) {
             SDL_RenderFillRect(r, &full);
             if (g.modeTimer > 20) {
                 drawA1Window(r, 16, 92, 288, 54);
-                centeredInk(16, 288, 96, "Flint est tombé...");
+                centeredInk(16, 288, 96, "Flint est tomb�...");
                 if (g.modeTimer > 40) centeredInk(16, 288, 112, "Valider : se relever");
             }
         }
@@ -1292,12 +1295,12 @@ SDL_AppResult SDL_AppIterate(void* state) {
             SDL_RenderFillRect(r, &full);
             // Generique simple : les etapes de la trame d'Alundra 2, dans l'ordre (resume du remake).
             const char* lines[] = {
-                "Le roi revient au trône.",
+                "Le roi revient au tr�ne.",
                 "Alexia reprend sa place.",
-                "Diaz est arrêté.",
-                "Méphisto est vaincu.",
-                "Flint rentre à Paco.",
-                "Varuna est libérée.",
+                "Diaz est arr�t�.",
+                "M�phisto est vaincu.",
+                "Flint rentre � Paco.",
+                "Varuna est lib�r�e.",
             };
             if (g.modeTimer >= 25) drawA1Window(r, 16, 24, 288, 112);
             for (int i = 0; i < 6; ++i) {
@@ -1374,11 +1377,3 @@ void SDL_AppQuit(void* state, SDL_AppResult) {
     if (g->music.stream) SDL_DestroyAudioStream(g->music.stream);
     delete g;
 }
-
-
-
-
-
-
-
-

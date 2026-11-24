@@ -29,5 +29,6 @@ memcard*.mcd
 # Fichiers générés à partir de ressources locales
 # src/a1_font.h est versionné : la build PC et les tests en dépendent.
 src/ps1/a1_font_ps1.h
+src/ps1/dialogue_data_ps1.h
 ps1/assets/*.dat
 ps1/a_graver/

@@ -49,6 +49,8 @@ chest 013 22 31 lettre ogre
 npc 013 41 55 ancien haut finrod
 # Marchand dépouillé par les pirates (A2, bloc 33) : échange herbe -> boussole (choix B02)
 npc 013 10 57 villageois haut marchand_kindra
+# Alexia rattrape Flint dans la foret (A2 blocs 30-31)
+npc 013 9 50 alexia bas alexia_kindra
 # Pièce de puzzle (A2, bloc 11 ; B05)
 chest 013 13 48 puzzle_piece
 # Ajouts du remake (tranche 3) : Lance de givre et materiaux, recoins de l'aile ouest (hors chemin principal)

@@ -23,6 +23,7 @@ chute: Le coup l'envoie par-dessus bord. Flint tombe. Longtemps. Puis la mer se 
 Flint: Ma tête... Le navire des pirates n'a pas pu aller bien loin. Quelqu'un ici l'a peut-être vu passer.
 
 [prunewell]
+! evenement prunewell
 Prunewell: Enfin debout ! Je suis Lord Prunewell, conseiller de la princesse Alexia, l'héritière du trône de Varuna.
 Prunewell: Son père a disparu, et le baron Diaz règne à sa place. La princesse pense que les pirates sont ses complices.
 Prunewell: Elle est partie seule vers le Mont Épervier, par la Forêt Kindra. Un « oiseau de fer » y est tombé du ciel...
@@ -83,6 +84,20 @@ Finrod: Je suis Finrod. Je vis ici, loin du vacarme de Paco.
 Finrod: Le vieux Prunewell m'a parlé de toi. La princesse Alexia est partie vers le Mont Épervier.
 Finrod: Un oiseau de fer s'est écrasé là-bas. Les pirates de Milena n'ont pas dû le laisser sans garde.
 Finrod: Reviens quand tu auras la lettre du baron. Alors je te dirai où poursuivre.
+
+# Retrouvailles Prunewell / Finrod (A2 bloc 32) : variant apres avoir parle au conseiller a Paco.
+[finrod_prunewell]
+Finrod: Prunewell... Tu n'as pas vieilli d'un jour. Je croyais que Varuna t'avait gardé au palais.
+Prunewell: Le trône est occupé par un pantin, mon vieux. J'ai préféré marcher vers l'épave avec ce chasseur de pirates.
+Finrod: Alors c'est toi le chasseur ? Prunewell m'a parlé de toi. La princesse est passée par ici, seule, avec sa détermination d'enfant gâtée.
+Finrod: Nous la retrouverons au mont Épervier. Méfie-toi des machines de Milena : on dit qu'elles ont des visages d'homme, à présent.
+
+# Foret Kindra : Alexia rattrape Flint (A2 blocs 30-31), scene inedite du remake.
+[alexia_kindra]
+Alexia: Flint ! Tu n'as donc pas attendu que je te rattrape, comme d'habitude.
+Flint: La princesse de Varuna court seule dans les bois ? Prunewell ne va pas aimer ça.
+Alexia: Prunewell parle trop. J'ai vu l'oiseau de fer tomber : c'est là que Diaz cache ses complices.
+Alexia: Je marche avec toi jusqu'à l'épave. Mais ne me traite pas comme une gamine, ou je te laisse aux tortues de roche.
 
 [finrod_apres]
 Finrod: Tu l'as trouvée ! Diaz écrit à Milena, et il parle de ses droïdes.
@@ -450,6 +465,10 @@ Milena: Garde-les. C'est avec le sorcier du Baron que j'ai des comptes à régle
 Méphisto: Regarde le trône. Il est vide depuis toujours. Ce n'est pas un siège, c'est une porte.
 Méphisto: Diaz croyait me commander. Le baron n'était que mon masque, rien de plus.
 Flint: Le roi n'est pas mort. Tu l'as gardé pour ouvrir cette porte à sa place.
+
+[mephisto_vaincu]
+Méphisto: La porte se referme... Diaz n'était que mon masque.
+Méphisto: Tu crois avoir gagné, Flint ? Le royaume restera à celui qui saura le porter.
 
 [roi_trone]
 Roi: Flint... J'ai entendu tes pas dans le couloir. Méphisto m'a gardé vivant pour le serment du sang.

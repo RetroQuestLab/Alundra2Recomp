@@ -1,4 +1,4 @@
 BOOT=cdrom:\alundra2.exe;1
 TCB=4
-EVENT=10
+EVENT=20
 STACK=801FFFF0

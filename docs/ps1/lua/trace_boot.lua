@@ -21,7 +21,9 @@ local addresses = {
 }
 
 local hits = {}
-local bps = {}
+-- Globale : une table locale non referencee apres la boucle est collectee par
+-- le GC Lua, ce qui supprime silencieusement les cinq points d'arret.
+bps = {}
 local frame = 0
 
 local function regsLine()
@@ -44,27 +46,36 @@ for _, item in ipairs(addresses) do
 		'trace ' .. label)
 end
 
-local summaryFrame = tonumber(os.getenv('PS1_SUMMARY_FRAME') or '120')
-local quitFrame = tonumber(os.getenv('PS1_QUIT_FRAME') or '130')
+local summaryFrame = tonumber(os.getenv('PS1_SUMMARY_FRAME') or '400')
+local quitFrame = tonumber(os.getenv('PS1_QUIT_FRAME') or '2500')
+
+-- Un boot a froid sous interpreteur peut prendre plusieurs centaines de
+-- VBlank avant d'executer notre EXE. On ne quitte donc pas sur un compteur
+-- fixe : on attend que les cinq points d'arret aient tous ete touches, avec
+-- quitFrame comme plafond de securite.
+local function allTouched()
+	for _, item in ipairs(addresses) do
+		if hits[item[2]] <= 0 then return false end
+	end
+	return true
+end
+
+local function printSummary(suffix)
+	print('TRACE_BOOT summary frame=' .. frame .. suffix)
+	for _, item in ipairs(addresses) do
+		local label = item[2]
+		print(string.format('TRACE_BOOT %s hits=%d', label, hits[label]))
+	end
+end
 
 print('TRACE_BOOT ready: ' .. #bps .. ' breakpoints, summary@' ..
 	summaryFrame .. ' quit@' .. quitFrame .. ' (debugger+interpreter requis)')
 
 vsyncListener = PCSX.Events.createEventListener('GPU::Vsync', function()
 	frame = frame + 1
-	if frame == summaryFrame then
-		print('TRACE_BOOT summary frame=' .. frame)
-		for _, item in ipairs(addresses) do
-			local label = item[2]
-			print(string.format('TRACE_BOOT %s hits=%d', label, hits[label]))
-		end
-	end
-	if frame == quitFrame then
-		print('TRACE_BOOT summary frame=' .. frame .. ' (final)')
-		for _, item in ipairs(addresses) do
-			local label = item[2]
-			print(string.format('TRACE_BOOT %s hits=%d', label, hits[label]))
-		end
+	if frame == summaryFrame then printSummary('') end
+	if (frame >= summaryFrame and allTouched()) or frame >= quitFrame then
+		printSummary(' (final)')
 		PCSX.quit(0)
 	end
 end)
