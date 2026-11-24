@@ -122,6 +122,25 @@ void pfInit(void) {
 	SetDispMask(1);
 }
 
+/* LoadImage lit la source par mots de 32 bits (DMA) : une adresse non
+ * alignee sur 4 octets decale toute l'image d'un demi-mot. C'etait le cas
+ * des CLUT et tuiles des blobs P1ZM a nombre de tuiles impair (offset
+ * 14 + 10*nTiles + 4*nCluts) : points parasites a Toroledo, sable zebre a
+ * Eden. Les sources mal alignees passent par un tampon aligne et le
+ * transfert est attendu avant de rendre la main (tampon reutilise). */
+static uint32_t s_alignBuf[2048];  // 8 Kio : plus grand televersement unitaire
+
+static void loadImageAligned(RECT* r, const void* data, int bytes) {
+	if ((reinterpret_cast<uintptr_t>(data) & 3u) == 0u ||
+	    bytes > (int)sizeof(s_alignBuf)) {
+		LoadImage(r, reinterpret_cast<const uint32_t*>(data));
+		return;
+	}
+	__builtin_memcpy(s_alignBuf, data, (size_t)bytes);
+	LoadImage(r, s_alignBuf);
+	DrawSync(0);
+}
+
 void pfUpload4bpp(int x, int y, int w, int h, const uint8_t* data) {
 	if (!data || w <= 0 || h <= 0) return;
 	DrawSync(0);
@@ -130,7 +149,7 @@ void pfUpload4bpp(int x, int y, int w, int h, const uint8_t* data) {
 	// P1ZM stocke deja w dans cette unite, comme le champ RECT de LoadImage.
 	setRECT(&r, x, y, w, h);
 	vramDiagTrackPS1(x, y, w, h, g_frame + 1u);
-	LoadImage(&r, reinterpret_cast<const uint32_t*>(data));
+	loadImageAligned(&r, data, w * h * 2);
 }
 
 void pfUpload16(int x, int y, int w, int h, const uint16_t* data) {
@@ -139,7 +158,7 @@ void pfUpload16(int x, int y, int w, int h, const uint16_t* data) {
 	RECT r;
 	setRECT(&r, x, y, w, h);
 	vramDiagTrackPS1(x, y, w, h, g_frame + 1u);
-	LoadImage(&r, reinterpret_cast<const uint32_t*>(data));
+	loadImageAligned(&r, data, w * h * 2);
 }
 
 void pfDrawSprite16(int x, int y, int uVram, int vVram, int w, int h, int clutX, int clutY, int z) {

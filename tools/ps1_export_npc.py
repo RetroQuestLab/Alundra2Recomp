@@ -40,6 +40,9 @@ SOURCE = {
     'alexia_kindra': ('assets/sprites/alexia.a1s', 10, 13, 2),
     # Vallee de Mithra (data/world.txt : npc 026 25 22 villageois gauche guide_vallee)
     'guide_vallee': ('assets/sprites/villageois.a1s', 0, 26, 0),
+    # Ruines d'Eden (data/world.txt : npc 042 20 51 ancien / 40 44 villageoise)
+    'roswell': ('assets/sprites/ancien.a1s', 2, 42, 0),
+    'ome': ('assets/sprites/villageoise.a1s', 0, 42, 1),
 }
 DEST = 'npc.dat'
 SLOT_RECTS = (NPC0_TEX, NPC1_TEX, NPC2_TEX)

@@ -240,14 +240,17 @@ void drawNpc(int npc, int camX, int camY) {
 /* Boss de la zone courante : une seule zone est active, donc un seul duel.
  * Kindra -> ogre (bossDown) ; Vallee de Mithra -> golem (QST_FLAG_GOLEM). */
 int duelActor(void) {
+	if (g_quest.zone == QST_ZONE_EDEN) return QST_ACTOR_GOLEM_EDEN;
 	return g_quest.zone == QST_ZONE_VALLEE ? QST_ACTOR_GOLEM : QST_ACTOR_OGRE;
 }
 int duelDone(void) {
+	if (g_quest.zone == QST_ZONE_EDEN) return (g_quest.gates & QST_FLAG_GOLEM_EDEN) != 0;
 	return g_quest.zone == QST_ZONE_VALLEE ? ((g_quest.gates & QST_FLAG_GOLEM) != 0)
 	                                       : g_quest.bossDown;
 }
 void duelWon(void) {
-	if (g_quest.zone == QST_ZONE_VALLEE) questGolemDefeated(&g_quest);
+	if (g_quest.zone == QST_ZONE_EDEN) questGolemEdenDefeated(&g_quest);
+	else if (g_quest.zone == QST_ZONE_VALLEE) questGolemDefeated(&g_quest);
 	else questOgreDefeated(&g_quest);
 }
 
@@ -284,6 +287,8 @@ void grantQuestItems(const QuestState* a, const QuestState* b) {
 		inventoryAddPS1("epee_supreme", 1);
 	if (!(a->gates & QST_GATE_LAMPE) && (b->gates & QST_GATE_LAMPE))
 		inventoryAddPS1("lampe", 1);
+	if (!(a->gates & QST_GATE_PRISME) && (b->gates & QST_GATE_PRISME))
+		inventoryAddPS1("prisme", 1);
 }
 
 /* Nom du lieu a l'entree d'une zone, comme le PC (world.cpp : 200 ticks,

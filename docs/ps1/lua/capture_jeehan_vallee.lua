@@ -140,8 +140,10 @@ end
 local function warpVia(cx, cy, want, cb)
 	local x, y = tileCenter(cx, cy)
 	teleport(x, y, 0)
-	waitFrames(30, function()
+	local t0 = gameFrame
+	waitUntil(function() return zone() == want end, 600, function()
 		if zone() ~= want then fail(string.format('passage (%d,%d) -> %d non pris', cx, cy, want)) return end
+		print('PASSAGE_IMAGES ' .. want .. ' ' .. (gameFrame - t0))
 		state('PASSAGE_' .. want)
 		cb()
 	end)
@@ -157,6 +159,63 @@ local function reload()
 end
 
 local wValley = 0
+
+-- Parler a un PNJ (x, y = point de placement, dir) et verifier le dialogue.
+local function talk(x, y, dir, want, tag, cb)
+	teleport(x, y, dir)
+	waitFrames(10, function() tap(B.CROSS, function() waitFrames(20, function()
+		if dialogueId() ~= want then fail(tag .. ': dlg=' .. dialogueId() .. ' attendu=' .. want) return end
+		state(tag)
+		shot(string.lower(tag))
+		closeDialogue(30, cb)
+	end) end) end)
+end
+
+-- Combat reel : CARRE uniquement quand le boss ouvre sa garde.
+local function fight(want, flag, tag, cb)
+	local function hit()
+		waitUntil(function() return duelPhase() == 1 and duelCooldown() == 0 end, 600, function()
+			if duelPhase() ~= 1 then fail(tag .. ' jamais ouvert phase=' .. duelPhase()) return end
+			tap(B.SQUARE, function()
+				if duelHp() ~= 0 then hit() return end
+				waitFrames(8, function()
+					if dialogueId() ~= want or bit.band(gates(), flag) == 0 then
+						fail(tag .. ' sans consequence dlg=' .. dialogueId()) return
+					end
+					state(tag)
+					waitFrames(12, function() shot(string.lower(tag)) closeDialogue(30, cb) end)
+				end)
+			end)
+		end)
+	end
+	tap(B.CROSS, function() waitFrames(10, function()
+		if dialogueId() ~= 4294967295 or bit.band(gates(), flag) ~= 0 then
+			fail('CROIX a contourne ' .. tag) return
+		end
+		hit()
+	end) end)
+end
+
+function edenContent()
+	talk(20 * 24 + 12 - 14, 51 * 16 + 8, 2, 29, 'ROSWELL_LAMPE', function()
+	talk(40 * 24 + 12, 44 * 16 + 8 + 10, 0, 31, 'OMEGA', function()
+		teleport(612, 468, 3)  -- au nord du second golem (25,30)
+		waitFrames(20, function()
+		fight(32, 0x2000, 'GOLEM_EDEN_VAINCU', function()
+			local n0 = invList()
+			talk(636, 494, 3, 33, 'PRISME_OBTENU', function()
+				if invList() ~= n0 + 1 or bit.band(gates(), 4) == 0 then fail('prisme non recu') return end
+				talk(20 * 24 + 12 - 14, 51 * 16 + 8, 2, 30, 'ROSWELL_PRISME', function()
+					local ex, ey = tileCenter(21, 48)
+					teleport(ex, ey, 0)
+					waitFrames(20, reload)
+				end)
+			end)
+		end)
+		end)
+	end)
+	end)
+end
 function toEden()
 	wValley = zoneW()
 	local x, y = tileCenter(26, 22)
@@ -177,7 +236,7 @@ function toEden()
 				if zone() ~= 42 then fail('rebond hors d Eden') return end
 				state('EDEN_CARTE')
 				shot('eden_carte')
-				reload()
+				edenContent()
 			end)
 		end) end)
 	end)

@@ -1,25 +1,14 @@
 /*
  * Zone 011 : parsing P1ZM, upload VRAM et dessin des tuiles 24x16.
- * Aucune STL, aucun malloc : le blob est embarque par .incbin dans l'EXE.
+ * Aucune STL ; le blob P1ZM est lu sur le CD (zone_heap_ps1.cpp).
  */
 #include "zone011.h"
 
 #include "../platform/pf.h"
+#include "zone_heap_ps1.h"
 
 #include <stddef.h>
 
-extern "C" {
-extern const uint8_t zone011_bin[];
-extern const uint32_t zone011_bin_size;
-extern const uint8_t zone013_bin[];
-extern const uint32_t zone013_bin_size;
-extern const uint8_t zone019_bin[];
-extern const uint32_t zone019_bin_size;
-extern const uint8_t zone119_bin[];
-extern const uint32_t zone119_bin_size;
-extern const uint8_t zone120_bin[];
-extern const uint32_t zone120_bin_size;
-}
 
 namespace {
 
@@ -105,30 +94,12 @@ void loadZone(const uint8_t* blob) {
 	}
 }
 
-void zoneInit(void) {
-	loadZone(zone011_bin);
-	(void)zone011_bin_size;
-}
-
-void zone013Init(void) {
-	loadZone(zone013_bin);
-	(void)zone013_bin_size;
-}
-
-void zone019Init(void) {
-	loadZone(zone019_bin);
-	(void)zone019_bin_size;
-}
-
-void zone119Init(void) {
-	loadZone(zone119_bin);
-	(void)zone119_bin_size;
-}
-
-void zone120Init(void) {
-	loadZone(zone120_bin);
-	(void)zone120_bin_size;
-}
+// Toutes les cartes sont lues sur le CD (v0.8.31) : voir zone_heap_ps1.cpp.
+void zoneInit(void) { zoneLoadFromCdPS1(11u); }
+void zone013Init(void) { zoneLoadFromCdPS1(13u); }
+void zone019Init(void) { zoneLoadFromCdPS1(19u); }
+void zone119Init(void) { zoneLoadFromCdPS1(119u); }
+void zone120Init(void) { zoneLoadFromCdPS1(120u); }
 
 void zoneDraw(int camX, int camY, int /*z*/) {
 	// Meme ordre que Map::draw : rangees du haut vers le bas, priorite decroissante.

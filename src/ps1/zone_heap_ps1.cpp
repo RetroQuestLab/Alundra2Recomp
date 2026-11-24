@@ -26,8 +26,15 @@ constexpr uint32_t kRamBase = 0x80000000u;
 // 0x38000 laisse 4 088 octets sous stackPaintLo mesure sur cette ISO
 // (qa/ps1_logs/harness_v0822/diag_probe/diag_capture.txt) et couvre encore le
 // pic de zone capture-only de 225 280 octets avec 4 096 octets de marge.
-constexpr uint32_t kHeapArenaBytes = 0x38000u;      // 229 376 octets
-constexpr uint32_t kMaxBufferBytes = kHeapArenaBytes - 0x1000u;
+// v0.8.31 : toutes les cartes sont lues sur le CD (plus aucun incbin de
+// zone). L'arene couvre la RAM libre entre _end et la pile, moins une
+// reserve de pile de 32 Kio (profondeur mesuree : ~3 Kio). L'ancienne
+// taille fixe 0x38000 depassait la fin de la RAM depuis v0.8.26.
+constexpr uint32_t kRamTop = 0x80200000u;
+constexpr uint32_t kStackReserve = 0x8000u;
+uint32_t s_arenaBytes = 0;
+uint32_t maxBufferBytes() { return s_arenaBytes > 0x1000u ? s_arenaBytes - 0x1000u : 0u; }
+uint32_t s_loadedZone = 0;  // zone dont la carte est dans s_zoneBuffer
 
 uint8_t* s_zoneBuffer = 0;
 
@@ -35,6 +42,9 @@ const char* zonePath(uint32_t zone) {
 	switch (zone) {
 	case 11u: return "\\ZONES\\ZONE011.DAT";
 	case 13u: return "\\ZONES\\ZONE013.DAT";
+	case 19u: return "\\ZONES\\ZONE019.DAT";
+	case 119u: return "\\ZONES\\ZONE119.DAT";
+	case 120u: return "\\ZONES\\ZONE120.DAT";
 	case 26u: return "\\ZONES\\ZONE026.DAT";
 	case 42u: return "\\ZONES\\ZONE042.DAT";
 	default:  return 0;
@@ -60,12 +70,14 @@ static int zoneCdFail(uint32_t zone, int code) {
 int zoneLoadFromCdPS1(uint32_t zone) {
 	const char* path = zonePath(zone);
 	if (path == 0) return zoneCdFail(zone, 1);
+	if (zone == s_loadedZone && s_zoneBuffer != 0) return 1;  // deja resident
+	audioCdInitOncePS1();
 	audioStreamStopPS1();
 	CdlFILE file{};
 	if (CdSearchFile(&file, path) == 0) return zoneCdFail(zone, 2);
 	const uint32_t bytes = static_cast<uint32_t>(file.size);
 	const uint32_t bufferBytes = zoneHeapBufferBytes(bytes);
-	if (bufferBytes == 0u || bufferBytes > kMaxBufferBytes) return zoneCdFail(zone, 3);
+	if (bufferBytes == 0u || bufferBytes > maxBufferBytes()) return zoneCdFail(zone, 3);
 	// Un seul blob CD vit a la fois : la zone precedente n'est plus dessinee
 	// (les zones embarquees ne pointent jamais dans ce tampon).
 	if (s_zoneBuffer != 0) {
@@ -87,6 +99,7 @@ int zoneLoadFromCdPS1(uint32_t zone) {
 		return zoneCdFail(zone, 6);
 	}
 	loadZone(buffer);
+	s_loadedZone = zone;
 	printf("PS1_ZONE_CD OK zone=%u bytes=%u\n", static_cast<unsigned>(zone),
 	       static_cast<unsigned>(bytes));
 	s_zoneBuffer = buffer;
@@ -95,7 +108,9 @@ int zoneLoadFromCdPS1(uint32_t zone) {
 
 void zoneHeapInitPS1(void) {
 	const uintptr_t endAddr = reinterpret_cast<uintptr_t>(_end);
-	InitHeap(reinterpret_cast<void*>(endAddr + 4u), kHeapArenaBytes);
+	const uint32_t base = static_cast<uint32_t>(endAddr + 4u);
+	s_arenaBytes = (kRamTop - kStackReserve - base) & ~0xFu;
+	InitHeap(reinterpret_cast<void*>(base), s_arenaBytes);
 	zoneHeapDiagInit(g_ps1ZoneHeapDiag,
 	                 static_cast<uint32_t>(endAddr - kRamBase));
 }
@@ -126,6 +141,7 @@ void zoneHeapSamplePS1(void) {
 			free(s_zoneBuffer);
 			s_zoneBuffer = 0;
 		}
+		s_loadedZone = 0;
 		zoneInit();  // restaure les pointeurs statiques et la VRAM de 011
 		HeapUsage usage{};
 		GetHeapUsage(&usage);
@@ -152,7 +168,7 @@ void zoneHeapSamplePS1(void) {
 
 	const uint32_t bytes = static_cast<uint32_t>(file.size);
 	const uint32_t bufferBytes = zoneHeapBufferBytes(bytes);
-	if (bufferBytes == 0u || bufferBytes > kMaxBufferBytes) {
+	if (bufferBytes == 0u || bufferBytes > maxBufferBytes()) {
 		signalError(3u);
 		return;
 	}
@@ -178,6 +194,7 @@ void zoneHeapSamplePS1(void) {
 
 	loadZone(buffer);  // meme parseur que le jeu, upload VRAM inclus
 	s_zoneBuffer = buffer;
+	s_loadedZone = zone;
 
 	HeapUsage after{};
 	GetHeapUsage(&after);

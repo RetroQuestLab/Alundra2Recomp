@@ -19,6 +19,9 @@
 			<dir name="ZONES">
 				<file name="ZONE011.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone011.dat" />
 				<file name="ZONE013.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone013.dat" />
+				<file name="ZONE019.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone019.dat" />
+				<file name="ZONE119.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone119.dat" />
+				<file name="ZONE120.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone120.dat" />
 				<file name="ZONE026.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone026.dat" />
 			<file name="ZONE042.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone042.dat" />
 			</dir>

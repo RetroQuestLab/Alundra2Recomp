@@ -37,11 +37,6 @@ target_include_directories(alundra2 PRIVATE ${PS1_SRC})
 # La banque VAG doit etre alignee 64 octets pour le transfert DMA SPU.
 psn00bsdk_target_incbin_a(alundra2 PRIVATE audio_vag audio_vag_size
 	${CMAKE_CURRENT_SOURCE_DIR}/assets/audio.vag .data 64)
-psn00bsdk_target_incbin(alundra2 PRIVATE zone011_bin ${CMAKE_CURRENT_SOURCE_DIR}/assets/zone011.dat)
-psn00bsdk_target_incbin(alundra2 PRIVATE zone013_bin ${CMAKE_CURRENT_SOURCE_DIR}/assets/zone013.dat)
-psn00bsdk_target_incbin(alundra2 PRIVATE zone019_bin ${CMAKE_CURRENT_SOURCE_DIR}/assets/zone019.dat)
-psn00bsdk_target_incbin(alundra2 PRIVATE zone119_bin ${CMAKE_CURRENT_SOURCE_DIR}/assets/zone119.dat)
-psn00bsdk_target_incbin(alundra2 PRIVATE zone120_bin ${CMAKE_CURRENT_SOURCE_DIR}/assets/zone120.dat)
 psn00bsdk_target_incbin(alundra2 PRIVATE hero_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/hero.dat)
 psn00bsdk_target_incbin(alundra2 PRIVATE npc_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/npc.dat)
 psn00bsdk_target_incbin(alundra2 PRIVATE actor_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/actor.dat)

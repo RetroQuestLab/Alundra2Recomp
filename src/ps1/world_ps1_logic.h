@@ -27,6 +27,10 @@
 #define QST_FLAG_GUIDE_VU     (1u << 10)  // guide de la vallee ecoute
 #define QST_FLAG_GOLEM        (1u << 11)  // golem de la vallee vaincu (boss_026)
 #define QST_FLAG_EDEN_VU      (1u << 12)  // narration d'arrivee a Eden lue
+#define QST_FLAG_GOLEM_EDEN   (1u << 13)  // second golem vaincu (boss_042)
+#define QST_FLAG_ROSWELL_VU   (1u << 14)  // Roswell ecoute (avant le Prisme)
+#define QST_FLAG_OME_VU       (1u << 15)  // Omega ecoutee
+#define QST_FLAG_ROSWELL_PRISME_VU (1u << 16)  // Roswell ecoute avec le Prisme
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)

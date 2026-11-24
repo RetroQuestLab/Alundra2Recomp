@@ -85,6 +85,9 @@ void audioStreamMusicPS1(int theme);
 void audioStreamPumpPS1(void);
 void audioStreamStopPS1(void);
 
+/* CdInit() une seule fois, partage avec le chargeur de zones CD. */
+void audioCdInitOncePS1(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -524,6 +524,61 @@ int main() {
 		CHECK(questZoneArrival(&s) == QST_DLG_NONE);
 		CHECK((s.gates & QST_FLAG_VALLEE_VUE) == 0);  // drapeaux distincts
 	}
+	// --- Ruines d'Eden : Roswell, Omega, second golem, Prisme ---------------
+	{
+		QuestState s;
+		questInit(&s);
+		questSetZone(&s, QST_ZONE_EDEN);
+		s.gates |= QST_FLAG_EDEN_VU | QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE;
+		int rx = 0, ry = 0, ox = 0, oy = 0;
+		questNpcPos(QST_NPC_ROSWELL, &rx, &ry);
+		questNpcPos(QST_NPC_OME, &ox, &oy);
+		CHECK(rx == 20 * 24 + 12 && ry == 51 * 16 + 8);
+		CHECK(ox == 40 * 24 + 12 && oy == 44 * 16 + 8);
+		CHECK(questNpcAvailable(&s, QST_NPC_ROSWELL) == 1);
+		CHECK(questNpcAvailable(&s, QST_NPC_OME) == 1);
+		// Variant PC : le dernier evenement disponible (lampe) l'emporte.
+		CHECK(questNpcDialogue(&s, QST_NPC_ROSWELL) == QST_DLG_ROSWELL_LAMPE);
+		s.gates &= ~QST_GATE_LAMPE;
+		CHECK(questNpcDialogue(&s, QST_NPC_ROSWELL) == QST_DLG_ROSWELL);
+		s.gates |= QST_GATE_LAMPE;
+		CHECK(questNpcBubble(&s, QST_NPC_ROSWELL) == 1);
+		tap(s, PF_BTN_CROSS, rx + QST_FWD_X, ry, PF_DIR_LEFT);
+		CHECK(s.dialogueId == QST_DLG_ROSWELL_LAMPE);
+		questDialogueDone(&s);
+		CHECK(questNpcBubble(&s, QST_NPC_ROSWELL) == 0);
+		CHECK(questNpcDialogue(&s, QST_NPC_OME) == QST_DLG_OME);
+		tap(s, PF_BTN_CROSS, ox, oy + QST_FWD_Y, PF_DIR_UP);
+		CHECK(s.dialogueId == QST_DLG_OME);
+		questDialogueDone(&s);
+		CHECK(questNpcBubble(&s, QST_NPC_OME) == 0);
+		// Second golem : CROIX sans effet, coffre scelle avant la victoire.
+		int gx = 0, gy = 0, cx = 0, cy = 0;
+		questActorPos(QST_ACTOR_GOLEM_EDEN, &gx, &gy);
+		questActorPos(QST_ACTOR_CHEST_PRISME, &cx, &cy);
+		CHECK(gx == 25 * 24 + 12 && gy == 30 * 16 + 8);
+		CHECK(cx == 26 * 24 + 12 && cy == 31 * 16 + 8);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM_EDEN) == 1);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM) == 0);  // pas le golem de la vallee
+		CHECK(questActorInteract(&s, QST_ACTOR_GOLEM_EDEN) == QST_DLG_NONE);
+		CHECK(questChestTake(&s, QST_CHEST_PRISME) == QST_DLG_NONE);
+		CHECK(questGolemEdenDefeated(&s) == 1);
+		CHECK(s.dialogueId == QST_DLG_BOSS_EDEN);
+		questDialogueDone(&s);
+		CHECK(questGolemEdenDefeated(&s) == 0);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM_EDEN) == 0);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_PRISME) == 1);
+		CHECK(questChestTake(&s, QST_CHEST_PRISME) == QST_DLG_OBJET_PRISME);
+		CHECK((s.gates & QST_GATE_PRISME) != 0);
+		questDialogueDone(&s);
+		CHECK(questChestTake(&s, QST_CHEST_PRISME) == QST_DLG_NONE);
+		CHECK(questNpcDialogue(&s, QST_NPC_ROSWELL) == QST_DLG_ROSWELL_PRISME);
+		// Un nouveau variant reouvre la bulle de Roswell (nouvelle information).
+		CHECK(questNpcBubble(&s, QST_NPC_ROSWELL) == 1);
+		CHECK(worldTroneGatesComplete(s.gates) == 0);
+		// Le golem de la vallee et celui d'Eden ont des drapeaux distincts.
+		CHECK((s.gates & QST_FLAG_GOLEM) == 0);
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

@@ -378,10 +378,7 @@ void audioStreamMusicPS1(int theme) {
 }
 
 void startStreamNow(int theme) {
-	if (!s_cdReady) {
-		CdInit();
-		s_cdReady = true;
-	}
+	audioCdInitOncePS1();
 
 	CdlFILE file;
 	if (!CdSearchFile(&file, g_ps1MusicPaths[theme])) {
@@ -473,4 +470,10 @@ void audioStreamStopPS1(void) {
 	Stream_Destroy(&s_stream);
 	s_streamReady = false;
 	g_ps1StreamDiag.active = 0u;
+}
+
+void audioCdInitOncePS1(void) {
+	if (s_cdReady) return;
+	CdInit();
+	s_cdReady = true;
 }

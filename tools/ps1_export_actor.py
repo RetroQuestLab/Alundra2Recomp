@@ -39,6 +39,9 @@ SOURCE = {
     # Vallee de Mithra : golem (spawn 026 26 28) et coffre de la Lampe (26,29).
     'golem': ('assets/sprites/golem.a1s', 0, 26, 0),
     'coffre_lampe': ('assets/sprites/coffre.a1s', 0, 26, 1),
+    # Ruines d'Eden : second golem (spawn 042 25 30) et coffre du Prisme (26,31).
+    'golem_eden': ('assets/sprites/golem.a1s', 0, 42, 0),
+    'coffre_prisme': ('assets/sprites/coffre.a1s', 0, 42, 1),
 }
 DEST = 'actor.dat'
 SLOT_RECTS = (ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,
