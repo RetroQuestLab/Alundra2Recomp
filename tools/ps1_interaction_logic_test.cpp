@@ -295,7 +295,14 @@ int main() {
 		CHECK(s.dialogueId == QST_DLG_MEPHISTO_TONE);
 		questDialogueDone(&s);
 		CHECK(s.talkedMephistoTrone == 1);
+		// Second CROIX : Mephisto se combat (entities.cpp, 36 PV), CROIX ne
+		// conclut jamais le combat final.
 		tap(s, PF_BTN_CROSS, 492, 424, PF_DIR_RIGHT);
+		CHECK(s.mephistoDown == 0);
+		CHECK(s.dialogueId == QST_DLG_NONE);
+		CHECK(questMephistoCombatReady(&s) == 1);
+		// Victoire reelle (pilote : ogreDuelJustWon sur l'etat du boss).
+		CHECK(questMephistoDefeated(&s) == 1);
 		CHECK(s.mephistoDown == 1);
 		CHECK(s.dialogueId == QST_DLG_MEPHISTO_VAINCU);
 		CHECK(s.ending == 0);  // la fin n'apparait pas a la victoire seule

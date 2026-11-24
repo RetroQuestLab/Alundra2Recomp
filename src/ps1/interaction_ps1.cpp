@@ -240,21 +240,36 @@ void drawNpc(int npc, int camX, int camY) {
 /* Boss de la zone courante : une seule zone est active, donc un seul duel.
  * Kindra -> ogre (bossDown) ; Vallee de Mithra -> golem (QST_FLAG_GOLEM). */
 int duelActor(void) {
+	if (g_quest.zone == QST_ZONE_TRONE) return QST_ACTOR_MEPHISTO;
 	if (g_quest.zone == QST_ZONE_MEDUSA) return QST_ACTOR_CAPITAINE;
 	if (g_quest.zone == QST_ZONE_EDEN) return QST_ACTOR_GOLEM_EDEN;
 	return g_quest.zone == QST_ZONE_VALLEE ? QST_ACTOR_GOLEM : QST_ACTOR_OGRE;
 }
 int duelDone(void) {
+	// Mephisto : inactif tant qu'il n'a pas parle, et apres sa defaite.
+	if (g_quest.zone == QST_ZONE_TRONE) return !questMephistoCombatReady(&g_quest);
 	if (g_quest.zone == QST_ZONE_MEDUSA) return (g_quest.gates & QST_GATE_BOSS_MEDUSA) != 0;
 	if (g_quest.zone == QST_ZONE_EDEN) return (g_quest.gates & QST_FLAG_GOLEM_EDEN) != 0;
 	return g_quest.zone == QST_ZONE_VALLEE ? ((g_quest.gates & QST_FLAG_GOLEM) != 0)
 	                                       : g_quest.bossDown;
 }
 void duelWon(void) {
+	if (g_quest.zone == QST_ZONE_TRONE) { questMephistoDefeated(&g_quest); return; }
 	if (g_quest.zone == QST_ZONE_MEDUSA) questCapitaineDefeated(&g_quest);
 	else if (g_quest.zone == QST_ZONE_EDEN) questGolemEdenDefeated(&g_quest);
 	else if (g_quest.zone == QST_ZONE_VALLEE) questGolemDefeated(&g_quest);
 	else questOgreDefeated(&g_quest);
+}
+
+/* PV des boss repris de src/entities.cpp (ogre : valeur historique PS1). */
+int duelMaxHp(int zone) {
+	switch (zone) {
+	case QST_ZONE_VALLEE:
+	case QST_ZONE_EDEN:   return 18;  // golem
+	case QST_ZONE_MEDUSA: return 12;  // capitaine
+	case QST_ZONE_TRONE:  return 36;  // Mephisto
+	default:              return OGRE_DUEL_MAX_HP;
+	}
 }
 
 void drawActor(int actor, int camX, int camY) {
@@ -353,6 +368,7 @@ void interactionSetZonePS1(int zone) {
 	questSetZone(&g_quest, zone);
 	enemyAnimReset(&g_ps1EnemyAnim);
 	ogreDuelReset(&g_ps1OgreDuel);
+	g_ps1OgreDuel.hp = static_cast<uint16_t>(duelMaxHp(zone));
 	uploadNpcSprites(zone);
 	uploadActors(zone);
 	uploadEnemyFrame(0);
@@ -369,7 +385,7 @@ int interactionWantsTalkPS1(uint32_t pad, int hx, int hy) {
 	// Une fois DOWN, questOgreDefeated() a pose bossDown et l'acteur n'est
 	// plus disponible ; CROIX ne sert alors qu'a confirmer le dialogue.
 	if (!ogreDuelInteractAllowed(&g_ps1OgreDuel) &&
-	    questActorNear(&g_quest, hx, hy, heroDir()) == duelActor() &&
+	    questActorNear(&g_quest, hx, hy, heroDir()) == duelActor() && !duelDone() &&
 	    questNpcNear(&g_quest, hx, hy, heroDir()) == QST_NPC_NONE) return 0;
 	return questHasInteract(&g_quest, hx, hy, heroDir());
 }
@@ -408,7 +424,7 @@ void interactionUpdatePS1(uint32_t pad, int hx, int hy) {
 	// sinon questActorInteract() poserait bossDown sans combat (contournement).
 	uint32_t questPad = pad;
 	if (!ogreDuelInteractAllowed(&g_ps1OgreDuel) &&
-	    questActorNear(&g_quest, hx, hy, heroDir()) == duelActor() &&
+	    questActorNear(&g_quest, hx, hy, heroDir()) == duelActor() && !duelDone() &&
 	    questNpcNear(&g_quest, hx, hy, heroDir()) == QST_NPC_NONE)
 		questPad &= ~PF_BTN_CROSS;
 	const QuestState prev = g_quest;

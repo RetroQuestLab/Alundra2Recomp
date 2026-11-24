@@ -173,13 +173,18 @@ end
 
 -- Combat reel : CARRE uniquement quand le boss ouvre sa garde.
 local function fight(want, flag, tag, cb)
+	local fx = math.floor(read32(heroXAddr) / 65536)
+	local fy = math.floor(read32(heroYAddr) / 65536)
+	local fdir = read32(dirAddr)
 	local function hit()
-		waitUntil(function() return duelPhase() == 1 and duelCooldown() == 0 end, 600, function()
+		teleport(fx, fy - 70, fdir)  -- hors de portee pendant la garde
+		waitUntil(function() return duelPhase() == 1 and duelCooldown() == 0 end, 900, function()
 			if duelPhase() ~= 1 then fail(tag .. ' jamais ouvert phase=' .. duelPhase()) return end
+			teleport(fx, fy, fdir)
 			tap(B.SQUARE, function()
 				if duelHp() ~= 0 then hit() return end
 				waitFrames(8, function()
-					if dialogueId() ~= want or bit.band(gates(), flag) == 0 then
+					if dialogueId() ~= want or (flag ~= 0 and bit.band(gates(), flag) == 0) then
 						fail(tag .. ' sans consequence dlg=' .. dialogueId()) return
 					end
 					state(tag)
@@ -208,6 +213,32 @@ local function enter(cx, cy, want, dlg, tag, cb)
 		if dialogueId() ~= dlg then fail(tag .. ' : dlg=' .. dialogueId()) return end
 		state(tag)
 		waitFrames(20, function() shot(string.lower(tag)) closeDialogue(30, cb) end)
+	end)
+end
+
+function finale()
+	-- Mephisto (20,26) : premiere replique, puis CROIX ne doit plus rien faire.
+	talk(492, 424 - 10, 3, 13, 'MEPHISTO_TRONE', function()
+		tap(B.CROSS, function() waitFrames(10, function()
+			if read32(questAddr + 68) ~= 0 or dialogueId() ~= 4294967295 then
+				fail('CROIX a vaincu Mephisto sans combat') return
+			end
+			print('MEPHISTO_CROIX_SANS_EFFET hp=' .. duelHp())
+			if duelHp() ~= 36 then fail('PV de Mephisto inattendus: ' .. duelHp()) return end
+			fight(14, 0, 'MEPHISTO_VAINCU', function()
+				if read32(questAddr + 68) ~= 1 then fail('mephistoDown absent') return end
+				if read32(questAddr + 72) ~= 0 then fail('fin avant Alexia') return end
+				talk(324, 840 - 10, 3, 18, 'ALEXIA_FINALE', function()
+					waitFrames(30, function()
+						if read32(questAddr + 72) ~= 1 then fail('vraie fin non atteinte') return end
+						state('VRAIE_FIN')
+						shot('vraie_fin')
+						print(string.format('JEEHAN_VALLEE_CAPTURE: PASS shots=%s', table.concat(captured, ',')))
+						PCSX.quit(0)
+					end)
+				end)
+			end)
+		end) end)
 	end)
 end
 
@@ -563,8 +594,7 @@ listener = PCSX.Events.createEventListener('GPU::Vsync', function()
 		if bit.band(gates(), 1) == 0 then fail('reprise : epee perdue') return end
 		if dialogueId() ~= 4294967295 then fail('reprise : narration rejouee') return end
 		shot('reprise_trone')
-		print(string.format('JEEHAN_VALLEE_CAPTURE: PASS shots=%s', table.concat(captured, ',')))
-		PCSX.quit(0)
+		finale()
 	end
 	if gameFrame > 30000 then fail('timeout phase=' .. phase) end
 end)

@@ -552,6 +552,12 @@ inline int questMephistoDefeated(QuestState* s) {
 
 /* La vraie fin n'est atteinte qu'apres la victoire ET la derniere replique
  * d'Alexia. Un simple retour en zone 120 ne suffit jamais. */
+/* Le combat final n'est arme qu'apres la replique de Mephisto sur son trone. */
+inline int questMephistoCombatReady(const QuestState* s) {
+	return s && s->zone == QST_ZONE_TRONE && s->talkedMephistoTrone &&
+	       !s->mephistoDown && worldTroneGatesComplete(s->gates) ? 1 : 0;
+}
+
 inline int questEnding(QuestState* s) {
 	if (!s || s->zone != QST_ZONE_TRONE || !s->mephistoDown ||
 	    !s->talkedAlexiaVaincu || s->ending) return 0;
@@ -705,8 +711,8 @@ inline int questActorInteract(QuestState* s, int actor) {
 			s->dialogueId = QST_DLG_MEPHISTO_TONE;
 			return s->dialogueId;
 		}
-		questMephistoDefeated(s);
-		return s->dialogueId;
+		// Ensuite il se combat (entities.cpp, 36 PV) : CROIX ne conclut jamais.
+		return QST_DLG_NONE;
 	case QST_ACTOR_ALEXIA_FINALE:
 		s->dialogueId = s->mephistoDown ? QST_DLG_ALEXIA_VAINCU
 		                                : QST_DLG_ALEXIA_FINALE;
