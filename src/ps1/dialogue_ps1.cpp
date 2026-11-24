@@ -157,6 +157,21 @@ void dlgDraw(void) {
 
 int dlgPanel(void) { return g_panel; }
 
+void zoneBannerDrawPS1(const char* name) {
+	if (name == 0) return;
+	a1window::draw(16, 168, 288, 56, kWindBank, kZWindow);
+	int width = 0;
+	for (int i = 0; name[i] != '\0'; ++i)
+		width += kA1FontAdvance[static_cast<unsigned char>(name[i])];
+	// PC : x = 160 - (largeur + 1) / 2, y = 188 (2e ligne du parchemin).
+	int x = 160 - (width + 1) / 2;
+	for (int i = 0; name[i] != '\0'; ++i) {
+		const unsigned char c = static_cast<unsigned char>(name[i]);
+		drawGlyph(c, x, 188);
+		x += kA1FontAdvance[c >= 32 ? c : '?'];
+	}
+}
+
 void gameOverDrawPS1(int frame) {
 	// Chaque voile semi-transparent approxime un palier du voile progressif du
 	// PC (src/main.cpp:1280) sans nouvelle CLUT ni rectangle opaque invente.

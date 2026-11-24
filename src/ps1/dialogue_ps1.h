@@ -41,3 +41,7 @@ void endingDrawPS1(int frame);
 /* Ecran local de Game Over : voile noir progressif, fenetre WIND.TX et deux
  * lignes FONT3.TIM. Aucun dialogue, aucune quete, aucun fichier de donnees. */
 void gameOverDrawPS1(int frame);
+
+/* Nom du lieu (src/main.cpp drawHud) : parchemin de dialogue standard
+ * (16,168,288,56), une ligne Latin-1 centree en 2e ligne. */
+void zoneBannerDrawPS1(const char* name);

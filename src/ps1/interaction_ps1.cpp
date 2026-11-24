@@ -286,22 +286,36 @@ void grantQuestItems(const QuestState* a, const QuestState* b) {
 		inventoryAddPS1("lampe", 1);
 }
 
-void drawObjective(void) {
-	if (!questObjectiveVisible(&g_quest)) return;
-	a1window::draw(10, 20, 300, 24, kWindBank, kZWindow);
-	if (g_quest.stage == QST_STAGE_BOSS_VAINCU) {
-		drawText("Vers Toroledo", 36, 24, 13);
-	} else if (g_quest.stage >= QST_STAGE_TOLEDO) {
-		drawText("Vers la Vallee", 36, 24, 14);
-	} else if (g_quest.stage >= QST_STAGE_EPAVE) {
-		drawText("Vers Toroledo", 36, 24, 13);
-	} else if (g_quest.stage >= QST_STAGE_KINDRA) {
-		drawText("Vers l'epave", 36, 24, 12);
-	} else if (g_quest.stage >= QST_STAGE_PACO_PREVENU) {
-		drawText("Paco prevenu!", 36, 24, 13);
-	} else {
-		drawText("Objectif Alexia", 36, 24, 15);
+/* Nom du lieu a l'entree d'une zone, comme le PC (world.cpp : 200 ticks,
+ * seulement quand le lieu change ; main.cpp : attend la fin d'un dialogue).
+ * Remplace l'ancien bandeau d'objectif permanent, absent de la reference
+ * PC et qui masquait les gemmes de vie. Noms : data/world.txt, Latin-1. */
+const char* zoneTitle(int zone) {
+	switch (zone) {
+	case QST_ZONE_PACO:   return "Village Paco";
+	case QST_ZONE_KINDRA: return "For\352t Kindra";
+	case QST_ZONE_EPAVE:  return "Mont Epervier - Epave";
+	case QST_ZONE_TOLEDO: return "Toroledo";
+	case QST_ZONE_VALLEE: return "Vall\351e de Mithra";
+	case QST_ZONE_MANOIR: return "Manoir de Milena";
+	case QST_ZONE_TRONE:  return "Salle du tr\364ne";
+	default:              return 0;
 	}
+}
+
+int g_bannerZone = -1;
+int g_bannerTicks = 0;
+
+void bannerEnter(int zone) {
+	if (zone == g_bannerZone || zoneTitle(zone) == 0) return;
+	g_bannerZone = zone;
+	g_bannerTicks = 200;
+}
+
+void drawObjective(void) {
+	if (g_bannerTicks <= 0 || dlgActive()) return;
+	--g_bannerTicks;
+	zoneBannerDrawPS1(zoneTitle(g_bannerZone));
 }
 
 }  // namespace
@@ -319,6 +333,8 @@ void interactionInitPS1(void) {
 	uploadNpcSprites(g_quest.zone);
 	uploadActors(g_quest.zone);
 	uploadEnemyFrame(0);
+	g_bannerZone = -1;
+	bannerEnter(g_quest.zone);
 }
 
 void interactionSetZonePS1(int zone) {
@@ -330,6 +346,7 @@ void interactionSetZonePS1(int zone) {
 	uploadEnemyFrame(0);
 	if (zone == QST_ZONE_TRONE) questThroneEnter(&g_quest);
 	questZoneArrival(&g_quest);  // narration unique (vallee)
+	bannerEnter(zone);
 }
 
 int interactionWantsTalkPS1(uint32_t pad, int hx, int hy) {
