@@ -77,7 +77,8 @@ inline int clampi(int v, int lo, int hi) {
 inline int themeForZone(int zone) {
 	switch (zone) {
 	case QST_ZONE_PACO:
-	case QST_ZONE_TOLEDO:  return 17;  // village
+	case QST_ZONE_TOLEDO:
+	case QST_ZONE_MEDUSA:  return 17;  // village
 	case QST_ZONE_KINDRA:
 	case QST_ZONE_EPAVE:
 	case QST_ZONE_EDEN:    return 25;  // donjon
@@ -98,6 +99,7 @@ int loadZoneMap(int zone) {
 	case QST_ZONE_TRONE:  zone120Init(); return 1;
 	case QST_ZONE_VALLEE: return zoneLoadFromCdPS1(QST_ZONE_VALLEE);
 	case QST_ZONE_EDEN:   return zoneLoadFromCdPS1(QST_ZONE_EDEN);
+	case QST_ZONE_MEDUSA: return zoneLoadFromCdPS1(QST_ZONE_MEDUSA);
 	case QST_ZONE_PACO:   zoneInit(); return 1;
 	default:              return 0;
 	}

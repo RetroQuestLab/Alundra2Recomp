@@ -11,6 +11,7 @@
 
 #define QST_ZONE_VALLEE    26
 #define QST_ZONE_EDEN      42
+#define QST_ZONE_MEDUSA    50
 #define QST_ZONE_MANOIR    86
 #define QST_ZONE_TRONE    120
 
@@ -31,6 +32,10 @@
 #define QST_FLAG_ROSWELL_VU   (1u << 14)  // Roswell ecoute (avant le Prisme)
 #define QST_FLAG_OME_VU       (1u << 15)  // Omega ecoutee
 #define QST_FLAG_ROSWELL_PRISME_VU (1u << 16)  // Roswell ecoute avec le Prisme
+#define QST_FLAG_MEDUSA_VU    (1u << 17)  // narration d'arrivee a Puerto Medusa lue
+#define QST_FLAG_RUBY_VU      (1u << 18)
+#define QST_FLAG_ALBERT_VU    (1u << 19)
+#define QST_FLAG_ZACH_VU      (1u << 20)
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)
@@ -42,7 +47,7 @@ struct WorldWarp {
 	int toX, toY;
 };
 
-#define QST_WARP_COUNT 11
+#define QST_WARP_COUNT 12
 
 static const WorldWarp kWorldWarps[QST_WARP_COUNT] = {
 	{11, 25, 45, 3, 1, 13, 8, 54},    // Paco -> Kindra
@@ -56,6 +61,7 @@ static const WorldWarp kWorldWarps[QST_WARP_COUNT] = {
 	{120, 14, 52, 2, 1, 86, 27, 8},   // Trone -> Manoir : retour libre
 	{26, 26, 52, 2, 1, 119, 26, 44},  // Vallee -> Toroledo : retour libre
 	{42, 21, 51, 2, 1, 26, 26, 22},   // Eden -> Vallee : retour libre
+	{50, 26, 52, 2, 1, 42, 21, 51},   // Puerto Medusa -> Eden : retour libre
 };
 
 /* data/warps.txt : 119 26 44 2 1 -> 026 26 52 haut epee_supreme. Hors de
@@ -66,10 +72,11 @@ struct WorldGatedWarp {
 	WorldWarp warp;
 	uint32_t gate;
 };
-#define QST_GATED_WARP_COUNT 2
+#define QST_GATED_WARP_COUNT 3
 static const WorldGatedWarp kGatedWarps[QST_GATED_WARP_COUNT] = {
 	{{119, 26, 44, 2, 1, QST_ZONE_VALLEE, 26, 52}, QST_GATE_EPEE_SUPREME},
 	{{26, 26, 22, 2, 1, QST_ZONE_EDEN, 21, 51}, QST_GATE_LAMPE},
+	{{42, 26, 13, 2, 1, QST_ZONE_MEDUSA, 26, 52}, QST_GATE_PRISME},
 };
 
 /* data/warps.txt : 086 26 8 2 1 -> 120 14 52 haut cristal. Volontairement

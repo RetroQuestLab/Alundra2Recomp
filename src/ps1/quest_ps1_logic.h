@@ -52,7 +52,10 @@
 #define QST_NPC_GUIDE_VALLEE       9  // zone 026, case (25,22) [guide_vallee]
 #define QST_NPC_ROSWELL           10  // zone 042, case (20,51)
 #define QST_NPC_OME               11  // zone 042, case (40,44)
-#define QST_NPC_COUNT             12
+#define QST_NPC_RUBY              12  // zone 050, case (40,26)
+#define QST_NPC_ALBERT            13  // zone 050, case (42,26) (Zeppo : sprite trop large)
+#define QST_NPC_ZACH              14  // zone 050, case (16,26)
+#define QST_NPC_COUNT             15
 
 /* Coffres portes depuis data/world.txt (centres en pixels, cases 24x16). */
 #define QST_CHEST_STRANGE_KEY      0  // zone 019, case (7,16)
@@ -60,7 +63,8 @@
 #define QST_CHEST_ORDRE            2  // zone 119, case (25,1), ordres de Diaz
 #define QST_CHEST_LAMPE            3  // zone 026, case (26,29), apres le golem
 #define QST_CHEST_PRISME           4  // zone 042, case (26,31), apres le 2e golem
-#define QST_CHEST_COUNT            5
+#define QST_CHEST_CRISTAL          5  // zone 050, case (34,29), apres le capitaine
+#define QST_CHEST_COUNT            6
 
 /* Acteurs portes par actor.dat (sprites A1 reels, interaction CROIX). */
 #define QST_ACTOR_OGRE              0  // zone 013, case (22,29)
@@ -74,7 +78,9 @@
 #define QST_ACTOR_CHEST_LAMPE       8  // zone 026, case (26,29)
 #define QST_ACTOR_GOLEM_EDEN        9  // zone 042, spawn (25,30)
 #define QST_ACTOR_CHEST_PRISME     10  // zone 042, case (26,31)
-#define QST_ACTOR_COUNT            11
+#define QST_ACTOR_CAPITAINE       11  // zone 050, spawn (34,28)
+#define QST_ACTOR_CHEST_CRISTAL   12  // zone 050, case (34,29)
+#define QST_ACTOR_COUNT           13
 
 #define QST_DLG_NONE               (-1)
 #define QST_DLG_PRUNWELL            0
@@ -112,6 +118,12 @@
 #define QST_DLG_OME                31  // [ome]
 #define QST_DLG_BOSS_EDEN          32  // [boss_042]
 #define QST_DLG_OBJET_PRISME       33  // [objet_prisme]
+#define QST_DLG_MEDUSA_ARRIVEE     34  // [medusa_arrivee]
+#define QST_DLG_RUBY               35  // [ruby_puerto]
+#define QST_DLG_ALBERT             36  // [albert_puerto]
+#define QST_DLG_ZACH               37  // [zach_fort]
+#define QST_DLG_BOSS_MEDUSA        38  // [boss_medusa]
+#define QST_DLG_OBJET_CRISTAL      39  // [objet_cristal]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -207,6 +219,18 @@ inline void questNpcPos(int npc, int* x, int* y) {
 		if (x) *x = 23 * 24 + 12;  // 564, zone 119
 		if (y) *y = 12 * 16 + 8;   // 200
 		break;
+	case QST_NPC_RUBY:
+		if (x) *x = 40 * 24 + 12;
+		if (y) *y = 26 * 16 + 8;
+		break;
+	case QST_NPC_ALBERT:
+		if (x) *x = 42 * 24 + 12;
+		if (y) *y = 26 * 16 + 8;
+		break;
+	case QST_NPC_ZACH:
+		if (x) *x = 16 * 24 + 12;
+		if (y) *y = 26 * 16 + 8;
+		break;
 	case QST_NPC_ROSWELL:
 		if (x) *x = 20 * 24 + 12;  // 492, zone 042
 		if (y) *y = 51 * 16 + 8;   // 824
@@ -245,6 +269,10 @@ inline int questZoneArrival(QuestState* s) {
 		s->dialogueId = QST_DLG_VALLEE_ARRIVEE;
 		return s->dialogueId;
 	}
+	if (s->zone == QST_ZONE_MEDUSA && (s->gates & QST_FLAG_MEDUSA_VU) == 0) {
+		s->dialogueId = QST_DLG_MEDUSA_ARRIVEE;
+		return s->dialogueId;
+	}
 	if (s->zone == QST_ZONE_EDEN && (s->gates & QST_FLAG_EDEN_VU) == 0) {
 		s->dialogueId = QST_DLG_EDEN_ARRIVEE;
 		return s->dialogueId;
@@ -266,6 +294,8 @@ inline int questNpcAvailable(const QuestState* s, int npc) {
 		return npc == QST_NPC_GUIDE_VALLEE ? 1 : 0;
 	case QST_ZONE_EDEN:
 		return npc == QST_NPC_ROSWELL || npc == QST_NPC_OME ? 1 : 0;
+	case QST_ZONE_MEDUSA:
+		return npc == QST_NPC_RUBY || npc == QST_NPC_ALBERT || npc == QST_NPC_ZACH ? 1 : 0;
 	case QST_ZONE_EPAVE:
 		return npc == QST_NPC_ALEXIA_EPAVE || npc == QST_NPC_BELGAR_EPAVE ? 1 : 0;
 	case QST_ZONE_TOLEDO:
@@ -286,6 +316,9 @@ inline int questNpcBubble(const QuestState* s, int npc) {
 	case QST_NPC_NATASHA: return s->talkedNatasha == 0 ? 1 : 0;
 	case QST_NPC_GUIDE_VALLEE: return (s->gates & QST_FLAG_GUIDE_VU) == 0 ? 1 : 0;
 	case QST_NPC_OME: return (s->gates & QST_FLAG_OME_VU) == 0 ? 1 : 0;
+	case QST_NPC_RUBY: return (s->gates & QST_FLAG_RUBY_VU) == 0 ? 1 : 0;
+	case QST_NPC_ALBERT: return (s->gates & QST_FLAG_ALBERT_VU) == 0 ? 1 : 0;
+	case QST_NPC_ZACH: return (s->gates & QST_FLAG_ZACH_VU) == 0 ? 1 : 0;
 	case QST_NPC_ROSWELL:
 		// Un nouveau variant (Prisme) est une nouvelle information : bulle.
 		return (s->gates & ((s->gates & QST_GATE_PRISME) ? QST_FLAG_ROSWELL_PRISME_VU
@@ -334,6 +367,9 @@ inline int questNpcDialogue(const QuestState* s, int npc) {
 	case QST_NPC_ALEXIA_KINDRA: return QST_DLG_ALEXIA_KINDRA;
 	case QST_NPC_GUIDE_VALLEE: return QST_DLG_GUIDE_VALLEE;
 	case QST_NPC_OME: return QST_DLG_OME;
+	case QST_NPC_RUBY: return QST_DLG_RUBY;
+	case QST_NPC_ALBERT: return QST_DLG_ALBERT;
+	case QST_NPC_ZACH: return QST_DLG_ZACH;
 	case QST_NPC_ROSWELL:
 		// main.cpp tryInteract : le dernier variant d'evenement disponible gagne.
 		if (s->gates & QST_GATE_PRISME) return QST_DLG_ROSWELL_PRISME;
@@ -355,6 +391,9 @@ inline int questChestAvailable(const QuestState* s, int chest) {
 	case QST_CHEST_LETTRE:
 		return s->zone == QST_ZONE_KINDRA && s->bossDown == 1 &&
 		       s->chestLettre == 0 ? 1 : 0;
+	case QST_CHEST_CRISTAL:
+		return s->zone == QST_ZONE_MEDUSA && (s->gates & QST_GATE_BOSS_MEDUSA) != 0 &&
+		       (s->gates & QST_GATE_CRISTAL) == 0 ? 1 : 0;
 	case QST_CHEST_PRISME:
 		return s->zone == QST_ZONE_EDEN && (s->gates & QST_FLAG_GOLEM_EDEN) != 0 &&
 		       (s->gates & QST_GATE_PRISME) == 0 ? 1 : 0;
@@ -371,9 +410,11 @@ inline int questChestAvailable(const QuestState* s, int chest) {
 inline int questChestIdAt(const QuestState* s, int hx, int hy) {
 	for (int chest = 0; chest < QST_CHEST_COUNT; ++chest) {
 		if (!questChestAvailable(s, chest)) continue;
-		const int cx = chest == QST_CHEST_STRANGE_KEY ? 7 : chest == QST_CHEST_ORDRE ? 25 :
+		const int cx = chest == QST_CHEST_CRISTAL ? 34 :
+		               chest == QST_CHEST_STRANGE_KEY ? 7 : chest == QST_CHEST_ORDRE ? 25 :
 		               chest == QST_CHEST_LAMPE || chest == QST_CHEST_PRISME ? 26 : 22;
-		const int cy = chest == QST_CHEST_STRANGE_KEY ? 16 : chest == QST_CHEST_ORDRE ? 1 :
+		const int cy = chest == QST_CHEST_CRISTAL ? 29 :
+		               chest == QST_CHEST_STRANGE_KEY ? 16 : chest == QST_CHEST_ORDRE ? 1 :
 		               chest == QST_CHEST_LAMPE ? 29 : 31;  // prisme : (26,31)
 		const int dx = hx - (cx * 24 + 12);
 		const int dy = hy - (cy * 16 + 8);
@@ -395,6 +436,10 @@ inline int questChestTake(QuestState* s, int chest) {
 	case QST_CHEST_LETTRE:
 		s->chestLettre = 1;
 		s->dialogueId = QST_DLG_OBJET_LETTRE;
+		return s->dialogueId;
+	case QST_CHEST_CRISTAL:
+		s->gates |= QST_GATE_CRISTAL;  // derniere relique, gate du trone
+		s->dialogueId = QST_DLG_OBJET_CRISTAL;
 		return s->dialogueId;
 	case QST_CHEST_PRISME:
 		s->gates |= QST_GATE_PRISME;  // gate de la route 042 -> 050
@@ -435,6 +480,15 @@ inline int questGolemEdenDefeated(QuestState* s) {
 	if (s->zone != QST_ZONE_EDEN || (s->gates & QST_FLAG_GOLEM_EDEN) != 0) return 0;
 	s->gates |= QST_FLAG_GOLEM_EDEN;
 	s->dialogueId = QST_DLG_BOSS_EDEN;
+	return 1;
+}
+
+/* Capitaine des pirates de Puerto Medusa : sa defaite pose le gate
+ * boss_medusa (entities.cpp). Retourne 1 la premiere fois. */
+inline int questCapitaineDefeated(QuestState* s) {
+	if (s->zone != QST_ZONE_MEDUSA || (s->gates & QST_GATE_BOSS_MEDUSA) != 0) return 0;
+	s->gates |= QST_GATE_BOSS_MEDUSA;
+	s->dialogueId = QST_DLG_BOSS_MEDUSA;
 	return 1;
 }
 
@@ -497,6 +551,14 @@ inline void questActorPos(int actor, int* x, int* y) {
 		if (x) *x = 13 * 24 + 12;  // 324, zone 120
 		if (y) *y = 42 * 16 + 8;   // 680
 		break;
+	case QST_ACTOR_CAPITAINE:
+		if (x) *x = 34 * 24 + 12;
+		if (y) *y = 28 * 16 + 8;
+		break;
+	case QST_ACTOR_CHEST_CRISTAL:
+		if (x) *x = 34 * 24 + 12;
+		if (y) *y = 29 * 16 + 8;
+		break;
 	case QST_ACTOR_GOLEM_EDEN:
 		if (x) *x = 25 * 24 + 12;  // 612, zone 042
 		if (y) *y = 30 * 16 + 8;   // 488
@@ -542,6 +604,10 @@ inline int questActorAvailable(const QuestState* s, int actor) {
 		return s->zone == QST_ZONE_EDEN && (s->gates & QST_FLAG_GOLEM_EDEN) == 0 ? 1 : 0;
 	case QST_ACTOR_CHEST_PRISME:
 		return questChestAvailable(s, QST_CHEST_PRISME);
+	case QST_ACTOR_CAPITAINE:
+		return s->zone == QST_ZONE_MEDUSA && (s->gates & QST_GATE_BOSS_MEDUSA) == 0 ? 1 : 0;
+	case QST_ACTOR_CHEST_CRISTAL:
+		return questChestAvailable(s, QST_CHEST_CRISTAL);
 	case QST_ACTOR_MEPHISTO:
 		return s->zone == QST_ZONE_TRONE && s->talkedMephistoArrivee == 1 &&
 		       s->mephistoDown == 0 ? 1 : 0;
@@ -594,6 +660,10 @@ inline int questActorInteract(QuestState* s, int actor) {
 		return QST_DLG_NONE;  // se combat (CARRE)
 	case QST_ACTOR_CHEST_PRISME:
 		return questChestTake(s, QST_CHEST_PRISME);
+	case QST_ACTOR_CAPITAINE:
+		return QST_DLG_NONE;  // se combat (CARRE)
+	case QST_ACTOR_CHEST_CRISTAL:
+		return questChestTake(s, QST_CHEST_CRISTAL);
 	case QST_ACTOR_MEPHISTO:
 		if (!s->talkedMephistoTrone) {
 			s->dialogueId = QST_DLG_MEPHISTO_TONE;
@@ -700,6 +770,18 @@ inline void questDialogueDoneAfter(QuestState* s, int dialogueId) {
 		break;
 	case QST_DLG_OME:
 		s->gates |= QST_FLAG_OME_VU;
+		break;
+	case QST_DLG_MEDUSA_ARRIVEE:
+		s->gates |= QST_FLAG_MEDUSA_VU;
+		break;
+	case QST_DLG_RUBY:
+		s->gates |= QST_FLAG_RUBY_VU;
+		break;
+	case QST_DLG_ALBERT:
+		s->gates |= QST_FLAG_ALBERT_VU;
+		break;
+	case QST_DLG_ZACH:
+		s->gates |= QST_FLAG_ZACH_VU;
 		break;
 	case QST_DLG_MEPHISTO_ARRIVEE:
 		s->talkedMephistoArrivee = 1;

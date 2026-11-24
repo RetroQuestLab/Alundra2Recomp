@@ -579,6 +579,49 @@ int main() {
 		// Le golem de la vallee et celui d'Eden ont des drapeaux distincts.
 		CHECK((s.gates & QST_FLAG_GOLEM) == 0);
 	}
+	// --- Puerto Medusa : PNJ, capitaine, Cristal ----------------------------
+	{
+		QuestState s;
+		questInit(&s);
+		questSetZone(&s, QST_ZONE_MEDUSA);
+		CHECK(questZoneArrival(&s) == QST_DLG_MEDUSA_ARRIVEE);
+		questDialogueDone(&s);
+		CHECK((s.gates & QST_FLAG_MEDUSA_VU) != 0);
+		const int npcs[3] = {QST_NPC_RUBY, QST_NPC_ALBERT, QST_NPC_ZACH};
+		const int dlgs[3] = {QST_DLG_RUBY, QST_DLG_ALBERT, QST_DLG_ZACH};
+		const int cxs[3] = {40, 42, 16};
+		const int cys[3] = {26, 26, 26};
+		for (int i = 0; i < 3; ++i) {
+			int nx = 0, ny = 0;
+			questNpcPos(npcs[i], &nx, &ny);
+			CHECK(nx == cxs[i] * 24 + 12 && ny == cys[i] * 16 + 8);
+			CHECK(questNpcAvailable(&s, npcs[i]) == 1);
+			CHECK(questNpcBubble(&s, npcs[i]) == 1);
+			CHECK(questNpcDialogue(&s, npcs[i]) == dlgs[i]);
+			s.dialogueId = dlgs[i];
+			questDialogueDone(&s);
+			CHECK(questNpcBubble(&s, npcs[i]) == 0);
+		}
+		int ax = 0, ay = 0;
+		questActorPos(QST_ACTOR_CAPITAINE, &ax, &ay);
+		CHECK(ax == 34 * 24 + 12 && ay == 28 * 16 + 8);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CAPITAINE) == 1);
+		CHECK(questActorInteract(&s, QST_ACTOR_CAPITAINE) == QST_DLG_NONE);
+		CHECK(questChestTake(&s, QST_CHEST_CRISTAL) == QST_DLG_NONE);
+		CHECK(questCapitaineDefeated(&s) == 1);
+		CHECK((s.gates & QST_GATE_BOSS_MEDUSA) != 0);
+		CHECK(s.dialogueId == QST_DLG_BOSS_MEDUSA);
+		questDialogueDone(&s);
+		CHECK(questCapitaineDefeated(&s) == 0);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CAPITAINE) == 0);
+		questActorPos(QST_ACTOR_CHEST_CRISTAL, &ax, &ay);
+		CHECK(ax == 34 * 24 + 12 && ay == 29 * 16 + 8);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_CRISTAL) == 1);
+		CHECK(questChestTake(&s, QST_CHEST_CRISTAL) == QST_DLG_OBJET_CRISTAL);
+		CHECK((s.gates & QST_GATE_CRISTAL) != 0);
+		questDialogueDone(&s);
+		CHECK(questChestTake(&s, QST_CHEST_CRISTAL) == QST_DLG_NONE);
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

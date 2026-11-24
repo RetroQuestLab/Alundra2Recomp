@@ -149,6 +149,18 @@ int main() {
 		expectTracker(worldTryWarpGated(&st, QST_GATE_LAMPE, 119, 26, 44, 0, 0, 0) == 0,
 		              "la lampe n'ouvre pas la vallee");
 	}
+	// Eden -> Puerto Medusa : `042 26 13 2 1 -> 050 26 52 haut prisme`, retour libre.
+	expectNone(42, 26, 13);
+	expectWarp(50, 26, 52, 42, 21, 51);
+	{
+		WorldWarpState st;
+		worldWarpStateInit(&st);
+		int z = 0, x = 0, y = 0;
+		expectTracker(worldTryWarpGated(&st, QST_GATE_LAMPE, 42, 26, 13, 0, 0, 0) == 0,
+		              "medusa refuse sans le prisme");
+		expectTracker(worldTryWarpGated(&st, QST_GATE_PRISME, 42, 27, 13, &z, &x, &y) == 1 &&
+		              z == QST_ZONE_MEDUSA && x == 26 && y == 52, "medusa ouvert avec le prisme");
+	}
 	printf("PS1_WORLD_LOGIC: %d/%d checks PASS\n", checks, checks);
-	return checks == 44 ? 0 : 1;
+	return checks == 48 ? 0 : 1;
 }

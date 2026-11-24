@@ -43,6 +43,11 @@ SOURCE = {
     # Ruines d'Eden (data/world.txt : npc 042 20 51 ancien / 40 44 villageoise)
     'roswell': ('assets/sprites/ancien.a1s', 2, 42, 0),
     'ome': ('assets/sprites/villageoise.a1s', 0, 42, 1),
+    # Puerto Medusa : 3 emplacements VRAM, PNJ narratifs (data/world.txt zone 050).
+    'ruby_puerto': ('assets/sprites/ruby.a1s', 0, 50, 0),
+    # Zeppo (capitaine.a1s, 39 px) depasse l'emplacement PNJ : Albert a la place.
+    'albert_puerto': ('assets/sprites/albert.a1s', 0, 50, 1),
+    'zach_fort': ('assets/sprites/zach.a1s', 0, 50, 2),
 }
 DEST = 'npc.dat'
 SLOT_RECTS = (NPC0_TEX, NPC1_TEX, NPC2_TEX)
