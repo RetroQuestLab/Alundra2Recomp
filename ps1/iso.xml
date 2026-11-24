@@ -25,6 +25,7 @@
 				<file name="ZONE026.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone026.dat" />
 			<file name="ZONE042.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone042.dat" />
 			<file name="ZONE050.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone050.dat" />
+			<file name="ZONE086.DAT" type="data" source="${PROJECT_SOURCE_DIR}/assets/zone086.dat" />
 			</dir>
 
 			<dir name="MUSIC">

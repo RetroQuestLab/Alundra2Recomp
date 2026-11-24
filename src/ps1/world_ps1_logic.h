@@ -36,6 +36,11 @@
 #define QST_FLAG_RUBY_VU      (1u << 18)
 #define QST_FLAG_ALBERT_VU    (1u << 19)
 #define QST_FLAG_ZACH_VU      (1u << 20)
+#define QST_FLAG_MANOIR_VU    (1u << 21)  // narration d'arrivee au manoir lue
+#define QST_FLAG_DIAZ_VU      (1u << 22)
+#define QST_FLAG_DIAZ_CRISTAL_VU (1u << 23)
+#define QST_FLAG_MILENA_VU    (1u << 24)
+#define QST_FLAG_ALEXIA_MANOIR_VU (1u << 25)
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)
@@ -47,7 +52,7 @@ struct WorldWarp {
 	int toX, toY;
 };
 
-#define QST_WARP_COUNT 12
+#define QST_WARP_COUNT 13
 
 static const WorldWarp kWorldWarps[QST_WARP_COUNT] = {
 	{11, 25, 45, 3, 1, 13, 8, 54},    // Paco -> Kindra
@@ -62,6 +67,7 @@ static const WorldWarp kWorldWarps[QST_WARP_COUNT] = {
 	{26, 26, 52, 2, 1, 119, 26, 44},  // Vallee -> Toroledo : retour libre
 	{42, 21, 51, 2, 1, 26, 26, 22},   // Eden -> Vallee : retour libre
 	{50, 26, 52, 2, 1, 42, 21, 51},   // Puerto Medusa -> Eden : retour libre
+	{86, 8, 30, 1, 2, 50, 44, 28},    // Manoir -> Puerto Medusa : retour libre
 };
 
 /* data/warps.txt : 119 26 44 2 1 -> 026 26 52 haut epee_supreme. Hors de
@@ -72,11 +78,12 @@ struct WorldGatedWarp {
 	WorldWarp warp;
 	uint32_t gate;
 };
-#define QST_GATED_WARP_COUNT 3
+#define QST_GATED_WARP_COUNT 4
 static const WorldGatedWarp kGatedWarps[QST_GATED_WARP_COUNT] = {
 	{{119, 26, 44, 2, 1, QST_ZONE_VALLEE, 26, 52}, QST_GATE_EPEE_SUPREME},
 	{{26, 26, 22, 2, 1, QST_ZONE_EDEN, 21, 51}, QST_GATE_LAMPE},
 	{{42, 26, 13, 2, 1, QST_ZONE_MEDUSA, 26, 52}, QST_GATE_PRISME},
+	{{50, 44, 28, 1, 2, QST_ZONE_MANOIR, 8, 30}, QST_GATE_BOSS_MEDUSA},
 };
 
 /* data/warps.txt : 086 26 8 2 1 -> 120 14 52 haut cristal. Volontairement

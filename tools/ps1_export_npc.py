@@ -48,6 +48,10 @@ SOURCE = {
     # Zeppo (capitaine.a1s, 39 px) depasse l'emplacement PNJ : Albert a la place.
     'albert_puerto': ('assets/sprites/albert.a1s', 0, 50, 1),
     'zach_fort': ('assets/sprites/zach.a1s', 0, 50, 2),
+    # Manoir de Milena (data/world.txt zone 086).
+    'diaz_manoir': ('assets/sprites/diaz.a1s', 0, 86, 0),
+    'milena': ('assets/sprites/milena.a1s', 0, 86, 1),
+    'alexia_manoir': ('assets/sprites/alexia.a1s', 10, 86, 2),
 }
 DEST = 'npc.dat'
 SLOT_RECTS = (NPC0_TEX, NPC1_TEX, NPC2_TEX)

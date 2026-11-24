@@ -48,13 +48,16 @@ if ((Test-Path $zoneMap) -and (Test-Path $heroSprite)) {
 	# Puerto Medusa : carte A1 029 (data/world.txt `map 050 029`).
 	& py -3.12 (Join-Path $repo 'tools\ps1_export_zone.py') (Join-Path $repo 'assets\maps\029.a1m') $heroSprite $assetsDir '050'
 	if ($LASTEXITCODE -ne 0) { throw 'generation du blob P1ZM zone 050' }
+	# Manoir de Milena : carte A1 316 (data/world.txt `map 086 316`).
+	& py -3.12 (Join-Path $repo 'tools\ps1_export_zone.py') (Join-Path $repo 'assets\maps\316.a1m') $heroSprite $assetsDir '086'
+	if ($LASTEXITCODE -ne 0) { throw 'generation du blob P1ZM zone 086' }
 } else {
 	Write-Warning 'Sources A1 absentes : utilisation des blobs deja present dans ps1/assets.'
 }
 # Regression VRAM / exporteurs (inclut les sprites PNJ de la premiere interaction).
 & py -3.12 (Join-Path $repo 'tools\ps1_export_zone_test.py')
 if ($LASTEXITCODE -ne 0) { throw 'tests exportateurs PS1' }
-foreach ($blob in @('zone011.dat', 'zone013.dat', 'zone019.dat', 'zone119.dat', 'zone120.dat', 'zone026.dat', 'zone042.dat', 'zone050.dat', 'hero.dat')) {
+foreach ($blob in @('zone011.dat', 'zone013.dat', 'zone019.dat', 'zone119.dat', 'zone120.dat', 'zone026.dat', 'zone042.dat', 'zone050.dat', 'zone086.dat', 'hero.dat')) {
 	if (-not (Test-Path (Join-Path $assetsDir $blob))) { throw "Blob PS1 absent : $blob" }
 }
 

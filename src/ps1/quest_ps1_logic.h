@@ -55,7 +55,10 @@
 #define QST_NPC_RUBY              12  // zone 050, case (40,26)
 #define QST_NPC_ALBERT            13  // zone 050, case (42,26) (Zeppo : sprite trop large)
 #define QST_NPC_ZACH              14  // zone 050, case (16,26)
-#define QST_NPC_COUNT             15
+#define QST_NPC_DIAZ              15  // zone 086, case (40,30)
+#define QST_NPC_MILENA            16  // zone 086, case (26,8)
+#define QST_NPC_ALEXIA_MANOIR     17  // zone 086, case (25,8)
+#define QST_NPC_COUNT             18
 
 /* Coffres portes depuis data/world.txt (centres en pixels, cases 24x16). */
 #define QST_CHEST_STRANGE_KEY      0  // zone 019, case (7,16)
@@ -124,6 +127,11 @@
 #define QST_DLG_ZACH               37  // [zach_fort]
 #define QST_DLG_BOSS_MEDUSA        38  // [boss_medusa]
 #define QST_DLG_OBJET_CRISTAL      39  // [objet_cristal]
+#define QST_DLG_MANOIR_ARRIVEE     40  // [manoir_arrivee]
+#define QST_DLG_DIAZ               41  // [diaz_manoir]
+#define QST_DLG_DIAZ_CRISTAL       42  // [diaz_manoir_objet_cristal]
+#define QST_DLG_MILENA             43  // [milena_boss_medusa] (gate deja pose a l'entree)
+#define QST_DLG_ALEXIA_MANOIR      44  // [alexia_manoir]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -219,6 +227,18 @@ inline void questNpcPos(int npc, int* x, int* y) {
 		if (x) *x = 23 * 24 + 12;  // 564, zone 119
 		if (y) *y = 12 * 16 + 8;   // 200
 		break;
+	case QST_NPC_DIAZ:
+		if (x) *x = 40 * 24 + 12;
+		if (y) *y = 30 * 16 + 8;
+		break;
+	case QST_NPC_MILENA:
+		if (x) *x = 26 * 24 + 12;
+		if (y) *y = 8 * 16 + 8;
+		break;
+	case QST_NPC_ALEXIA_MANOIR:
+		if (x) *x = 25 * 24 + 12;
+		if (y) *y = 8 * 16 + 8;
+		break;
 	case QST_NPC_RUBY:
 		if (x) *x = 40 * 24 + 12;
 		if (y) *y = 26 * 16 + 8;
@@ -269,6 +289,10 @@ inline int questZoneArrival(QuestState* s) {
 		s->dialogueId = QST_DLG_VALLEE_ARRIVEE;
 		return s->dialogueId;
 	}
+	if (s->zone == QST_ZONE_MANOIR && (s->gates & QST_FLAG_MANOIR_VU) == 0) {
+		s->dialogueId = QST_DLG_MANOIR_ARRIVEE;
+		return s->dialogueId;
+	}
 	if (s->zone == QST_ZONE_MEDUSA && (s->gates & QST_FLAG_MEDUSA_VU) == 0) {
 		s->dialogueId = QST_DLG_MEDUSA_ARRIVEE;
 		return s->dialogueId;
@@ -294,6 +318,9 @@ inline int questNpcAvailable(const QuestState* s, int npc) {
 		return npc == QST_NPC_GUIDE_VALLEE ? 1 : 0;
 	case QST_ZONE_EDEN:
 		return npc == QST_NPC_ROSWELL || npc == QST_NPC_OME ? 1 : 0;
+	case QST_ZONE_MANOIR:
+		return npc == QST_NPC_DIAZ || npc == QST_NPC_MILENA ||
+		       npc == QST_NPC_ALEXIA_MANOIR ? 1 : 0;
 	case QST_ZONE_MEDUSA:
 		return npc == QST_NPC_RUBY || npc == QST_NPC_ALBERT || npc == QST_NPC_ZACH ? 1 : 0;
 	case QST_ZONE_EPAVE:
@@ -317,6 +344,11 @@ inline int questNpcBubble(const QuestState* s, int npc) {
 	case QST_NPC_GUIDE_VALLEE: return (s->gates & QST_FLAG_GUIDE_VU) == 0 ? 1 : 0;
 	case QST_NPC_OME: return (s->gates & QST_FLAG_OME_VU) == 0 ? 1 : 0;
 	case QST_NPC_RUBY: return (s->gates & QST_FLAG_RUBY_VU) == 0 ? 1 : 0;
+	case QST_NPC_MILENA: return (s->gates & QST_FLAG_MILENA_VU) == 0 ? 1 : 0;
+	case QST_NPC_ALEXIA_MANOIR: return (s->gates & QST_FLAG_ALEXIA_MANOIR_VU) == 0 ? 1 : 0;
+	case QST_NPC_DIAZ:
+		return (s->gates & ((s->gates & QST_GATE_CRISTAL) ? QST_FLAG_DIAZ_CRISTAL_VU
+		                                                  : QST_FLAG_DIAZ_VU)) == 0 ? 1 : 0;
 	case QST_NPC_ALBERT: return (s->gates & QST_FLAG_ALBERT_VU) == 0 ? 1 : 0;
 	case QST_NPC_ZACH: return (s->gates & QST_FLAG_ZACH_VU) == 0 ? 1 : 0;
 	case QST_NPC_ROSWELL:
@@ -368,6 +400,10 @@ inline int questNpcDialogue(const QuestState* s, int npc) {
 	case QST_NPC_GUIDE_VALLEE: return QST_DLG_GUIDE_VALLEE;
 	case QST_NPC_OME: return QST_DLG_OME;
 	case QST_NPC_RUBY: return QST_DLG_RUBY;
+	case QST_NPC_DIAZ:
+		return (s->gates & QST_GATE_CRISTAL) ? QST_DLG_DIAZ_CRISTAL : QST_DLG_DIAZ;
+	case QST_NPC_MILENA: return QST_DLG_MILENA;
+	case QST_NPC_ALEXIA_MANOIR: return QST_DLG_ALEXIA_MANOIR;
 	case QST_NPC_ALBERT: return QST_DLG_ALBERT;
 	case QST_NPC_ZACH: return QST_DLG_ZACH;
 	case QST_NPC_ROSWELL:
@@ -776,6 +812,21 @@ inline void questDialogueDoneAfter(QuestState* s, int dialogueId) {
 		break;
 	case QST_DLG_RUBY:
 		s->gates |= QST_FLAG_RUBY_VU;
+		break;
+	case QST_DLG_MANOIR_ARRIVEE:
+		s->gates |= QST_FLAG_MANOIR_VU;
+		break;
+	case QST_DLG_DIAZ:
+		s->gates |= QST_FLAG_DIAZ_VU;
+		break;
+	case QST_DLG_DIAZ_CRISTAL:
+		s->gates |= QST_FLAG_DIAZ_VU | QST_FLAG_DIAZ_CRISTAL_VU;
+		break;
+	case QST_DLG_MILENA:
+		s->gates |= QST_FLAG_MILENA_VU;
+		break;
+	case QST_DLG_ALEXIA_MANOIR:
+		s->gates |= QST_FLAG_ALEXIA_MANOIR_VU;
 		break;
 	case QST_DLG_ALBERT:
 		s->gates |= QST_FLAG_ALBERT_VU;

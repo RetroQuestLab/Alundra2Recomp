@@ -622,6 +622,46 @@ int main() {
 		questDialogueDone(&s);
 		CHECK(questChestTake(&s, QST_CHEST_CRISTAL) == QST_DLG_NONE);
 	}
+	// --- Manoir de Milena : Diaz, Milena, Alexia -----------------------------
+	{
+		QuestState s;
+		questInit(&s);
+		questSetZone(&s, QST_ZONE_MANOIR);
+		s.gates |= QST_GATE_BOSS_MEDUSA;
+		CHECK(questZoneArrival(&s) == QST_DLG_MANOIR_ARRIVEE);
+		questDialogueDone(&s);
+		CHECK((s.gates & QST_FLAG_MANOIR_VU) != 0);
+		int nx = 0, ny = 0;
+		questNpcPos(QST_NPC_DIAZ, &nx, &ny);
+		CHECK(nx == 40 * 24 + 12 && ny == 30 * 16 + 8);
+		questNpcPos(QST_NPC_MILENA, &nx, &ny);
+		CHECK(nx == 26 * 24 + 12 && ny == 8 * 16 + 8);
+		questNpcPos(QST_NPC_ALEXIA_MANOIR, &nx, &ny);
+		CHECK(nx == 25 * 24 + 12 && ny == 8 * 16 + 8);
+		// Sans le Cristal : Diaz classique ; avec : variant (dernier evenement).
+		CHECK(questNpcDialogue(&s, QST_NPC_DIAZ) == QST_DLG_DIAZ);
+		s.dialogueId = QST_DLG_DIAZ;
+		questDialogueDone(&s);
+		CHECK(questNpcBubble(&s, QST_NPC_DIAZ) == 0);
+		s.gates |= QST_GATE_CRISTAL;
+		CHECK(questNpcDialogue(&s, QST_NPC_DIAZ) == QST_DLG_DIAZ_CRISTAL);
+		CHECK(questNpcBubble(&s, QST_NPC_DIAZ) == 1);
+		s.dialogueId = QST_DLG_DIAZ_CRISTAL;
+		questDialogueDone(&s);
+		CHECK(questNpcBubble(&s, QST_NPC_DIAZ) == 0);
+		// Milena : boss_medusa est le dernier evenement de la liste PC.
+		CHECK(questNpcDialogue(&s, QST_NPC_MILENA) == QST_DLG_MILENA);
+		CHECK(questNpcDialogue(&s, QST_NPC_ALEXIA_MANOIR) == QST_DLG_ALEXIA_MANOIR);
+		s.dialogueId = QST_DLG_MILENA;
+		questDialogueDone(&s);
+		s.dialogueId = QST_DLG_ALEXIA_MANOIR;
+		questDialogueDone(&s);
+		CHECK(questNpcBubble(&s, QST_NPC_MILENA) == 0);
+		CHECK(questNpcBubble(&s, QST_NPC_ALEXIA_MANOIR) == 0);
+		CHECK(questNpcAvailable(&s, QST_NPC_DIAZ) == 1);
+		questSetZone(&s, QST_ZONE_MEDUSA);
+		CHECK(questNpcAvailable(&s, QST_NPC_DIAZ) == 0);
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

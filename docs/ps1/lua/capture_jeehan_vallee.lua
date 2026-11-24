@@ -196,6 +196,42 @@ local function fight(want, flag, tag, cb)
 	end) end)
 end
 
+local function enter(cx, cy, want, dlg, tag, cb)
+	local before = zoneW()
+	local x, y = tileCenter(cx, cy)
+	teleport(x, y, 0)
+	local t0 = gameFrame
+	waitUntil(function() return zone() == want and dlgIsActive() end, 600, function()
+		print(tag .. '_CHARGEMENT images=' .. (gameFrame - t0))
+		if zone() ~= want then fail(tag .. ' : passage refuse') return end
+		if zoneW() == before then fail(tag .. ' : carte non chargee') return end
+		if dialogueId() ~= dlg then fail(tag .. ' : dlg=' .. dialogueId()) return end
+		state(tag)
+		waitFrames(20, function() shot(string.lower(tag)) closeDialogue(30, cb) end)
+	end)
+end
+
+function toManoir()
+	enter(44, 28, 86, 40, 'MANOIR_ARRIVEE', function()
+		talk(40 * 24 + 12, 30 * 16 + 8 + 10, 0, 42, 'DIAZ_CRISTAL', function()
+		talk(25 * 24 + 12, 8 * 16 + 8 + 10, 0, 44, 'ALEXIA_MANOIR', function()
+		talk(26 * 24 + 12, 8 * 16 + 8 + 10, 0, 43, 'MILENA', function()
+			enter(26, 8, 120, 12, 'TRONE_ARRIVEE', function()
+				local tx, ty = tileCenter(14, 48)
+				teleport(tx, ty, 0)
+				waitFrames(40, function()
+					if zone() ~= 120 then fail('rebond hors du trone') return end
+					state('TRONE_CARTE')
+					shot('trone_carte')
+					reload()
+				end)
+			end)
+		end)
+		end)
+		end)
+	end)
+end
+
 function toMedusa()
 	local wEden = zoneW()
 	local x, y = tileCenter(26, 13)
@@ -218,9 +254,7 @@ function toMedusa()
 					local n0 = invList()
 					talk(34 * 24 + 12, 29 * 16 + 8 - 10, 3, 39, 'CRISTAL_OBTENU', function()
 						if invList() ~= n0 + 1 or bit.band(gates(), 0x10) == 0 then fail('cristal non recu') return end
-						local mx, my = tileCenter(26, 49)
-						teleport(mx, my, 0)
-						waitFrames(20, reload)
+						toManoir()
 					end)
 				end)
 				end)
@@ -523,12 +557,12 @@ listener = PCSX.Events.createEventListener('GPU::Vsync', function()
 	elseif phase == 'reload_go' and gameFrame >= phaseFrame + 300 then
 		phase = 'done'
 		state('REPRISE')
-		if zone() ~= 50 then fail('reprise hors de Puerto Medusa') return end
+		if zone() ~= 120 then fail('reprise hors de la salle du trone') return end
 		if zoneW() == w119 or zoneW() == 0 then fail('reprise : carte 042 absente') return end
 		if zoneW() == wValley then fail('reprise : carte de la vallee au lieu d Eden') return end
 		if bit.band(gates(), 1) == 0 then fail('reprise : epee perdue') return end
 		if dialogueId() ~= 4294967295 then fail('reprise : narration rejouee') return end
-		shot('reprise_medusa')
+		shot('reprise_trone')
 		print(string.format('JEEHAN_VALLEE_CAPTURE: PASS shots=%s', table.concat(captured, ',')))
 		PCSX.quit(0)
 	end

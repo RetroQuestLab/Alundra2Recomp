@@ -161,6 +161,19 @@ int main() {
 		expectTracker(worldTryWarpGated(&st, QST_GATE_PRISME, 42, 27, 13, &z, &x, &y) == 1 &&
 		              z == QST_ZONE_MEDUSA && x == 26 && y == 52, "medusa ouvert avec le prisme");
 	}
+	// Puerto Medusa -> Manoir : `050 44 28 1 2 -> 086 8 30 droite boss_medusa`.
+	expectNone(50, 44, 28);
+	expectWarp(86, 8, 30, 50, 44, 28);
+	expectWarp(86, 8, 31, 50, 44, 28);
+	{
+		WorldWarpState st;
+		worldWarpStateInit(&st);
+		int z = 0, x = 0, y = 0;
+		expectTracker(worldTryWarpGated(&st, QST_GATE_CRISTAL, 50, 44, 29, 0, 0, 0) == 0,
+		              "manoir refuse tant que le capitaine garde le passage");
+		expectTracker(worldTryWarpGated(&st, QST_GATE_BOSS_MEDUSA, 50, 44, 29, &z, &x, &y) == 1 &&
+		              z == QST_ZONE_MANOIR && x == 8 && y == 30, "manoir ouvert apres le capitaine");
+	}
 	printf("PS1_WORLD_LOGIC: %d/%d checks PASS\n", checks, checks);
-	return checks == 48 ? 0 : 1;
+	return checks == 53 ? 0 : 1;
 }
