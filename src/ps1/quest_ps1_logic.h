@@ -49,7 +49,8 @@
 #define QST_NPC_NATASHA            6
 #define QST_NPC_JEEHAN             7
 #define QST_NPC_ALEXIA_KINDRA      8  // zone 013, case (9,50)
-#define QST_NPC_COUNT              9
+#define QST_NPC_GUIDE_VALLEE       9  // zone 026, case (25,22) [guide_vallee]
+#define QST_NPC_COUNT             10
 
 /* Coffres portes depuis data/world.txt (centres en pixels, cases 24x16). */
 #define QST_CHEST_STRANGE_KEY      0  // zone 019, case (7,16)
@@ -93,6 +94,7 @@
 #define QST_DLG_OBJET_ORDRE        21  // [objet_ordre]
 #define QST_DLG_JEEHAN_ORDRE       22  // [jeehan_objet_ordre]
 #define QST_DLG_VALLEE_ARRIVEE     23  // [vallee_arrivee]
+#define QST_DLG_GUIDE_VALLEE       24  // [guide_vallee]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -188,6 +190,10 @@ inline void questNpcPos(int npc, int* x, int* y) {
 		if (x) *x = 23 * 24 + 12;  // 564, zone 119
 		if (y) *y = 12 * 16 + 8;   // 200
 		break;
+	case QST_NPC_GUIDE_VALLEE:
+		if (x) *x = 25 * 24 + 12;  // 612, zone 026
+		if (y) *y = 22 * 16 + 8;   // 360
+		break;
 	case QST_NPC_ALEXIA_KINDRA:
 		if (x) *x = 9 * 24 + 12;   // 228, zone 013
 		if (y) *y = 50 * 16 + 8;   // 808
@@ -227,6 +233,8 @@ inline int questNpcAvailable(const QuestState* s, int npc) {
 	case QST_ZONE_KINDRA:
 		return npc == QST_NPC_FINROD || npc == QST_NPC_MARCHAND_KINDRA ||
 		       npc == QST_NPC_ALEXIA_KINDRA ? 1 : 0;
+	case QST_ZONE_VALLEE:
+		return npc == QST_NPC_GUIDE_VALLEE ? 1 : 0;
 	case QST_ZONE_EPAVE:
 		return npc == QST_NPC_ALEXIA_EPAVE || npc == QST_NPC_BELGAR_EPAVE ? 1 : 0;
 	case QST_ZONE_TOLEDO:
@@ -245,6 +253,7 @@ inline int questNpcBubble(const QuestState* s, int npc) {
 	case QST_NPC_ALEXIA_EPAVE: return s->talkedAlexiaEpave == 0 ? 1 : 0;
 	case QST_NPC_BELGAR_EPAVE: return s->talkedBelgarEpave == 0 ? 1 : 0;
 	case QST_NPC_NATASHA: return s->talkedNatasha == 0 ? 1 : 0;
+	case QST_NPC_GUIDE_VALLEE: return (s->gates & QST_FLAG_GUIDE_VU) == 0 ? 1 : 0;
 	case QST_NPC_JEEHAN:
 		// Jeehan revient vers Flint quand il apporte les ordres (epee pas encore remise).
 		return s->talkedJeehan == 0 || questJeehanAwaitsOrdre(s) ? 1 : 0;
@@ -287,6 +296,7 @@ inline int questNpcDialogue(const QuestState* s, int npc) {
 	case QST_NPC_JEEHAN:
 		return questJeehanAwaitsOrdre(s) ? QST_DLG_JEEHAN_ORDRE : QST_DLG_JEEHAN;
 	case QST_NPC_ALEXIA_KINDRA: return QST_DLG_ALEXIA_KINDRA;
+	case QST_NPC_GUIDE_VALLEE: return QST_DLG_GUIDE_VALLEE;
 	default: return QST_DLG_PRUNWELL;
 	}
 }
@@ -567,6 +577,9 @@ inline void questDialogueDoneAfter(QuestState* s, int dialogueId) {
 		break;
 	case QST_DLG_VALLEE_ARRIVEE:
 		s->gates |= QST_FLAG_VALLEE_VUE;
+		break;
+	case QST_DLG_GUIDE_VALLEE:
+		s->gates |= QST_FLAG_GUIDE_VU;
 		break;
 	case QST_DLG_MEPHISTO_ARRIVEE:
 		s->talkedMephistoArrivee = 1;

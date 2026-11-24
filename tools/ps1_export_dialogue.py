@@ -32,7 +32,7 @@ DIALOGUE_IDS = ('prunewell', 'garde', 'finrod', 'marchand_kindra',
                 'alexia_finale', 'alexia_finale_mephisto_vaincu',
                  'finrod_prunewell',
                  'alexia_kindra', 'objet_ordre', 'jeehan_objet_ordre',
-                 'vallee_arrivee')
+                 'vallee_arrivee', 'guide_vallee')
 # Indications de commandes propres au clavier PC, adaptees a la manette PS1.
 PS1_CONTROL_HINTS = (
     (' Touche Q pour la sortir.', ' Equipe-la avec START.'),

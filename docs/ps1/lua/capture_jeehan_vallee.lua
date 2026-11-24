@@ -172,7 +172,16 @@ local function inValley()
 				if zone() ~= 26 then fail('rebond hors de la vallee') return end
 				state('VALLEE_CARTE')
 				shot('vallee_carte')
-				reload()
+				teleport(612 - 14, 360, 2)  -- guide (25,22), PF_DIR_RIGHT
+				waitFrames(10, function() tap(B.CROSS, function() waitFrames(20, function()
+					if dialogueId() ~= 24 then fail('guide de la vallee muet: dlg=' .. dialogueId()) return end
+					state('GUIDE_VALLEE')
+					shot('guide_vallee')
+					closeDialogue(30, function()
+						if bit.band(gates(), 0x400) == 0 then fail('guide non marque ecoute') return end
+						reload()
+					end)
+				end) end) end)
 			end)
 		end) end)
 	end)

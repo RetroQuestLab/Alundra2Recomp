@@ -23,6 +23,7 @@
  * aucun changement de format. Ils ne sont pas des gates de la chaine du trone. */
 #define QST_FLAG_ORDRE        (1u << 8)   // ordres de Diaz trouves a Toroledo
 #define QST_FLAG_VALLEE_VUE   (1u << 9)   // narration d'arrivee en vallee lue
+#define QST_FLAG_GUIDE_VU     (1u << 10)  // guide de la vallee ecoute
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)

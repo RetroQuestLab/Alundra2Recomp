@@ -449,6 +449,27 @@ int main() {
 		CHECK(questZoneArrival(&s) == QST_DLG_NONE);
 		CHECK(s.dialogueId == QST_DLG_NONE);
 	}
+	// --- Guide de la Vallee de Mithra (data/world.txt : npc 026 25 22) -------
+	{
+		QuestState s;
+		questInit(&s);
+		questSetZone(&s, QST_ZONE_VALLEE);
+		s.gates |= QST_FLAG_VALLEE_VUE;  // narration deja lue
+		int gx = 0, gy = 0;
+		questNpcPos(QST_NPC_GUIDE_VALLEE, &gx, &gy);
+		CHECK(gx == 25 * 24 + 12);
+		CHECK(gy == 22 * 16 + 8);
+		CHECK(questNpcAvailable(&s, QST_NPC_GUIDE_VALLEE) == 1);
+		CHECK(questNpcBubble(&s, QST_NPC_GUIDE_VALLEE) == 1);
+		tap(s, PF_BTN_CROSS, gx - QST_FWD_X, gy, PF_DIR_RIGHT);
+		CHECK(s.dialogueId == QST_DLG_GUIDE_VALLEE);
+		questDialogueDone(&s);
+		CHECK(questNpcBubble(&s, QST_NPC_GUIDE_VALLEE) == 0);
+		CHECK(worldTroneGatesComplete(s.gates) == 0);
+		CHECK((s.gates & QST_GATE_LAMPE) == 0);  // la lampe vient du golem
+		questSetZone(&s, QST_ZONE_TOLEDO);
+		CHECK(questNpcAvailable(&s, QST_NPC_GUIDE_VALLEE) == 0);
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

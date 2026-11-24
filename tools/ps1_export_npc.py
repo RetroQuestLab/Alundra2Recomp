@@ -38,6 +38,8 @@ SOURCE = {
     'natasha': ('assets/sprites/natasha.a1s', 2, 119, 0),
     'jeehan': ('assets/sprites/jeehan.a1s', 5, 119, 1),
     'alexia_kindra': ('assets/sprites/alexia.a1s', 10, 13, 2),
+    # Vallee de Mithra (data/world.txt : npc 026 25 22 villageois gauche guide_vallee)
+    'guide_vallee': ('assets/sprites/villageois.a1s', 0, 26, 0),
 }
 DEST = 'npc.dat'
 SLOT_RECTS = (NPC0_TEX, NPC1_TEX, NPC2_TEX)

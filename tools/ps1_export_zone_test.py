@@ -285,7 +285,7 @@ def test_npc_vram_reserved():
     assert pn.NPC1_TEX[0] + pn.NPC1_TEX[2] <= pn.NPC2_TEX[0]
     assert pn.NPC0_TEX[1] + pn.NPC0_TEX[3] <= pn.NPC_CLUTS[1]
     for name, (path, frame, zone, slot) in pn.SOURCE.items():
-        assert frame >= 0 and zone in (11, 13, 19, 119), f"source PNJ invalide: {name}"
+        assert frame >= 0 and zone in (11, 13, 19, 26, 119), f"source PNJ invalide: {name}"
         assert 0 <= slot < len(pn.SLOT_RECTS), f"slot PNJ invalide: {name}"
     print("test_npc_vram_reserved: PASS")
 
@@ -301,7 +301,8 @@ def test_npc_blob_header_uploadable():
     b = open(os.path.join(out, 'npc.dat'), 'rb').read()
     assert len(b) == size and b[:4] == b'P1NP'
     count, _ = struct.unpack_from('<HH', b, 4)
-    assert count == len(pn.SOURCE) == 9
+    assert count == len(pn.SOURCE) == 10
+    assert list(pn.SOURCE)[9] == 'guide_vallee' and pn.SOURCE['guide_vallee'][2] == 26
     by_zone = {}
     p = 8
     for i in range(count):
@@ -317,7 +318,7 @@ def test_npc_blob_header_uploadable():
         by_zone.setdefault(zone, []).append(slot)
         p += 32 + stride * 2 * upload_h
     assert p == len(b)
-    assert set(by_zone) == {11, 13, 19, 119}, f'zones PNJ inattendues : {sorted(by_zone)}'
+    assert set(by_zone) == {11, 13, 19, 26, 119}, f'zones PNJ inattendues : {sorted(by_zone)}'
     for zone, slots in by_zone.items():
         assert len(slots) <= 3 and len(set(slots)) == len(slots), \
             f'slots PNJ en conflit dans la zone {zone} : {slots}'
@@ -546,7 +547,7 @@ def test_dialogue_header_is_pod_and_uploadable():
                 'alexia_finale', 'alexia_finale_mephisto_vaincu',
                 'finrod_prunewell',
                 'alexia_kindra', 'objet_ordre', 'jeehan_objet_ordre',
-                'vallee_arrivee')
+                'vallee_arrivee', 'guide_vallee')
     assert dlg.DIALOGUE_IDS == expected, f'identifiants de dialogue incomplets : {dlg.DIALOGUE_IDS}'
     assert 'kDlgLines_garde' in text, "le dialogue du garde doit etre exporte"
     # Aucune touche clavier PC ne doit apparaitre dans un texte PS1.
