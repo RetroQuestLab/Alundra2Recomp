@@ -36,6 +36,9 @@ SOURCE = {
     # Ordres de Diaz a Toroledo (data/world.txt : chest 119 25 1 ordre). Une
     # seule zone est active : le slot 1 (coffre de l'epave, zone 19) est libre.
     'coffre_ordre': ('assets/sprites/coffre.a1s', 0, 119, 1),
+    # Vallee de Mithra : golem (spawn 026 26 28) et coffre de la Lampe (26,29).
+    'golem': ('assets/sprites/golem.a1s', 0, 26, 0),
+    'coffre_lampe': ('assets/sprites/coffre.a1s', 0, 26, 1),
 }
 DEST = 'actor.dat'
 SLOT_RECTS = (ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,

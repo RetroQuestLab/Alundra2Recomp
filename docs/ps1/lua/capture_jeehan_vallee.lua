@@ -25,6 +25,7 @@ local introDrawAddr = tonumber(os.getenv('PS1_INTRO_DRAW_ADDR') or '0')
 local menuAddr = tonumber(os.getenv('PS1_MENU_ADDR'))
 local invAddr = tonumber(os.getenv('PS1_INV_ADDR'))
 local zoneWAddr = tonumber(os.getenv('PS1_ZONE_TILES_ADDR'))  -- g_nTiles
+local duelBase = tonumber(os.getenv('PS1_DUEL_ADDR'))
 local pad = PCSX.SIO0.slots[1].pads[1]
 local B = PCSX.CONSTS.PAD.BUTTON
 local mem = PCSX.getMemPtr()
@@ -55,6 +56,10 @@ local function dialogueId() return read32(questAddr + 8) end
 local function zone() return read32(questAddr + 56) end
 local function gates() return read32(questAddr + 64) end
 local function zoneW() return read32(zoneWAddr) end
+local function duelHp() return bit.band(read32(duelBase), 0xffff) end
+local function duelCooldown() return bit.band(bit.rshift(read32(duelBase), 16), 0xffff) end
+local function duelPhase() return bit.band(bit.rshift(read32(duelBase + 8), 16), 0xffff) end
+local function duelHits() return bit.band(read32(duelBase + 12), 0xffff) end
 local function dlgIsActive() return read32(dlgActiveAddr) == 1 end
 -- PSIItemEntry = { uint8 def ; int16 qty } (4 octets), 64 entrees, 0xFF = vide.
 local function invList()
@@ -151,6 +156,61 @@ local function reload()
 	pulse(B.SELECT, function() end)
 end
 
+local function lampChest()
+	local n0 = invList()
+	teleport(636, 462, 3)  -- PF_DIR_DOWN : point d'interaction = coffre (26,29)
+	waitFrames(10, function() tap(B.CROSS, function() waitFrames(20, function()
+		if dialogueId() ~= 26 then fail('coffre de la lampe: dlg=' .. dialogueId()) return end
+		if bit.band(gates(), 2) == 0 then fail('gate lampe absent') return end
+		state('LAMPE_OBTENUE')
+		shot('lampe')
+		closeDialogue(30, function()
+			if invList() ~= n0 + 1 then fail('lampe non ajoutee a l inventaire') return end
+			tap(B.CROSS, function() waitFrames(10, function()
+				if dialogueId() ~= 4294967295 or invList() ~= n0 + 1 then fail('coffre lampe rouvert') return end
+				state('LAMPE_UNIQUE')
+				reload()
+			end) end)
+		end)
+	end) end) end)
+end
+
+local function golemHit()
+	waitUntil(function() return duelPhase() == 1 and duelCooldown() == 0 end, 600, function()
+		if duelPhase() ~= 1 then fail('golem jamais ouvert phase=' .. duelPhase()) return end
+		tap(B.SQUARE, function()
+			if duelHp() == 0 then
+				waitFrames(8, function()
+					if dialogueId() ~= 25 or bit.band(gates(), 0x800) == 0 then
+						fail('victoire golem sans consequence dlg=' .. dialogueId()) return
+					end
+					print(string.format('GOLEM_VAINCU hp=%d hits=%d', duelHp(), duelHits()))
+					state('GOLEM_VAINCU')
+					waitFrames(12, function() shot('golem_vaincu')
+						closeDialogue(30, lampChest) end)
+				end)
+			else
+				golemHit()
+			end
+		end)
+	end)
+end
+
+function golem()
+	teleport(636, 436, 3)  -- au nord du golem (26,28), face vers le bas
+	waitFrames(20, function()
+		state('GOLEM_FACE')
+		shot('golem')
+		tap(B.CROSS, function() waitFrames(10, function()
+			if dialogueId() ~= 4294967295 or bit.band(gates(), 0x800) ~= 0 then
+				fail('CROIX a contourne le golem dlg=' .. dialogueId()) return
+			end
+			print('GOLEM_CROIX_SANS_EFFET hp=' .. duelHp())
+			golemHit()
+		end) end)
+	end)
+end
+
 local function inValley()
 	local n = invList()
 	local x, y = tileCenter(26, 44)
@@ -179,7 +239,7 @@ local function inValley()
 					shot('guide_vallee')
 					closeDialogue(30, function()
 						if bit.band(gates(), 0x400) == 0 then fail('guide non marque ecoute') return end
-						reload()
+						golem()
 					end)
 				end) end) end)
 			end)

@@ -237,6 +237,20 @@ void drawNpc(int npc, int camX, int camY) {
 	drawGlyph('!', bx + 28, by + 5);
 }
 
+/* Boss de la zone courante : une seule zone est active, donc un seul duel.
+ * Kindra -> ogre (bossDown) ; Vallee de Mithra -> golem (QST_FLAG_GOLEM). */
+int duelActor(void) {
+	return g_quest.zone == QST_ZONE_VALLEE ? QST_ACTOR_GOLEM : QST_ACTOR_OGRE;
+}
+int duelDone(void) {
+	return g_quest.zone == QST_ZONE_VALLEE ? ((g_quest.gates & QST_FLAG_GOLEM) != 0)
+	                                       : g_quest.bossDown;
+}
+void duelWon(void) {
+	if (g_quest.zone == QST_ZONE_VALLEE) questGolemDefeated(&g_quest);
+	else questOgreDefeated(&g_quest);
+}
+
 void drawActor(int actor, int camX, int camY) {
 	int ax = 0, ay = 0;
 	questActorPos(actor, &ax, &ay);
@@ -268,6 +282,8 @@ void grantQuestItems(const QuestState* a, const QuestState* b) {
 		inventoryAddPS1("ordre", 1);
 	if (!(a->gates & QST_GATE_EPEE_SUPREME) && (b->gates & QST_GATE_EPEE_SUPREME))
 		inventoryAddPS1("epee_supreme", 1);
+	if (!(a->gates & QST_GATE_LAMPE) && (b->gates & QST_GATE_LAMPE))
+		inventoryAddPS1("lampe", 1);
 }
 
 void drawObjective(void) {
@@ -324,7 +340,7 @@ int interactionWantsTalkPS1(uint32_t pad, int hx, int hy) {
 	// Une fois DOWN, questOgreDefeated() a pose bossDown et l'acteur n'est
 	// plus disponible ; CROIX ne sert alors qu'a confirmer le dialogue.
 	if (!ogreDuelInteractAllowed(&g_ps1OgreDuel) &&
-	    questActorNear(&g_quest, hx, hy, heroDir()) == QST_ACTOR_OGRE &&
+	    questActorNear(&g_quest, hx, hy, heroDir()) == duelActor() &&
 	    questNpcNear(&g_quest, hx, hy, heroDir()) == QST_NPC_NONE) return 0;
 	return questHasInteract(&g_quest, hx, hy, heroDir());
 }
@@ -334,22 +350,22 @@ void interactionUpdatePS1(uint32_t pad, int hx, int hy) {
 	// L'etat dlgActive() est celui de la frame precedente : front deterministe.
 	// questOgreDefeated() n'est appele que sur la transition reelle vers DOWN.
 	int ax = 0, ay = 0;
-	questActorPos(QST_ACTOR_OGRE, &ax, &ay);
+	questActorPos(duelActor(), &ax, &ay);
 	const int dx = hx - ax;
 	const int dy = hy - ay;
-	const int inRange = questActorAvailable(&g_quest, QST_ACTOR_OGRE) &&
-	                    g_quest.bossDown == 0 && dx * dx + dy * dy <= 40 * 40 ? 1 : 0;
+	const int inRange = questActorAvailable(&g_quest, duelActor()) &&
+	                    duelDone() == 0 && dx * dx + dy * dy <= 40 * 40 ? 1 : 0;
 	const int square = (!dlgActive() && (pad & PF_BTN_SQUARE)) ? 1 : 0;
 	// Copie 20 octets avant mutation : le mapping SFX reste une fonction pure et
 	// n'ajoute aucun champ a l'etat observable par la sonde.
 	const PS1OgreDuelState before = g_ps1OgreDuel;
-	const int hit = ogreDuelTryHit(&g_ps1OgreDuel, g_quest.bossDown, square, inRange);
+	const int hit = ogreDuelTryHit(&g_ps1OgreDuel, duelDone(), square, inRange);
 	const int sfx = ogreDuelSfxForHit(&before, &g_ps1OgreDuel, hit);
 	if (sfx != OGRE_DUEL_SFX_NONE) audioPlaySfxIdPS1(sfx);
 	// Victoire reellement obtenue au combat : consequence de quete unique.
 	// questOgreDefeated() pose bossDown, stage=6 et le dialogue de victoire ;
 	// ses guards rendent tout appel ulterieur sans effet (pas de double lot).
-	if (ogreDuelJustWon(&before, &g_ps1OgreDuel, hit)) questOgreDefeated(&g_quest);
+	if (ogreDuelJustWon(&before, &g_ps1OgreDuel, hit)) duelWon();
 
 	// Contre-attaque de l'ogre : uniquement en GARDE, a portee, hors dialogue.
 	// Le POD vital ne touche jamais a la quete ni a la sauvegarde.
@@ -363,7 +379,7 @@ void interactionUpdatePS1(uint32_t pad, int hx, int hy) {
 	// sinon questActorInteract() poserait bossDown sans combat (contournement).
 	uint32_t questPad = pad;
 	if (!ogreDuelInteractAllowed(&g_ps1OgreDuel) &&
-	    questActorNear(&g_quest, hx, hy, heroDir()) == QST_ACTOR_OGRE &&
+	    questActorNear(&g_quest, hx, hy, heroDir()) == duelActor() &&
 	    questNpcNear(&g_quest, hx, hy, heroDir()) == QST_NPC_NONE)
 		questPad &= ~PF_BTN_CROSS;
 	const QuestState prev = g_quest;
@@ -377,7 +393,7 @@ void interactionUpdatePS1(uint32_t pad, int hx, int hy) {
 void interactionDrawPS1(int camX, int camY) {
 	// Une avance par image presentee. Le gel de l'animation v0.8.8 reste pilote
 	// par bossDown uniquement : aucun observable existant n'est modifie.
-	ogreDuelStep(&g_ps1OgreDuel, g_quest.bossDown);
+	ogreDuelStep(&g_ps1OgreDuel, duelDone());
 	enemyAnimPump(&g_ps1EnemyAnim, g_quest.bossDown);
 	for (int npc = 0; npc < QST_NPC_COUNT; ++npc) {
 		if (questNpcAvailable(&g_quest, npc)) drawNpc(npc, camX, camY);
@@ -387,9 +403,9 @@ void interactionDrawPS1(int camX, int camY) {
 	}
 	// Flash du duel : trois tires au-dessus de l'ogre, entre le sprite et le
 	// texte (z plus petit = dessine plus tard). Aucune CLUT ni VRAM supplementaire.
-	if (g_ps1OgreDuel.flash != 0 && questActorAvailable(&g_quest, QST_ACTOR_OGRE)) {
+	if (g_ps1OgreDuel.flash != 0 && questActorAvailable(&g_quest, duelActor())) {
 		int ax = 0, ay = 0;
-		questActorPos(QST_ACTOR_OGRE, &ax, &ay);
+		questActorPos(duelActor(), &ax, &ay);
 		int z = npcZ(ay) - 1;
 		if (z < 1) z = 1;
 		const uint32_t color = g_ps1OgreDuel.flash > OGRE_DUEL_ABSORB_FLASH_TICKS

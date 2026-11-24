@@ -337,12 +337,15 @@ def test_actor_vram_and_blob_uploadable():
         assert a[0] + a[2] <= b[0], f"slots acteurs en conflit : {a} / {b}"
     assert rects[0][1] + rects[0][3] <= pa.ACTOR_CLUTS[1]
     expected = {'ogre', 'coffre_strange_key', 'coffre_lettre',
-                'mephisto', 'alexia_trone', 'roi_trone', 'coffre_ordre'}
+                'mephisto', 'alexia_trone', 'roi_trone', 'coffre_ordre',
+                'golem', 'coffre_lampe'}
     assert set(pa.SOURCE) == expected, f"acteurs PS1 incomplets : {sorted(pa.SOURCE)}"
     for name in ('mephisto', 'alexia_trone', 'roi_trone'):
         assert pa.SOURCE[name][2] == 120, f"{name} hors de la zone 120"
     # L'ordre de SOURCE fixe l'index QST_ACTOR_* : coffre_ordre est le 7e (6).
     assert list(pa.SOURCE)[6] == 'coffre_ordre'
+    assert list(pa.SOURCE)[7:9] == ['golem', 'coffre_lampe']
+    assert pa.SOURCE['golem'][2] == pa.SOURCE['coffre_lampe'][2] == 26
     assert pa.SOURCE['coffre_ordre'][2] == 119
     # Deux acteurs d'une meme zone ne partagent jamais un slot VRAM.
     used = {}
@@ -355,7 +358,7 @@ def test_actor_vram_and_blob_uploadable():
     b = open(os.path.join(out, 'actor.dat'), 'rb').read()
     assert len(b) == size and b[:4] == b'P1AC'
     count, _ = struct.unpack_from('<HH', b, 4)
-    assert count == len(pa.SOURCE) == 7
+    assert count == len(pa.SOURCE) == 9
     p = 8
     zones = set()
     for i in range(count):
@@ -370,7 +373,7 @@ def test_actor_vram_and_blob_uploadable():
         zones.add(zone)
         p += 32 + stride * 2 * upload_h
     assert p == len(b)
-    assert zones == {13, 19, 119, 120}, f"zones acteur inattendues : {sorted(zones)}"
+    assert zones == {13, 19, 26, 119, 120}, f"zones acteur inattendues : {sorted(zones)}"
     print("test_actor_vram_and_blob_uploadable: PASS")
 
 
@@ -547,7 +550,7 @@ def test_dialogue_header_is_pod_and_uploadable():
                 'alexia_finale', 'alexia_finale_mephisto_vaincu',
                 'finrod_prunewell',
                 'alexia_kindra', 'objet_ordre', 'jeehan_objet_ordre',
-                'vallee_arrivee', 'guide_vallee')
+                'vallee_arrivee', 'guide_vallee', 'boss_026', 'objet_lampe')
     assert dlg.DIALOGUE_IDS == expected, f'identifiants de dialogue incomplets : {dlg.DIALOGUE_IDS}'
     assert 'kDlgLines_garde' in text, "le dialogue du garde doit etre exporte"
     # Aucune touche clavier PC ne doit apparaitre dans un texte PS1.

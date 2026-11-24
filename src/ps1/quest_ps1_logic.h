@@ -56,7 +56,8 @@
 #define QST_CHEST_STRANGE_KEY      0  // zone 019, case (7,16)
 #define QST_CHEST_LETTRE           1  // zone 013, case (22,31), garde par l'ogre
 #define QST_CHEST_ORDRE            2  // zone 119, case (25,1), ordres de Diaz
-#define QST_CHEST_COUNT            3
+#define QST_CHEST_LAMPE            3  // zone 026, case (26,29), apres le golem
+#define QST_CHEST_COUNT            4
 
 /* Acteurs portes par actor.dat (sprites A1 reels, interaction CROIX). */
 #define QST_ACTOR_OGRE              0  // zone 013, case (22,29)
@@ -66,7 +67,9 @@
 #define QST_ACTOR_ALEXIA_FINALE     4  // zone 120, npc (13,52)
 #define QST_ACTOR_ROI               5  // zone 120, npc (13,42)
 #define QST_ACTOR_CHEST_ORDRE       6  // zone 119, case (25,1)
-#define QST_ACTOR_COUNT             7
+#define QST_ACTOR_GOLEM             7  // zone 026, spawn (26,28)
+#define QST_ACTOR_CHEST_LAMPE       8  // zone 026, case (26,29)
+#define QST_ACTOR_COUNT             9
 
 #define QST_DLG_NONE               (-1)
 #define QST_DLG_PRUNWELL            0
@@ -95,6 +98,8 @@
 #define QST_DLG_JEEHAN_ORDRE       22  // [jeehan_objet_ordre]
 #define QST_DLG_VALLEE_ARRIVEE     23  // [vallee_arrivee]
 #define QST_DLG_GUIDE_VALLEE       24  // [guide_vallee]
+#define QST_DLG_BOSS_VALLEE        25  // [boss_026]
+#define QST_DLG_OBJET_LAMPE        26  // [objet_lampe]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -313,6 +318,9 @@ inline int questChestAvailable(const QuestState* s, int chest) {
 	case QST_CHEST_LETTRE:
 		return s->zone == QST_ZONE_KINDRA && s->bossDown == 1 &&
 		       s->chestLettre == 0 ? 1 : 0;
+	case QST_CHEST_LAMPE:
+		return s->zone == QST_ZONE_VALLEE && (s->gates & QST_FLAG_GOLEM) != 0 &&
+		       (s->gates & QST_GATE_LAMPE) == 0 ? 1 : 0;
 	case QST_CHEST_ORDRE:
 		return s->zone == QST_ZONE_TOLEDO && (s->gates & QST_FLAG_ORDRE) == 0 ? 1 : 0;
 	default:
@@ -323,8 +331,10 @@ inline int questChestAvailable(const QuestState* s, int chest) {
 inline int questChestIdAt(const QuestState* s, int hx, int hy) {
 	for (int chest = 0; chest < QST_CHEST_COUNT; ++chest) {
 		if (!questChestAvailable(s, chest)) continue;
-		const int cx = chest == QST_CHEST_STRANGE_KEY ? 7 : chest == QST_CHEST_ORDRE ? 25 : 22;
-		const int cy = chest == QST_CHEST_STRANGE_KEY ? 16 : chest == QST_CHEST_ORDRE ? 1 : 31;
+		const int cx = chest == QST_CHEST_STRANGE_KEY ? 7 : chest == QST_CHEST_ORDRE ? 25 :
+		               chest == QST_CHEST_LAMPE ? 26 : 22;
+		const int cy = chest == QST_CHEST_STRANGE_KEY ? 16 : chest == QST_CHEST_ORDRE ? 1 :
+		               chest == QST_CHEST_LAMPE ? 29 : 31;
 		const int dx = hx - (cx * 24 + 12);
 		const int dy = hy - (cy * 16 + 8);
 		if (dx * dx + dy * dy < QST_RADIUS2) return chest;
@@ -346,6 +356,10 @@ inline int questChestTake(QuestState* s, int chest) {
 		s->chestLettre = 1;
 		s->dialogueId = QST_DLG_OBJET_LETTRE;
 		return s->dialogueId;
+	case QST_CHEST_LAMPE:
+		s->gates |= QST_GATE_LAMPE;  // gate de la route 026 -> 042
+		s->dialogueId = QST_DLG_OBJET_LAMPE;
+		return s->dialogueId;
 	case QST_CHEST_ORDRE:
 		s->gates |= QST_FLAG_ORDRE;
 		s->dialogueId = QST_DLG_OBJET_ORDRE;
@@ -361,6 +375,15 @@ inline void questOgreDefeated(QuestState* s) {
 	s->bossDown = 1;
 	if (s->stage < QST_STAGE_BOSS_VAINCU) s->stage = QST_STAGE_BOSS_VAINCU;
 	s->dialogueId = QST_DLG_VICTOIRE;
+}
+
+/* Consequence de la victoire reelle sur le golem de la vallee (boss_026).
+ * Retourne 1 la premiere fois seulement. */
+inline int questGolemDefeated(QuestState* s) {
+	if (s->zone != QST_ZONE_VALLEE || (s->gates & QST_FLAG_GOLEM) != 0) return 0;
+	s->gates |= QST_FLAG_GOLEM;
+	s->dialogueId = QST_DLG_BOSS_VALLEE;
+	return 1;
 }
 
 /* --- v0.6.0b : salle du trone ---------------------------------------------------
@@ -422,6 +445,14 @@ inline void questActorPos(int actor, int* x, int* y) {
 		if (x) *x = 13 * 24 + 12;  // 324, zone 120
 		if (y) *y = 42 * 16 + 8;   // 680
 		break;
+	case QST_ACTOR_GOLEM:
+		if (x) *x = 26 * 24 + 12;  // 636, zone 026
+		if (y) *y = 28 * 16 + 8;   // 456
+		break;
+	case QST_ACTOR_CHEST_LAMPE:
+		if (x) *x = 26 * 24 + 12;  // 636, zone 026
+		if (y) *y = 29 * 16 + 8;   // 472
+		break;
 	case QST_ACTOR_CHEST_ORDRE:
 		if (x) *x = 25 * 24 + 12;  // 612, zone 119
 		if (y) *y = 1 * 16 + 8;    // 24
@@ -443,6 +474,10 @@ inline int questActorAvailable(const QuestState* s, int actor) {
 		return questChestAvailable(s, QST_CHEST_LETTRE);
 	case QST_ACTOR_CHEST_ORDRE:
 		return questChestAvailable(s, QST_CHEST_ORDRE);
+	case QST_ACTOR_GOLEM:
+		return s->zone == QST_ZONE_VALLEE && (s->gates & QST_FLAG_GOLEM) == 0 ? 1 : 0;
+	case QST_ACTOR_CHEST_LAMPE:
+		return questChestAvailable(s, QST_CHEST_LAMPE);
 	case QST_ACTOR_MEPHISTO:
 		return s->zone == QST_ZONE_TRONE && s->talkedMephistoArrivee == 1 &&
 		       s->mephistoDown == 0 ? 1 : 0;
@@ -487,6 +522,10 @@ inline int questActorInteract(QuestState* s, int actor) {
 		return questChestTake(s, QST_CHEST_LETTRE);
 	case QST_ACTOR_CHEST_ORDRE:
 		return questChestTake(s, QST_CHEST_ORDRE);
+	case QST_ACTOR_GOLEM:
+		return QST_DLG_NONE;  // se combat (CARRE) : CROIX ne conclut jamais
+	case QST_ACTOR_CHEST_LAMPE:
+		return questChestTake(s, QST_CHEST_LAMPE);
 	case QST_ACTOR_MEPHISTO:
 		if (!s->talkedMephistoTrone) {
 			s->dialogueId = QST_DLG_MEPHISTO_TONE;

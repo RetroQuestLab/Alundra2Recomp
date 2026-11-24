@@ -470,6 +470,49 @@ int main() {
 		questSetZone(&s, QST_ZONE_TOLEDO);
 		CHECK(questNpcAvailable(&s, QST_NPC_GUIDE_VALLEE) == 0);
 	}
+	// --- Golem de la vallee et Lampe de Lumiere (world.txt : spawn 026 26 28
+	// golem ; chest 026 26 29 lampe boss_026 ; warps : 026->042 lampe) ------
+	{
+		QuestState s;
+		questInit(&s);
+		questSetZone(&s, QST_ZONE_VALLEE);
+		s.gates |= QST_FLAG_VALLEE_VUE;
+		int gx = 0, gy = 0, cx = 0, cy = 0;
+		questActorPos(QST_ACTOR_GOLEM, &gx, &gy);
+		questActorPos(QST_ACTOR_CHEST_LAMPE, &cx, &cy);
+		CHECK(gx == 26 * 24 + 12 && gy == 28 * 16 + 8);
+		CHECK(cx == 26 * 24 + 12 && cy == 29 * 16 + 8);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM) == 1);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_LAMPE) == 0);
+		// CROIX ne combat pas, meme directement sur l'acteur.
+		tap(s, PF_BTN_CROSS, gx, gy, PF_DIR_RIGHT);
+		CHECK(s.dialogueId == QST_DLG_NONE);
+		CHECK(questActorInteract(&s, QST_ACTOR_GOLEM) == QST_DLG_NONE);
+		CHECK((s.gates & QST_FLAG_GOLEM) == 0);
+		CHECK(questChestTake(&s, QST_CHEST_LAMPE) == QST_DLG_NONE);  // coffre scelle
+		// Victoire reelle (pilote : ogreDuelJustWon sur l'etat du golem).
+		CHECK(questGolemDefeated(&s) == 1);
+		CHECK(s.dialogueId == QST_DLG_BOSS_VALLEE);
+		questDialogueDone(&s);
+		CHECK(questGolemDefeated(&s) == 0);  // une seule fois
+		CHECK(s.dialogueId == QST_DLG_NONE);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM) == 0);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_LAMPE) == 1);
+		CHECK((s.gates & QST_GATE_LAMPE) == 0);
+		tap(s, PF_BTN_CROSS, cx, cy - QST_FWD_Y, PF_DIR_DOWN);
+		CHECK(s.dialogueId == QST_DLG_OBJET_LAMPE);
+		CHECK((s.gates & QST_GATE_LAMPE) != 0);
+		questDialogueDone(&s);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_LAMPE) == 0);
+		CHECK(questChestTake(&s, QST_CHEST_LAMPE) == QST_DLG_NONE);
+		CHECK(worldTroneGatesComplete(s.gates) == 0);
+		// Hors vallee : ni golem ni coffre.
+		questSetZone(&s, QST_ZONE_TOLEDO);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM) == 0);
+		// Le golem ne doit pas s'afficher sur le terrain de l'ogre.
+		questSetZone(&s, QST_ZONE_KINDRA);
+		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM) == 0);
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

@@ -89,6 +89,7 @@ $env:PS1_DLG_ACTIVE_ADDR = Get-Symbol '8g_activeE$' 'g_active'
 $env:PS1_MENU_DRAW_ADDR = Get-SymbolSuffix 'menuDrawPS1v$' 'menuDrawPS1'
 $env:PS1_INTRO_DRAW_ADDR = Get-SymbolSuffix 'introDrawPS1v$' 'introDrawPS1'
 $env:PS1_MENU_ADDR = Get-SymbolSuffix '6g_menuE$' 'g_menu'
+$env:PS1_DUEL_ADDR = Get-Symbol '\bg_ps1OgreDuel$' 'g_ps1OgreDuel'
 $env:PS1_INV_ADDR = Get-Symbol '5g_invE$' 'g_inv'
 $env:PS1_ZONE_TILES_ADDR = Get-Symbol '_18g_nTilesE$' 'g_nTiles'
 $env:PS1_PFDRAW_ADDR = Get-Symbol '\bpfDrawRect$' 'pfDrawRect'
@@ -164,7 +165,7 @@ foreach ($ppm in $ppmFiles) {
 }
 
 $stdout -split "`n" | Where-Object { $_ -match 'shot |JEEHAN|PASSAGE_|VALLEE|ORDRES|COFFRE|EPEE|REPRISE|DEPART|RELOAD|PS1_SAVE' } | ForEach-Object { Write-Host $_ }
-foreach ($m in @('VALLEE_REFUSEE_SANS_EPEE', 'ORDRES_TROUVES', 'COFFRE_VIDE', 'JEEHAN_ORDRE_VU', 'EPEE_SUPREME_RECUE', 'JEEHAN_SANS_DOUBLE', 'VALLEE_ARRIVEE', 'GUIDE_VALLEE', 'REPRISE', 'JEEHAN_VALLEE_CAPTURE: PASS')) {
+foreach ($m in @('VALLEE_REFUSEE_SANS_EPEE', 'ORDRES_TROUVES', 'COFFRE_VIDE', 'JEEHAN_ORDRE_VU', 'EPEE_SUPREME_RECUE', 'JEEHAN_SANS_DOUBLE', 'VALLEE_ARRIVEE', 'GUIDE_VALLEE', 'GOLEM_CROIX_SANS_EFFET', 'GOLEM_VAINCU', 'LAMPE_OBTENUE', 'LAMPE_UNIQUE', 'REPRISE', 'JEEHAN_VALLEE_CAPTURE: PASS')) {
 	if ($stdout -notmatch [regex]::Escape($m)) { Fail "etape absente: $m" }
 }
 if ($stdout -notmatch 'PS1_SAVE_READ OK seq=\d+ zone=26 ') { Fail 'reprise non lue depuis la carte en zone 26' }
