@@ -100,6 +100,7 @@
 #define QST_DLG_GUIDE_VALLEE       24  // [guide_vallee]
 #define QST_DLG_BOSS_VALLEE        25  // [boss_026]
 #define QST_DLG_OBJET_LAMPE        26  // [objet_lampe]
+#define QST_DLG_EDEN_ARRIVEE       27  // [eden_arrivee]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -223,6 +224,10 @@ inline int questZoneArrival(QuestState* s) {
 	if (s->dialogueId != QST_DLG_NONE) return QST_DLG_NONE;
 	if (s->zone == QST_ZONE_VALLEE && (s->gates & QST_FLAG_VALLEE_VUE) == 0) {
 		s->dialogueId = QST_DLG_VALLEE_ARRIVEE;
+		return s->dialogueId;
+	}
+	if (s->zone == QST_ZONE_EDEN && (s->gates & QST_FLAG_EDEN_VU) == 0) {
+		s->dialogueId = QST_DLG_EDEN_ARRIVEE;
 		return s->dialogueId;
 	}
 	return QST_DLG_NONE;
@@ -619,6 +624,9 @@ inline void questDialogueDoneAfter(QuestState* s, int dialogueId) {
 		break;
 	case QST_DLG_GUIDE_VALLEE:
 		s->gates |= QST_FLAG_GUIDE_VU;
+		break;
+	case QST_DLG_EDEN_ARRIVEE:
+		s->gates |= QST_FLAG_EDEN_VU;
 		break;
 	case QST_DLG_MEPHISTO_ARRIVEE:
 		s->talkedMephistoArrivee = 1;

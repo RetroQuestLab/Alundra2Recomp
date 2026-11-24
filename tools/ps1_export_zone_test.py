@@ -550,7 +550,8 @@ def test_dialogue_header_is_pod_and_uploadable():
                 'alexia_finale', 'alexia_finale_mephisto_vaincu',
                 'finrod_prunewell',
                 'alexia_kindra', 'objet_ordre', 'jeehan_objet_ordre',
-                'vallee_arrivee', 'guide_vallee', 'boss_026', 'objet_lampe')
+                'vallee_arrivee', 'guide_vallee', 'boss_026', 'objet_lampe',
+                'eden_arrivee')
     assert dlg.DIALOGUE_IDS == expected, f'identifiants de dialogue incomplets : {dlg.DIALOGUE_IDS}'
     assert 'kDlgLines_garde' in text, "le dialogue du garde doit etre exporte"
     # Aucune touche clavier PC ne doit apparaitre dans un texte PS1.

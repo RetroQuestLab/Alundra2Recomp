@@ -297,6 +297,7 @@ const char* zoneTitle(int zone) {
 	case QST_ZONE_EPAVE:  return "Mont Epervier - Epave";
 	case QST_ZONE_TOLEDO: return "Toroledo";
 	case QST_ZONE_VALLEE: return "Vall\351e de Mithra";
+	case QST_ZONE_EDEN:   return "Ruines d'Eden";
 	case QST_ZONE_MANOIR: return "Manoir de Milena";
 	case QST_ZONE_TRONE:  return "Salle du tr\364ne";
 	default:              return 0;

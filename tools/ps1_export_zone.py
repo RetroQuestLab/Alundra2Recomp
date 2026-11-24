@@ -381,11 +381,15 @@ def export(zone, hero, out_dir, zone_name='zone011'):
 
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         print(__doc__)
         return 2
     stem = os.path.splitext(os.path.basename(sys.argv[1]))[0]
     zone_name = f'zone{stem}' if stem.isdigit() else stem
+    # 5e argument : zone du remake quand la carte A1 differe
+    # (data/world.txt : `map 042 028` -> zone042 depuis 028.a1m).
+    if len(sys.argv) == 5:
+        zone_name = f'zone{sys.argv[4]}'
     export(parse_a1m(sys.argv[1]), subset_hero(parse_a1s(sys.argv[2])),
            sys.argv[3], zone_name)
     return 0

@@ -513,6 +513,17 @@ int main() {
 		questSetZone(&s, QST_ZONE_KINDRA);
 		CHECK(questActorAvailable(&s, QST_ACTOR_GOLEM) == 0);
 	}
+	// --- Arrivee aux Ruines d'Eden (event 042 arrivee_eden eden_arrivee) ----
+	{
+		QuestState s;
+		questInit(&s);
+		questSetZone(&s, QST_ZONE_EDEN);
+		CHECK(questZoneArrival(&s) == QST_DLG_EDEN_ARRIVEE);
+		questDialogueDone(&s);
+		CHECK((s.gates & QST_FLAG_EDEN_VU) != 0);
+		CHECK(questZoneArrival(&s) == QST_DLG_NONE);
+		CHECK((s.gates & QST_FLAG_VALLEE_VUE) == 0);  // drapeaux distincts
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

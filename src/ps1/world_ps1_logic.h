@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #define QST_ZONE_VALLEE    26
+#define QST_ZONE_EDEN      42
 #define QST_ZONE_MANOIR    86
 #define QST_ZONE_TRONE    120
 
@@ -25,6 +26,7 @@
 #define QST_FLAG_VALLEE_VUE   (1u << 9)   // narration d'arrivee en vallee lue
 #define QST_FLAG_GUIDE_VU     (1u << 10)  // guide de la vallee ecoute
 #define QST_FLAG_GOLEM        (1u << 11)  // golem de la vallee vaincu (boss_026)
+#define QST_FLAG_EDEN_VU      (1u << 12)  // narration d'arrivee a Eden lue
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)
@@ -36,7 +38,7 @@ struct WorldWarp {
 	int toX, toY;
 };
 
-#define QST_WARP_COUNT 10
+#define QST_WARP_COUNT 11
 
 static const WorldWarp kWorldWarps[QST_WARP_COUNT] = {
 	{11, 25, 45, 3, 1, 13, 8, 54},    // Paco -> Kindra
@@ -49,11 +51,22 @@ static const WorldWarp kWorldWarps[QST_WARP_COUNT] = {
 	{119, 25, 49, 1, 1, 19, 14, 52},  // Toroledo -> Epave
 	{120, 14, 52, 2, 1, 86, 27, 8},   // Trone -> Manoir : retour libre
 	{26, 26, 52, 2, 1, 119, 26, 44},  // Vallee -> Toroledo : retour libre
+	{42, 21, 51, 2, 1, 26, 26, 22},   // Eden -> Vallee : retour libre
 };
 
 /* data/warps.txt : 119 26 44 2 1 -> 026 26 52 haut epee_supreme. Hors de
  * kWorldWarps : il ne s'ouvre qu'avec l'epee remise par Jeehan. */
-static const WorldWarp kWarpVallee = {119, 26, 44, 2, 1, QST_ZONE_VALLEE, 26, 52};
+/* Passages de la route conditionnes par un gate (data/warps.txt, dernier mot).
+ * Hors de kWorldWarps : ils ne s'ouvrent qu'avec leur objet. */
+struct WorldGatedWarp {
+	WorldWarp warp;
+	uint32_t gate;
+};
+#define QST_GATED_WARP_COUNT 2
+static const WorldGatedWarp kGatedWarps[QST_GATED_WARP_COUNT] = {
+	{{119, 26, 44, 2, 1, QST_ZONE_VALLEE, 26, 52}, QST_GATE_EPEE_SUPREME},
+	{{26, 26, 22, 2, 1, QST_ZONE_EDEN, 21, 51}, QST_GATE_LAMPE},
+};
 
 /* data/warps.txt : 086 26 8 2 1 -> 120 14 52 haut cristal. Volontairement
  * absent de kWorldWarps : il ne doit jamais etre franchi sans la chaine. */
@@ -119,12 +132,15 @@ inline int worldTryWarp(WorldWarpState* s, int zone, int cx, int cy,
 inline int worldTryWarpGated(WorldWarpState* s, uint32_t gates, int zone, int cx, int cy,
                              int* toZone, int* toX, int* toY) {
 	if (s->lockZone == zone && s->lockX == cx && s->lockY == cy) return 0;
-	const WorldWarp& w = kWarpVallee;
-	if (zone != w.fromZone || !(gates & QST_GATE_EPEE_SUPREME)) return 0;
-	if (cx < w.x || cy < w.y || cx >= w.x + w.w || cy >= w.y + w.h) return 0;
-	s->lockZone = -1;
-	if (toZone) *toZone = w.toZone;
-	if (toX) *toX = w.toX;
-	if (toY) *toY = w.toY;
-	return 1;
+	for (int i = 0; i < QST_GATED_WARP_COUNT; ++i) {
+		const WorldWarp& w = kGatedWarps[i].warp;
+		if (zone != w.fromZone || !(gates & kGatedWarps[i].gate)) continue;
+		if (cx < w.x || cy < w.y || cx >= w.x + w.w || cy >= w.y + w.h) continue;
+		s->lockZone = -1;
+		if (toZone) *toZone = w.toZone;
+		if (toX) *toX = w.toX;
+		if (toY) *toY = w.toY;
+		return 1;
+	}
+	return 0;
 }

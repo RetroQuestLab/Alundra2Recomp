@@ -128,6 +128,27 @@ int main() {
 		expectTracker(worldTryWarpGated(&st, QST_GATE_EPEE_SUPREME, 119, 26, 44,
 		                                0, 0, 0) == 0, "arrivee Toroledo verrouillee");
 	}
+	// Vallee -> Ruines d'Eden : `026 26 22 2 1 -> 042 21 51 haut lampe`, retour libre.
+	expectNone(26, 26, 22);
+	expectWarp(42, 21, 51, 26, 26, 22);
+	expectWarp(42, 22, 51, 26, 26, 22);
+	{
+		WorldWarpState st;
+		worldWarpStateInit(&st);
+		int z = 0, x = 0, y = 0;
+		expectTracker(worldTryWarpGated(&st, QST_GATE_EPEE_SUPREME, 26, 26, 22, 0, 0, 0) == 0,
+		              "eden refuse sans la lampe");
+		expectTracker(worldTryWarpGated(&st, QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE, 26, 27, 22,
+		                                &z, &x, &y) == 1 && z == QST_ZONE_EDEN &&
+		              x == 21 && y == 51, "eden ouvert avec la lampe");
+		worldWarpStateLock(&st, z, x, y);
+		expectTracker(worldTryWarp(&st, QST_ZONE_EDEN, 21, 51, 0, 0, 0) == 0,
+		              "arrivee eden verrouillee");
+		// L'epee seule ouvre toujours la vallee, pas Eden.
+		worldWarpStateInit(&st);
+		expectTracker(worldTryWarpGated(&st, QST_GATE_LAMPE, 119, 26, 44, 0, 0, 0) == 0,
+		              "la lampe n'ouvre pas la vallee");
+	}
 	printf("PS1_WORLD_LOGIC: %d/%d checks PASS\n", checks, checks);
-	return checks == 37 ? 0 : 1;
+	return checks == 44 ? 0 : 1;
 }

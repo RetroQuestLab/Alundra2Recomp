@@ -165,10 +165,10 @@ foreach ($ppm in $ppmFiles) {
 }
 
 $stdout -split "`n" | Where-Object { $_ -match 'shot |JEEHAN|PASSAGE_|VALLEE|ORDRES|COFFRE|EPEE|REPRISE|DEPART|RELOAD|PS1_SAVE' } | ForEach-Object { Write-Host $_ }
-foreach ($m in @('VALLEE_REFUSEE_SANS_EPEE', 'ORDRES_TROUVES', 'COFFRE_VIDE', 'JEEHAN_ORDRE_VU', 'EPEE_SUPREME_RECUE', 'JEEHAN_SANS_DOUBLE', 'VALLEE_ARRIVEE', 'GUIDE_VALLEE', 'GOLEM_CROIX_SANS_EFFET', 'GOLEM_VAINCU', 'LAMPE_OBTENUE', 'LAMPE_UNIQUE', 'REPRISE', 'JEEHAN_VALLEE_CAPTURE: PASS')) {
+foreach ($m in @('VALLEE_REFUSEE_SANS_EPEE', 'ORDRES_TROUVES', 'COFFRE_VIDE', 'JEEHAN_ORDRE_VU', 'EPEE_SUPREME_RECUE', 'JEEHAN_SANS_DOUBLE', 'VALLEE_ARRIVEE', 'GUIDE_VALLEE', 'GOLEM_CROIX_SANS_EFFET', 'GOLEM_VAINCU', 'LAMPE_OBTENUE', 'LAMPE_UNIQUE', 'EDEN_ARRIVEE', 'EDEN_CARTE', 'REPRISE', 'JEEHAN_VALLEE_CAPTURE: PASS')) {
 	if ($stdout -notmatch [regex]::Escape($m)) { Fail "etape absente: $m" }
 }
-if ($stdout -notmatch 'PS1_SAVE_READ OK seq=\d+ zone=26 ') { Fail 'reprise non lue depuis la carte en zone 26' }
+if ($stdout -notmatch 'PS1_SAVE_READ OK seq=\d+ zone=42 ') { Fail 'reprise non lue depuis la carte en zone 42' }
 Write-Host '--- PNG ---'
 Get-ChildItem -LiteralPath $OutDir -Filter '*.png' -File | ForEach-Object { Write-Host "$($_.Name) $($_.Length) octets" }
 Write-Host 'PS1_CAPTURE_JEEHAN_VALLEE: PASS'

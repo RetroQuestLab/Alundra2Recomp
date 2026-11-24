@@ -156,6 +156,33 @@ local function reload()
 	pulse(B.SELECT, function() end)
 end
 
+local wValley = 0
+function toEden()
+	wValley = zoneW()
+	local x, y = tileCenter(26, 22)
+	teleport(x, y, 0)
+	local t0 = gameFrame
+	waitUntil(function() return zone() == 42 and dlgIsActive() end, 600, function()
+		print('EDEN_CHARGEMENT images=' .. (gameFrame - t0))
+		if zone() ~= 42 then fail('passage vers Eden refuse avec la lampe') return end
+		if zoneW() == wValley then fail('carte 042 non chargee') return end
+		if dialogueId() ~= 27 then fail('narration d Eden absente: dlg=' .. dialogueId()) return end
+		state('EDEN_ARRIVEE')
+		waitFrames(20, function() shot('eden_arrivee')
+		closeDialogue(30, function()
+			if bit.band(gates(), 0x1000) == 0 then fail('narration Eden non marquee') return end
+			local ex, ey = tileCenter(21, 48)
+			teleport(ex, ey, 0)
+			waitFrames(40, function()
+				if zone() ~= 42 then fail('rebond hors d Eden') return end
+				state('EDEN_CARTE')
+				shot('eden_carte')
+				reload()
+			end)
+		end) end)
+	end)
+end
+
 local function lampChest()
 	local n0 = invList()
 	teleport(636, 462, 3)  -- PF_DIR_DOWN : point d'interaction = coffre (26,29)
@@ -169,7 +196,7 @@ local function lampChest()
 			tap(B.CROSS, function() waitFrames(10, function()
 				if dialogueId() ~= 4294967295 or invList() ~= n0 + 1 then fail('coffre lampe rouvert') return end
 				state('LAMPE_UNIQUE')
-				reload()
+				toEden()
 			end) end)
 		end)
 	end) end) end)
@@ -404,11 +431,12 @@ listener = PCSX.Events.createEventListener('GPU::Vsync', function()
 	elseif phase == 'reload_go' and gameFrame >= phaseFrame + 300 then
 		phase = 'done'
 		state('REPRISE')
-		if zone() ~= 26 then fail('reprise hors de la vallee') return end
-		if zoneW() == w119 or zoneW() == 0 then fail('reprise : carte 026 absente') return end
+		if zone() ~= 42 then fail('reprise hors d Eden') return end
+		if zoneW() == w119 or zoneW() == 0 then fail('reprise : carte 042 absente') return end
+		if zoneW() == wValley then fail('reprise : carte de la vallee au lieu d Eden') return end
 		if bit.band(gates(), 1) == 0 then fail('reprise : epee perdue') return end
 		if dialogueId() ~= 4294967295 then fail('reprise : narration rejouee') return end
-		shot('reprise_vallee')
+		shot('reprise_eden')
 		print(string.format('JEEHAN_VALLEE_CAPTURE: PASS shots=%s', table.concat(captured, ',')))
 		PCSX.quit(0)
 	end
