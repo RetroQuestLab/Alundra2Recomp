@@ -50,9 +50,15 @@ void ps1VsyncHalt(void) {
 	/* Operation carte en vol : le compteur du SDK est gele. On scrute le statut
 	 * BIOS jusqu'a la fin (ou une erreur 0x11/0x21), puis on desactive l'auto-ack
 	 * et on attend le VBlank suivant pour que VSync() puisse retourner. */
+	/* Juste apres _card_write/_card_read, le statut vaut encore 1 ("pret") pour
+	 * l'operation PRECEDENTE : y voir une fin coupait l'auto-ack trop tot et le
+	 * BIOS abandonnait l'operation (statut 0x11, sauvegardes perdues apres la
+	 * 3e ecriture, v0.8.35). "Pret" ne compte qu'apres un etat occupe observe. */
+	int sawBusy = 0;
 	for (int i = 0; i < 500000; ++i) {
 		const int st = saveCardStatusPS1();
-		if (st == 1 || st == 0x11 || st == 0x21) break;
+		if (st != 1) sawBusy = 1;
+		if ((st == 1 && (sawBusy || i > 20000)) || st == 0x11 || st == 0x21) break;
 		if (VSync(-1) != before) return;  /* compteur deja avance : on sort */
 	}
 	ChangeClearPAD(0);

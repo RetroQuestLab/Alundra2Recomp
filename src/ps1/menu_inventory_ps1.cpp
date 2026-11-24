@@ -364,3 +364,17 @@ int inventoryQtyPS1(const char* code) { return psiQty(&g_inv, &kPsiDb, code); }
 int inventorySavePS1(uint8_t* buf) { return psiSave(&g_inv, buf); }
 
 int inventoryLoadPS1(const uint8_t* buf) { return psiLoad(&g_inv, &kPsiDb, buf); }
+
+const char* inventoryWeaponCodePS1(void) {
+	return g_inv.weapon >= 0 ? kPsiDb.defs[g_inv.weapon].code : 0;
+}
+
+const char* inventoryPocketCodePS1(void) {
+	return g_inv.pocket >= 0 ? kPsiDb.defs[g_inv.pocket].code : 0;
+}
+
+void inventoryDrawIconPS1(const char* code, int x, int y, int z) {
+	if (code == 0) return;
+	const int frame = iconFrame(code);
+	if (frame >= 0) drawIcon(frame, x, y, z);
+}

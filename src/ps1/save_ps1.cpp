@@ -49,6 +49,8 @@ uint16_t g_seq = 0;
 PS1SaveBlock g_slots[PS1_SAVE_SLOTS];
 
 CardState g_state = kIdle;
+int g_pendingWrite = 0;  // ecriture demandee pendant une operation en cours
+int g_pzone = 0, g_px = 0, g_py = 0, g_pdir = 0;
 int g_wait = 0;
 int g_sub = 0;
 int g_targetSlot = 0;
@@ -150,6 +152,8 @@ void finishWrite(void) {
 
 }  // namespace
 
+static int startWrite(int zone, int hx, int hy, int dir);
+
 int saveCardOpPendingPS1(void) { return g_wait; }
 
 int saveCardStatusPS1(void) { return _card_status(kCardSlot); }
@@ -204,6 +208,7 @@ void savePumpPS1(void) {
 
 	switch (g_state) {
 	case kIdle:
+		if (g_pendingWrite && g_ready) startWrite(g_pzone, g_px, g_py, g_pdir);
 		return;
 
 	case kInitProbeInfo: {
@@ -229,6 +234,7 @@ void savePumpPS1(void) {
 		const int rd = _card_read(kCardPort, sector,
 		                          g_slots[slot].bytes + g_sub * 128);
 		if (rd != 1) {
+			printf("PS1_SAVE_FAIL init_read slot=%d sub=%d\n", slot, g_sub);
 			g_state = kIdle;
 			return;
 		}
@@ -259,6 +265,7 @@ void savePumpPS1(void) {
 		const int wr = _card_write(kCardPort, slotSector(g_targetSlot, g_sub),
 		                g_pendingBlock.bytes + g_sub * 128);
 		if (wr != 1) {
+			printf("PS1_SAVE_FAIL write sub=%d\n", g_sub);
 			g_state = kIdle;
 			return;
 		}
@@ -276,7 +283,11 @@ void savePumpPS1(void) {
 		 * l'operation suivante : _card_info sert de synchronisation. */
 		armCardOp();
 		const int info = _card_info(kCardChan);
-		if (info != 1) { g_state = kIdle; return; }
+		if (info != 1) {
+			printf("PS1_SAVE_FAIL info\n");
+			g_state = kIdle;
+			return;
+		}
 		g_wait = 1;
 		g_state = kVerifySector;
 		return;
@@ -288,6 +299,7 @@ void savePumpPS1(void) {
 		const int rd = _card_read(kCardPort, slotSector(g_targetSlot, g_sub),
 		               g_verifyBlock.bytes + g_sub * 128);
 		if (rd != 1) {
+			printf("PS1_SAVE_FAIL verify_read sub=%d\n", g_sub);
 			g_state = kIdle;
 			return;
 		}
@@ -310,8 +322,21 @@ int saveHasGamePS1(void) { return g_ready && g_hasGame; }
 
 uint16_t saveSequencePS1(void) { return g_ready ? g_seq : 0; }
 
+/* Une ecriture demandee pendant qu'une autre est en cours n'est plus perdue :
+ * elle est memorisee (la plus recente remplace la precedente) et lancee par
+ * savePumpPS1() des que la machine carte est au repos (v0.8.35). L'etat de
+ * quete est relu au lancement : c'est l'etat le plus recent qui est ecrit. */
 int saveWriteGamePS1(int zone, int hx, int hy, int dir) {
-	if (!g_ready || g_state != kIdle) return 0;
+	if (!g_ready || g_state != kIdle) {
+		g_pendingWrite = 1;
+		g_pzone = zone; g_px = hx; g_py = hy; g_pdir = dir;
+		return 1;
+	}
+	return startWrite(zone, hx, hy, dir);
+}
+
+static int startWrite(int zone, int hx, int hy, int dir) {
+	g_pendingWrite = 0;
 
 	PS1SavePayload payload;
 	QuestState quest;
@@ -332,7 +357,10 @@ int saveWriteGamePS1(int zone, int hx, int hy, int dir) {
 		if (v != 0x00u && v != 0xFFu) { blank = 0; break; }
 	}
 	PS1SavePayload probe;
-	if (!blank && !ps1SaveBlockDecode(&probe, 0, &g_slots[target])) return 0;
+	if (!blank && !ps1SaveBlockDecode(&probe, 0, &g_slots[target])) {
+		printf("PS1_SAVE_FAIL foreign_block slot=%d\n", target);
+		return 0;
+	}
 
 	g_targetSlot = target;
 	g_pendingSeq = g_best < 0 ? 1 : ps1SaveNextSeq(g_seq);

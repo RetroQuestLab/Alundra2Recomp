@@ -65,11 +65,16 @@ HUD_CLUTS = (64, 480, 16, 16)
 # enemy_anim.dat, une seule frame televersee ici a la fois. Synchronise avec
 # PF_ENEMY_* de src/platform/pf.h et ENEMY_* de ps1_export_actor.py.
 ENEMY_TEX = (80, 256, 32, 64)
+# HUD complementaire (case d'objet, cristaux d'EP, bourse) : colonne libre entre
+# l'ennemi et les CLUT de police. Synchronise avec PF_HUD2_* de pf.h.
+HUD2_ATLAS = (112, 256, 16, 128)
+HUD2_CLUTS = (112, 384, 16, 8)
 ENEMY_CLUT = (80, 320, 16, 1)
 # Atlas d'icones d'inventaire A1 : grille 12x7 de cellules 6x32 demi-mots.
 ICON_ATLAS = (896, 256, 72, 224)
 ICON_CLUT = (896, 480, 16, 1)
 RESERVED_RECTS = ((0, 0, 320, 240), (320, 0, 320, 240), HERO_SCRATCH,
+                  HUD2_ATLAS, HUD2_CLUTS,
                   HERO_CLUTS, FONT_ATLAS, FONT_CLUTS, WIND_ATLAS, WIND_CLUTS,
                   NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC_CLUTS,
                   ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,

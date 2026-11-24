@@ -29,6 +29,12 @@ int inventoryAddPS1(const char* code, int qty);
 /* Quantite possedee (0 si absent). */
 int inventoryQtyPS1(const char* code);
 
+/* HUD : code de l'arme / de l'objet de poche equipes (0 si aucun) et icone
+ * native a1_icons a l'origine (x, y), comme drawItemIcon() cote PC. */
+const char* inventoryWeaponCodePS1(void);
+const char* inventoryPocketCodePS1(void);
+void inventoryDrawIconPS1(const char* code, int x, int y, int z);
+
 /* Sauvegarde / restauration versionnee dans un bloc POD de PSI_SAVE_SIZE. */
 int inventorySavePS1(uint8_t* buf);
 int inventoryLoadPS1(const uint8_t* buf);
