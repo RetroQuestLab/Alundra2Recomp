@@ -83,9 +83,19 @@ L'utilisateur dit « c'est moche, plein de bugs ». **Ne pas deviner** : lui dem
 - transferts VRAM non alignés (voir `loadImageAligned` dans `pf_ps1.cpp`) ;
 - tests dans DuckStation avec options « précises » (GPU logiciel, timing CD précis, pas de fast boot) avant de livrer.
 
-### Tâche 4 — Reprendre le backlog normal
+### Tâche 4 — Avancer sur TOUT le jeu, en continu (mission permanente)
 
-Seulement une fois le démarrage 5/5 confirmé : reprendre la « prochaine action » de `notes.md` § « ÉTAT ACTUEL — REPRISE » (scénario A2, zones, visuel A1). À chaque livraison : nouveau dossier `ps1\a_graver\v0.8.N-nom\`, PS1_BUILD PASS, cold boot PASS, quatre commandes PC vertes, commit local.
+Pendant que tu attends un retour console (tâches 1-3), et ensuite sans fin, avance sur l'ensemble du jeu, **PC et PS1**, en alternant les chantiers :
+- **Histoire A2 complète** (`Alundra_2_Histoire_et_trame_detaillee.txt`, `data/dialogues.txt`) : chapitres, scènes, PNJ, événements manquants, de Paco jusqu'à Méphisto ;
+- **Niveaux et donjons** (`data/world.txt`, `data/warps.txt`, `src/map*`) : zones manquantes, énigmes, coffres, progression ;
+- **Combat et ennemis** : variété d'ennemis, boss A2, armes A2 (Longue, Bronze, Large, Rune, Brillante, Ascendante), anneaux ;
+- **Menus et inventaire** A1 fonctionnels, objets, équipement, forge `rm_*`, sauvegarde ;
+- **Visuel A1** : sprites, décors, police `FONT3.TIM`, fenêtres — corriger les bugs visibles ;
+- **Audio** : musiques et bruitages par zone ;
+- **Portage PS1** de chaque ajout PC, dans les budgets (2 Mo RAM / 1 Mo VRAM / 512 Ko audio).
+Chaque chantier : scénario `--auto` ou test, quatre commandes vertes, commit local, ligne au journal, puis chantier suivant. Livrer un disque PS1 de temps en temps (pas à chaque commit).
+
+Puis reprendre aussi la « prochaine action » de `notes.md` § « ÉTAT ACTUEL — REPRISE » (scénario A2, zones, visuel A1). À chaque livraison : nouveau dossier `ps1\a_graver\v0.8.N-nom\`, PS1_BUILD PASS, cold boot PASS, quatre commandes PC vertes, commit local.
 
 ---
 
