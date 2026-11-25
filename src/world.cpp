@@ -164,6 +164,8 @@ void loadWorldData(Game& g) {
             std::string d;
             if (ss >> n.zone >> n.x >> n.y >> n.sprite >> d >> n.dialogue) {
                 n.dir = parseDir(d);
+                std::string opt;
+                if (ss >> opt && opt.rfind("masque:", 0) == 0) n.hideAfter = opt.substr(7);
                 g.npcDefs.push_back(n);
             }
         } else if (cmd == "zone") {

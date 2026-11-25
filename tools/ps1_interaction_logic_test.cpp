@@ -369,7 +369,8 @@ int main() {
 		int px = 0, py = 0;
 		questNpcPos(QST_NPC_PRUNWELL, &px, &py);
 		CHECK(questNpcDialogue(&s, QST_NPC_FINROD) == QST_DLG_FINROD);
-		tap(s, PF_BTN_CROSS, px, py, PF_DIR_RIGHT);
+		// Depuis la case voisine (Alexia se tient a droite de Prunewell depuis v0.8.40).
+		tap(s, PF_BTN_CROSS, px - QST_FWD_X, py, PF_DIR_RIGHT);
 		CHECK(s.dialogueId == QST_DLG_PRUNWELL);
 		CHECK(s.talkedPrunewell == 0);
 		questDialogueDone(&s);
@@ -712,6 +713,21 @@ int main() {
 		CHECK(s.stage == QST_STAGE_ARRIVEE);
 		s.stage = QST_STAGE_MONT_EPERVIER;
 		CHECK(questAfterIntro(&s) == 0);
+	}
+	// --- A2 trame 4 : alliance avec Alexia a Paco, puis elle part en avant ---
+	{
+		QuestState s;
+		questInit(&s);
+		int ax = 0, ay = 0;
+		questActorPos(QST_ACTOR_ALEXIA_PACO, &ax, &ay);
+		CHECK(ax == 32 * 24 + 12 && ay == 47 * 16 + 8);
+		CHECK(questActorAvailable(&s, QST_ACTOR_ALEXIA_PACO) == 1);
+		CHECK(questActorInteract(&s, QST_ACTOR_ALEXIA_PACO) == QST_DLG_ALEXIA_PACO);
+		questDialogueDone(&s);
+		CHECK((s.gates & QST_FLAG_ALEXIA_PACO) != 0);
+		CHECK(questActorAvailable(&s, QST_ACTOR_ALEXIA_PACO) == 0);
+		questSetZone(&s, QST_ZONE_KINDRA);
+		CHECK(questActorAvailable(&s, QST_ACTOR_ALEXIA_PACO) == 0);
 	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{

@@ -44,6 +44,7 @@
 #define QST_FLAG_ZEPPO_VU     (1u << 26)
 #define QST_FLAG_HERBE        (1u << 27)  // coffre d'herbe de Paco ouvert
 #define QST_FLAG_PACO_PNJ_VU  (1u << 28)  // villageoise / enfants / forgeron (bulle)
+#define QST_FLAG_ALEXIA_PACO  (1u << 29)  // alliance avec Alexia a Paco (A2, trame 4)
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)

@@ -33,9 +33,9 @@ Flint: Ma tête... Le navire des pirates n'a pas pu aller bien loin. Quelqu'un i
 ! evenement prunewell
 Prunewell: Enfin debout ! Je suis Lord Prunewell, conseiller de la princesse Alexia, l'héritière du trône de Varuna.
 Prunewell: Son père a disparu, et le baron Diaz règne à sa place. La princesse pense que les pirates sont ses complices.
-Prunewell: Elle est partie seule vers le Mont Épervier, par la Forêt Kindra. Un « oiseau de fer » y est tombé du ciel...
-Prunewell: Vous chassez les pirates, elle traque Diaz : même ennemi. Rejoignez-la, je vous en prie.
-Flint: Un oiseau de fer... Le navire volant. J'y vais.
+Prunewell: Elle est ici, au village. Elle veut partir vers le Mont Épervier : un « oiseau de fer » y est tombé du ciel...
+Prunewell: Vous chassez les pirates, elle traque Diaz : même ennemi. Allez lui parler, je vous en prie.
+Flint: Un oiseau de fer... Le navire volant. Allons voir cette princesse.
 
 [prunewell_apres]
 Prunewell: Une lettre du baron Diaz à Lady Milena, la chef des pirates ? Voilà la preuve que la princesse cherchait !
@@ -100,9 +100,17 @@ Finrod: Alors c'est toi le chasseur ? Prunewell m'a parlé de toi. La princesse 
 Finrod: Nous la retrouverons au mont Épervier. Méfie-toi des machines de Milena : on dit qu'elles ont des visages d'homme, à présent.
 
 # Foret Kindra : Alexia rattrape Flint (A2 blocs 30-31), scene inedite du remake.
+[alexia_paco]
+! evenement alexia_paco
+Alexia: C'est toi, le chasseur de pirates que la mer nous a rendu ? Je suis Alexia, fille du roi de Varuna.
+Alexia: Mon père a disparu, et un pantin de bois siège sur son trône. Je suis sûre que le baron Diaz est derrière tout ça.
+Flint: Moi, je traque les pirates. Ceux qui ont détruit ma famille.
+Alexia: Alors nous cherchons les mêmes gens. Leur navire s'est écrasé au Mont Épervier : je pars devant, par la Forêt Kindra.
+Flint: Seule ? ... Bon. Je te rejoins là-bas.
+
 [alexia_kindra]
-Alexia: Flint ! Tu n'as donc pas attendu que je te rattrape, comme d'habitude.
-Flint: La princesse de Varuna court seule dans les bois ? Prunewell ne va pas aimer ça.
+Alexia: Flint ! Te voilà enfin. Ces rochers qui bougent m'ont fait perdre du temps.
+Flint: La princesse de Varuna coincée par des pierres ? Prunewell ne va pas aimer ça.
 Alexia: Prunewell parle trop. J'ai vu l'oiseau de fer tomber : c'est là que Diaz cache ses complices.
 Alexia: Je marche avec toi jusqu'à l'épave. Mais ne me traite pas comme une gamine, ou je te laisse aux tortues de roche.
 

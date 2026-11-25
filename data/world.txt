@@ -3,7 +3,9 @@
 #   intro <dialogue>                                  (lance apres l'ecran titre)
 #   spawn <zone> <x> <y> <monstre>                    (gelee, minigelee, tortue, gobelin, ogre, droide,
 #                                                      golem, capitaine, mephisto)
-#   npc <zone> <x> <y> <sprite> <direction> <dialogue>   ("<dialogue>_apres" une fois l'ogre vaincu)
+#   npc <zone> <x> <y> <sprite> <direction> <dialogue> [masque:<evenement>]
+#                                                     ("<dialogue>_apres" une fois l'ogre vaincu ;
+#                                                      masque : PNJ absent une fois l'evenement vu)
 #   name <zone> <nom du lieu>                         (bandeau affiche a l'entree)
 #   chest <zone> <x> <y> <objet>[:n] [besoin]         (coffre : coeur, herbe, lettre, cle, gantelet, ordre,
 #                                                      lampe, prisme, cristal ; "besoin" = objet/evenement requis)
@@ -16,6 +18,8 @@ intro intro
 # --- Village Paco (zone 011) : Flint s'y reveille, echoue sur la plage ---
 name 011 Village Paco
 npc 011 31 47 ancien gauche prunewell
+# A2 (trame 4, blocs 22-24) : Flint rencontre Alexia a Paco ; elle part ensuite en avant vers Kindra.
+npc 011 32 47 alexia gauche alexia_paco masque:alexia_paco
 npc 011 38 50 villageoise bas villageoise
 npc 011 34 49 villageois gauche garde
 npc 011 32 52 villageoise bas enfants_paco

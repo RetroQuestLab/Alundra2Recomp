@@ -40,7 +40,7 @@ DIALOGUE_IDS = ('prunewell', 'garde', 'finrod', 'marchand_kindra',
                  'diaz_manoir_objet_cristal', 'milena_boss_medusa', 'alexia_manoir',
                  'zeppo_puerto', 'villageoise', 'villageoise_objet_lettre',
                  'enfants_paco', 'enfants_paco_objet_lettre', 'enfants_paco_objet_ordre',
-                 'rm_forgeron', 'objet_herbe', 'intro')
+                 'rm_forgeron', 'objet_herbe', 'intro', 'alexia_paco')
 # Indications de commandes propres au clavier PC, adaptees a la manette PS1.
 PS1_CONTROL_HINTS = (
     (' Touche Q pour la sortir.', ' Equipe-la avec START.'),

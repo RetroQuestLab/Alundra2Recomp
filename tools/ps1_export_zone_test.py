@@ -339,7 +339,7 @@ def test_actor_vram_and_blob_uploadable():
     expected = {'ogre', 'coffre_strange_key', 'coffre_lettre',
                 'mephisto', 'alexia_trone', 'roi_trone', 'coffre_ordre',
                 'golem', 'coffre_lampe', 'golem_eden', 'coffre_prisme',
-                'capitaine', 'coffre_cristal', 'zeppo', 'coffre_herbe'}
+                'capitaine', 'coffre_cristal', 'zeppo', 'coffre_herbe', 'alexia_paco'}
     assert set(pa.SOURCE) == expected, f"acteurs PS1 incomplets : {sorted(pa.SOURCE)}"
     for name in ('mephisto', 'alexia_trone', 'roi_trone'):
         assert pa.SOURCE[name][2] == 120, f"{name} hors de la zone 120"
@@ -359,7 +359,7 @@ def test_actor_vram_and_blob_uploadable():
     b = open(os.path.join(out, 'actor.dat'), 'rb').read()
     assert len(b) == size and b[:4] == b'P1AC'
     count, _ = struct.unpack_from('<HH', b, 4)
-    assert count == len(pa.SOURCE) == 15
+    assert count == len(pa.SOURCE) == 16
     p = 8
     zones = set()
     for i in range(count):
@@ -559,7 +559,7 @@ def test_dialogue_header_is_pod_and_uploadable():
                 'diaz_manoir_objet_cristal', 'milena_boss_medusa', 'alexia_manoir',
                 'zeppo_puerto', 'villageoise', 'villageoise_objet_lettre',
                 'enfants_paco', 'enfants_paco_objet_lettre', 'enfants_paco_objet_ordre',
-                'rm_forgeron', 'objet_herbe', 'intro')
+                'rm_forgeron', 'objet_herbe', 'intro', 'alexia_paco')
     assert dlg.DIALOGUE_IDS == expected, f'identifiants de dialogue incomplets : {dlg.DIALOGUE_IDS}'
     assert 'kDlgLines_garde' in text, "le dialogue du garde doit etre exporte"
     # Aucune touche clavier PC ne doit apparaitre dans un texte PS1.

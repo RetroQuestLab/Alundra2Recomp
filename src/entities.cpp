@@ -84,7 +84,7 @@ void spawnZoneEntities(Game& g) {
             g.enemies.push_back(makeEnemy(g, s.kind, s.x * TILE_W + TILE_W / 2.f, s.y * TILE_H + TILE_H - 1.f));
         }
     for (const auto& n : g.npcDefs)
-        if (n.zone == zone) {
+        if (n.zone == zone && (n.hideAfter.empty() || !g.seenEvents.count(n.hideAfter))) {
             Npc p;
             p.zone = n.zone;
             p.sprite = n.sprite;

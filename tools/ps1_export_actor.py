@@ -49,6 +49,8 @@ SOURCE = {
     'zeppo': ('assets/sprites/capitaine.a1s', 0, 50, 2),
     # Paco : coffre d'herbe (chest 011 29 50 herbe).
     'coffre_herbe': ('assets/sprites/coffre.a1s', 0, 11, 0),
+    # Alexia a Paco (npc 011 32 47 alexia_paco) : actrice, slot acteur libre.
+    'alexia_paco': ('assets/sprites/alexia.a1s', 10, 11, 1),
 }
 DEST = 'actor.dat'
 SLOT_RECTS = (ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,

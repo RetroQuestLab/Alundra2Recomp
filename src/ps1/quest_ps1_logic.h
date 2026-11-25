@@ -88,7 +88,8 @@
 #define QST_ACTOR_CHEST_CRISTAL   12  // zone 050, case (34,29)
 #define QST_ACTOR_ZEPPO           13  // zone 050, npc (47,26), sprite capitaine (39 px)
 #define QST_ACTOR_CHEST_HERBE     14  // zone 011, case (29,50)
-#define QST_ACTOR_COUNT           15
+#define QST_ACTOR_ALEXIA_PACO     15  // zone 011, npc (32,47) : actrice (5 emplacements PNJ pris)
+#define QST_ACTOR_COUNT           16
 
 #define QST_DLG_NONE               (-1)
 #define QST_DLG_PRUNWELL            0
@@ -146,6 +147,7 @@
 #define QST_DLG_FORGERON           51  // [rm_forgeron] (ajout du remake)
 #define QST_DLG_OBJET_HERBE        52  // [objet_herbe]
 #define QST_DLG_INTRO              53  // [intro] (data/world.txt : intro intro)
+#define QST_DLG_ALEXIA_PACO        54  // [alexia_paco]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -640,6 +642,10 @@ inline void questActorPos(int actor, int* x, int* y) {
 		if (x) *x = 13 * 24 + 12;  // 324, zone 120
 		if (y) *y = 42 * 16 + 8;   // 680
 		break;
+	case QST_ACTOR_ALEXIA_PACO:
+		if (x) *x = 32 * 24 + 12;
+		if (y) *y = 47 * 16 + 8;
+		break;
 	case QST_ACTOR_CHEST_HERBE:
 		if (x) *x = 29 * 24 + 12;
 		if (y) *y = 50 * 16 + 8;
@@ -709,6 +715,8 @@ inline int questActorAvailable(const QuestState* s, int actor) {
 		return s->zone == QST_ZONE_MEDUSA ? 1 : 0;
 	case QST_ACTOR_CHEST_HERBE:
 		return s->zone == QST_ZONE_PACO && (s->gates & QST_FLAG_HERBE) == 0 ? 1 : 0;
+	case QST_ACTOR_ALEXIA_PACO:  // elle part en avant vers Kindra apres l'alliance
+		return s->zone == QST_ZONE_PACO && (s->gates & QST_FLAG_ALEXIA_PACO) == 0 ? 1 : 0;
 	case QST_ACTOR_MEPHISTO:
 		return s->zone == QST_ZONE_TRONE && s->talkedMephistoArrivee == 1 &&
 		       s->mephistoDown == 0 ? 1 : 0;
@@ -767,6 +775,9 @@ inline int questActorInteract(QuestState* s, int actor) {
 		return questChestTake(s, QST_CHEST_CRISTAL);
 	case QST_ACTOR_ZEPPO:
 		s->dialogueId = QST_DLG_ZEPPO;
+		return s->dialogueId;
+	case QST_ACTOR_ALEXIA_PACO:
+		s->dialogueId = QST_DLG_ALEXIA_PACO;
 		return s->dialogueId;
 	case QST_ACTOR_CHEST_HERBE:
 		s->gates |= QST_FLAG_HERBE;
@@ -902,6 +913,9 @@ inline void questDialogueDoneAfter(QuestState* s, int dialogueId) {
 		break;
 	case QST_DLG_ZEPPO:
 		s->gates |= QST_FLAG_ZEPPO_VU;
+		break;
+	case QST_DLG_ALEXIA_PACO:
+		s->gates |= QST_FLAG_ALEXIA_PACO;
 		break;
 	case QST_DLG_ALBERT:
 		s->gates |= QST_FLAG_ALBERT_VU;

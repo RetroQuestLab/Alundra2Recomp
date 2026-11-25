@@ -314,7 +314,8 @@ struct Game {
     std::vector<Npc> npcs;
     struct Spawn { std::string zone; int x, y; EnemyKind kind; };
     std::vector<Spawn> spawns;
-    struct NpcDef { std::string zone; int x, y; std::string sprite; Dir dir; std::string dialogue; };
+    struct NpcDef { std::string zone; int x, y; std::string sprite; Dir dir; std::string dialogue;
+                    std::string hideAfter; }; // "masque:<evenement>" : absent une fois l'evenement vu
     std::vector<NpcDef> npcDefs;
     std::map<std::string, bool> cleared; // zones dont tous les monstres sont vaincus
 
