@@ -403,10 +403,15 @@ int main(void) {
 		const int camY = clampi(hy + heroElevPS1() - PF_H / 2 - 16, 0,
 		                        (zoneH() + kMarginRows) * kTileH - PF_H);
 
-		pfDrawRect(0, 0, PF_W, PF_H, kBlack, 63);
-		zoneDraw(camX, camY, 0);
+		// Ordre d'ajout = inverse de l'ordre de dessin a z egal (addPrim en tete).
+		// Le PC dessine chaque entite APRES les tuiles de sa rangee (Map::draw,
+		// afterRow) : heros et PNJ sont donc ajoutes AVANT le decor pour passer
+		// devant les tuiles de leur rangee (ils restaient caches dans l'herbe de
+		// Paco, v0.8.37), et le fond noir en dernier pour rester derriere tout.
 		heroDraw(camX, camY);
 		interactionDrawPS1(camX, camY);  // PNJ, bulles et objectif de quete
+		zoneDraw(camX, camY, 0);
+		pfDrawRect(0, 0, PF_W, PF_H, kBlack, 63);
 
 		// Dialogue A1 natif : fenetre WIND.TX + police FONT3.TIM, texte A2.
 		// interactionUpdatePS1() gere aussi l'ouverture et la fin du dialogue.
