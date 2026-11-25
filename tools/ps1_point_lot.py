@@ -30,8 +30,10 @@ def main():
     today = datetime.date.today().isoformat()
     with open(os.path.join(ROOT, 'DERNIERE_VERSION.txt'), 'w', encoding='utf-8', newline='\r\n') as f:
         f.write('DERNIERE VERSION VERIFIEE\n')
-        f.write(f'Chemin : {iso}\n')
-        f.write(f'BIN/CUE : {os.path.join(lot, "alundra2_ps1.cue")}\n')
+        f.write(f'A GRAVER : {os.path.join(lot, "alundra2_ps1.cue")} (avec alundra2_ps1.bin dans le meme dossier)\n')
+        f.write('Gravure : ouvrir le .cue (pas l ISO), mode DAO / Disc-At-Once, vitesse la plus lente proposee, CD-R.\n')
+        f.write(f'BIN SHA256 : {hashes["alundra2_ps1.bin"]}\n')
+        f.write(f'ISO 2048 (emulateurs uniquement, NE PAS GRAVER) : {iso}\n')
         f.write(f'Build ID : PS1-{version}\nDate : {today}\n')
         f.write(f'Nouveautes : {news}\nVerifications : {proofs} ISO SHA256 '
                 f'{hashes["alundra2_ntsc.iso"]}. Console physique non testee.\n')

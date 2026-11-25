@@ -44,7 +44,11 @@ if ($licenseSrc -and (Test-Path -LiteralPath $licenseSrc)) {
 	$lic = [Text.Encoding]::ASCII.GetString($buf, 4 * 2352 + 24, 60)
 	if ($lic -notmatch 'Licensed\s+by') { throw "secteur de licence introuvable dans $licenseSrc" }
 	if (-not (Test-Path (Split-Path $licenseOut))) { New-Item -ItemType Directory -Path (Split-Path $licenseOut) | Out-Null }
-	[IO.File]::WriteAllBytes($licenseOut, $buf)
+	# mkpsxiso attend 16 secteurs de 2336 octets (sans synchro ni en-tete MSF) :
+	# verifie, il reproduit alors les secteurs bruts a l'identique (v0.8.41).
+	$lic2336 = New-Object byte[] (16 * 2336)
+	for ($n = 0; $n -lt 16; $n++) { [Array]::Copy($buf, $n * 2352 + 16, $lic2336, $n * 2336, 2336) }
+	[IO.File]::WriteAllBytes($licenseOut, $lic2336)
 	Write-Host ('Licence du disque : ' + ($lic -replace '\s+', ' ').Trim())
 } elseif (-not (Test-Path $licenseOut)) {
 	throw 'licence de disque absente : definir ALUNDRA_LICENSE_DISC (image brute 2352 de votre disque)'
