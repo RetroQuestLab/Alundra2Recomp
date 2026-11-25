@@ -20,7 +20,7 @@ int g_checks = 0;
 		}                                                                   \
 	} while (0)
 
-IntroCardMeta g_meta[16];
+IntroCardMeta g_meta[32];
 
 void initFromData(IntroState& s) {
 	for (int i = 0; i < kIntroCardCount; ++i) {
@@ -33,14 +33,16 @@ void initFromData(IntroState& s) {
 
 int main() {
 	// Donnees : une carte par replique du prologue, scenes du PC.
-	CHECK(kIntroCardCount == 9);
+	// v0.8.40 : prologue enrichi selon la trame A2 (sections 1 a 3).
+	CHECK(kIntroCardCount == 16);
 	CHECK(kIntroCards[0].scene == INTRO_SCENE_ZONE && kIntroCards[0].zone == 42);
-	CHECK(kIntroCards[1].scene == INTRO_SCENE_ZONE && kIntroCards[1].zone == 18);
-	CHECK(kIntroCards[2].scene == INTRO_SCENE_SHIP && kIntroCards[2].shipFirst == 2 &&
-	      kIntroCards[2].shipLast == 6);
-	CHECK(kIntroCards[3].name[0] == '-');  // "- Zeppo -"
-	CHECK(kIntroCards[7].scene == INTRO_SCENE_FALL);
-	CHECK(kIntroCards[8].scene == INTRO_SCENE_ZONE && kIntroCards[8].zone == 26);
+	CHECK(kIntroCards[1].scene == INTRO_SCENE_ZONE && kIntroCards[1].zone == 42);
+	CHECK(kIntroCards[2].scene == INTRO_SCENE_ZONE && kIntroCards[2].zone == 18);
+	CHECK(kIntroCards[3].scene == INTRO_SCENE_SHIP && kIntroCards[3].shipFirst == 3 &&
+	      kIntroCards[3].shipLast == 13);
+	CHECK(kIntroCards[5].name[0] == '-');  // "- Zeppo -"
+	CHECK(kIntroCards[14].scene == INTRO_SCENE_FALL);
+	CHECK(kIntroCards[15].scene == INTRO_SCENE_ZONE && kIntroCards[15].zone == 26);
 	for (int i = 0; i < kIntroCardCount; ++i) CHECK(kIntroCards[i].nlines >= 1 && kIntroCards[i].nlines <= 4);
 
 	// Frappe : rien pendant le fondu, puis 0,55 caractere par tick.

@@ -28,7 +28,7 @@
 namespace {
 
 IntroState g_intro;
-IntroCardMeta g_meta[16];
+IntroCardMeta g_meta[32];
 int g_loadedCard = -1;
 int g_zoneOk = 0;
 
@@ -209,7 +209,7 @@ int cdZoneFor(int zone) { return zone == 42 ? 1042 : zone; }  // fond brut 042.a
 }  // namespace
 
 void introInitPS1(uint32_t padSeed) {
-	const int n = kIntroCardCount < 16 ? kIntroCardCount : 16;
+	const int n = kIntroCardCount < 32 ? kIntroCardCount : 32;
 	for (int i = 0; i < n; ++i) {
 		g_meta[i].scene = uint8_t(kIntroCards[i].scene);
 		g_meta[i].len = uint16_t(kIntroCards[i].len);

@@ -10,13 +10,20 @@
 # convoient les créatures « Gi Gi » pour Lady Milena, le combat, la chute, le réveil sur la plage de Paco.
 [prologue]
 042: Royaume de Varuna. Le roi a disparu sans laisser de trace. Sur son trône, un pantin obéit au baron Diaz.
+042: Pour prendre le pouvoir, Diaz s'est allié aux pirates et à un sorcier venu de nulle part : Méphisto.
 018: Sur les mers, les pirates de Lady Milena font la loi. On murmure qu'ils ont aidé le baron à prendre le pouvoir.
 navire: Cette nuit-là, un de leurs navires volants fend les nuages. À son bord, un clandestin : Flint, chasseur de pirates.
+navire: Les soldats de l'équipage ne parlent pas et ne dorment pas. Une grosse clé tourne lentement dans leur dos.
 navire/Zeppo: Jouer les nourrices pour une cargaison de boîtes de conserve ! Milena me le paiera.
 navire/Ruby: Du calme, papa. Mais ces créatures qui pilotent... « Gi Gi », c'est tout ce qu'elles savent dire ?
+navire/Zeppo: C'est l'oeuvre de Méphisto. Il change les hommes en machines, et personne ne sait comment.
+navire/Albert: Le baron non plus n'a pas confiance. Il nous a demandé de garder un oeil sur ce sorcier.
+navire: Dans la cale, Flint trouve une clé étrange, ciselée comme celles des soldats. Il l'empoche sans bruit.
 navire/Albert: Chut ! Vous avez entendu ? Il y a quelqu'un sur le pont !
 navire/Zeppo: Un chasseur de pirates ! Il est à moi, les enfants. Voyons s'il encaisse mon « écrase-crâne » !
-chute: Le coup l'envoie par-dessus bord. Flint tombe. Longtemps. Puis la mer se referme sur lui.
+navire: Zeppo bondit, frappe lourdement... et s'effondre. Mais un soldat mécanique bien plus grand se dresse.
+navire: Le combat fracasse la coque. Le pont cède, et le navire volant se brise au-dessus de la mer.
+chute: Flint tombe. Longtemps. Sous les vagues, une baleine immense, bardée de métal, ouvre un oeil.
 026: Trois jours plus tard, la marée le dépose sur une plage, tout près du Village Paco.
 
 [intro]

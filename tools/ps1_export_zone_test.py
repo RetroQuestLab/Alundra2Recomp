@@ -602,19 +602,15 @@ def test_throne_runtime_hooks():
 def test_intro_exporter_preserves_all_prologue_text():
     """Les panneaux d'intro doivent contenir tout le prologue A2, sans perte."""
     import ps1_export_intro as intro
-    panels = intro.build_panels()
-    assert len(panels) == 10, f"{len(panels)} panneaux au lieu de 10"
-    folded = [intro.fold(line) for line in intro.source_lines()]
-    expected = b''.join(folded).replace(b' ', b'')
-    actual = b''.join(line for panel in panels for line in panel).replace(b' ', b'')
-    assert expected == actual, "le texte du prologue est modifie par la pagination"
-    assert b'Voyons' in actual, "le mot 'Voyons' est absent des panneaux generes"
-    adv = intro.advances()
-    for pi, panel in enumerate(panels):
-        assert len(panel) == 3, f"panneau {pi}: {len(panel)} lignes au lieu de 3"
-        for li, line in enumerate(panel):
-            width = sum(adv[c] for c in line)
-            assert width <= 254, f"intro panneau {pi} ligne {li}: {width}px > 254"
+    # v0.8.39 : l'intro PS1 affiche des CARTES (une par replique, comme le PC),
+    # decoupees a 37 caracteres (title.cpp::wrap), au plus 4 lignes.
+    cards = intro.build_cards()
+    sources = intro.source_cards()
+    assert len(cards) == len(sources) and len(cards) >= 9
+    for card, (_scene, _name, body) in zip(cards, sources):
+        assert b' '.join(card['lines']) == intro.fold(body), f"texte modifie : {body[:30]}"
+        assert 1 <= len(card['lines']) <= 4 and all(len(l) <= 37 for l in card['lines'])
+    assert any(b'Voyons' in l for c in cards for l in c['lines'])
     print("test_intro_exporter_preserves_all_prologue_text: PASS")
 
 
