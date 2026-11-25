@@ -142,7 +142,7 @@ void heroInit(void) {
 	g_z = 1;
 	g_jumpY = 0;
 	g_jumpV = 0;
-	g_dir = 0;
+	g_dir = PF_DIR_DOWN;  // PC : start 011 26 47 bas
 	g_group = 0;
 	g_step = 0;
 	g_timer = 0;

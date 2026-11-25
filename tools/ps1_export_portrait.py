@@ -16,7 +16,7 @@ import struct
 import sys
 
 from ps1_export_dialogue import PORTRAIT_BANKS
-from ps1_export_zone import PORTRAIT_TEX, pad_rows, parse_a1s, quantize
+from ps1_export_zone import PORTRAIT_TEX, make_clut, pad_rows, parse_a1s
 
 W, H = 48, 56
 DEST = 'portrait.dat'
@@ -40,12 +40,66 @@ def portrait_rgba(bank):
     return bytes(out)
 
 
+def median_cut(colors, k):
+    """Coupe mediane ponderee : [(r,g,b,poids)] -> k couleurs moyennes."""
+    boxes = [colors]
+    while len(boxes) < k:
+        boxes.sort(key=lambda b: max(max(c[i] for c in b) - min(c[i] for c in b) for i in range(3)))
+        box = boxes.pop()
+        if len(box) < 2:
+            boxes.append(box)
+            break
+        ch = max(range(3), key=lambda i: max(c[i] for c in box) - min(c[i] for c in box))
+        box.sort(key=lambda c: c[ch])
+        total = sum(c[3] for c in box)
+        acc, cut = 0, 1
+        for i, c in enumerate(box):
+            acc += c[3]
+            if acc >= total / 2:
+                cut = max(1, min(len(box) - 1, i + 1))
+                break
+        boxes += [box[:cut], box[cut:]]
+    pal = []
+    for b in boxes:
+        w = sum(c[3] for c in b)
+        pal.append(tuple(sum(c[i] * c[3] for c in b) // w for i in range(3)))
+    return pal
+
+
+def quantize_mc(rgba, w, h):
+    """Comme quantize() de ps1_export_zone (index 0 transparent, 4bpp), mais
+    palette par coupe mediane : les teintes minoritaires (peau, yeux) d'un
+    buste agrandi ne sont plus remplacees par les couleurs dominantes."""
+    freq = {}
+    for i in range(w * h):
+        if rgba[i * 4 + 3] >= 128:
+            c = tuple(rgba[i * 4:i * 4 + 3])
+            freq[c] = freq.get(c, 0) + 1
+    colors = [(c[0], c[1], c[2], n) for c, n in freq.items()]
+    pal = [tuple(c[:3]) for c in colors] if len(colors) <= 15 else median_cut(colors, 15)
+    clut = make_clut([(c[0], c[1], c[2], 255) for c in pal])
+    pw = (w + 3) // 4 * 4
+    out = bytearray(pw * h // 2)
+    cache = {}
+    for y in range(h):
+        for x in range(pw):
+            idx = 0
+            if x < w and rgba[(y * w + x) * 4 + 3] >= 128:
+                c = tuple(rgba[(y * w + x) * 4:(y * w + x) * 4 + 3])
+                if c not in cache:
+                    cache[c] = 1 + min(range(len(pal)), key=lambda k: sum((c[j] - pal[k][j]) ** 2 for j in range(3)))
+                idx = cache[c]
+            o = y * (pw // 2) + x // 2
+            out[o] = (out[o] & 0xF0) | idx if (x & 1) == 0 else (out[o] & 0x0F) | (idx << 4)
+    return bytes(out), clut
+
+
 def build(out_dir):
     out = bytearray(b'P1PT')
     out += struct.pack('<HH', len(PORTRAIT_BANKS), 0)
     for name in PORTRAIT_BANKS:
         bank = parse_a1s(f'assets/sprites/{name}.a1s')
-        packed, clut = quantize(portrait_rgba(bank), W, H)
+        packed, clut = quantize_mc(portrait_rgba(bank), W, H)
         pixels, stride, upload_h = pad_rows(packed, W, H)
         if stride > PORTRAIT_TEX[2] or upload_h > PORTRAIT_TEX[3]:
             raise ValueError(f'buste {name} trop grand pour la zone VRAM reservee')

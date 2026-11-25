@@ -140,7 +140,9 @@ void dlgClose(void) {
 }
 
 void dlgUpdate(uint32_t pad) {
-	const int start = (pad & PF_BTN_START) != 0 ? 1 : 0;
+	// CROIX ou START : la CROIX est le bouton de validation annonce a l'ecran
+	// (aide du menu) et l'equivalent de la touche de dialogue du PC.
+	const int start = (pad & (PF_BTN_START | PF_BTN_CROSS)) != 0 ? 1 : 0;
 	if (!g_active) {
 		g_prevStart = start;
 		return;

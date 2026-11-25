@@ -96,7 +96,7 @@ void nightSky(int tick, int shipNum, int shipDen) {
 		}
 	}
 	// Lune et halo (le PC additionne 4 disques : paliers equivalents).
-	for (int k = 3; k >= 0; --k) disc(238, 64, 26 + k * 7, rgb(6 + 14 * (4 - k), 8 + 16 * (4 - k), 30 + 26 * (4 - k)), 61, 3);
+	for (int k = 0; k <= 3; ++k) disc(238, 64, 26 + k * 7, rgb(6 + 14 * (4 - k), 8 + 16 * (4 - k), 30 + 26 * (4 - k)), 61, 3);
 	disc(238, 64, 21, rgb(238, 236, 214), 60);
 	disc(231, 58, 4, rgb(214, 212, 190), 59);
 	disc(245, 72, 6, rgb(214, 212, 190), 59);

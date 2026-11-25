@@ -275,7 +275,11 @@ def parse_a1m(path):
 def parse_a1s(path):
     b = open(path, "rb").read()
     assert b[:4] == b"A1SP"
-    nframes, ngroups = struct.unpack_from("<HH", b, 4)
+    # Format (src/sprite.cpp::SpriteBank::load) : "A1SP", u16 nframes, frames,
+    # PUIS u16 groups et 4 animations par groupe. Avant v0.8.41, le nombre de
+    # groupes etait lu a l'offset 6 (largeur de la 1re frame) et le vrai champ
+    # groups etait pris pour le compte de la 1re animation : tables decalees.
+    nframes = struct.unpack_from("<H", b, 4)[0]
     o = 6
     frames = []
     for _ in range(nframes):
@@ -283,6 +287,8 @@ def parse_a1s(path):
         o += 8
         frames.append({"w": w, "h": h, "ox": ox, "oy": oy, "rgba": b[o:o + w * h * 4]})
         o += w * h * 4
+    ngroups = struct.unpack_from("<H", b, o)[0] if o + 2 <= len(b) else 0
+    o += 2
     anims = []
     for _ in range(ngroups):
         dirs = []
