@@ -18,6 +18,9 @@ int heroDir(void);
 /* Decalage vertical ecran du heros : (MARGIN_ROWS - niveau) * 16, comme
  * screenY()/followHero() cote PC. La camera le reutilise. */
 int heroElevPS1(void);
+
+/* Intro (chute) : frame de repos vers le bas, centree, agrandie et tournee. */
+void heroDrawFallPS1(int cx, int cy, int angle4096, int scale, int z);
 /* Restaure la direction apres un chargement (0=haut, 1=gauche, 2=droite, 3=bas). */
 void heroSetDirPS1(int dir);
 /* Portrait A1 de Flint pour le panneau droit de l'inventaire : reutilise la

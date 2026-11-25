@@ -170,9 +170,87 @@ def format_header(panels):
     )
 
 
+def source_cards():
+    """(scene, nom, texte) par replique : "decor" ou "decor/Personnage" (title.cpp::sceneOf)."""
+    text = open(SOURCE, encoding='utf-8').read().splitlines()
+    inside = False
+    out = []
+    for raw in text:
+        line = raw.strip()
+        if line.startswith('['):
+            inside = line == '[' + DIALOGUE_ID + ']'
+            continue
+        if inside and line and not line.startswith('#') and ': ' in line:
+            head, body = line.split(': ', 1)
+            scene, _, name = head.partition('/')
+            out.append((scene, name, body))
+    return out
+
+
+def pc_wrap(bs, width=37):
+    """Port de wrap() de src/title.cpp : coupure au mot, en nombre de caracteres."""
+    lines, cur = [], b''
+    for word in bs.split(b' '):
+        if cur and len(cur) + 1 + len(word) > width:
+            lines.append(cur)
+            cur = b''
+        if word:
+            cur = word if not cur else cur + b' ' + word
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def build_cards():
+    cards = []
+    for scene, name, body in source_cards():
+        if scene[:1].isdigit():
+            kind, zone = 'INTRO_SCENE_ZONE', int(scene)
+        elif scene == 'navire':
+            kind, zone = 'INTRO_SCENE_SHIP', 0
+        elif scene == 'chute':
+            kind, zone = 'INTRO_SCENE_FALL', 0
+        else:
+            kind, zone = 'INTRO_SCENE_SKY', 0
+        folded = fold(body)
+        cards.append({'kind': kind, 'zone': zone, 'scene': scene,
+                      'name': fold('- ' + name + ' -') if name else b'',
+                      'lines': pc_wrap(folded), 'len': len(folded)})
+    # Navire : progression sur la suite de cartes "navire" (title.cpp drawPrologue).
+    for i, c in enumerate(cards):
+        first = last = i
+        if c['scene'] == 'navire':
+            while first > 0 and cards[first - 1]['scene'] == 'navire':
+                first -= 1
+            while last + 1 < len(cards) and cards[last + 1]['scene'] == 'navire':
+                last += 1
+        c['first'], c['last'] = first, last
+    return cards
+
+
+def format_cards(cards):
+    if any(len(c['lines']) > 4 for c in cards):
+        raise ValueError('carte de prologue sur plus de 4 lignes')
+    rows = []
+    for c in cards:
+        lines = [cstr(l) for l in c['lines']] + ['""'] * (4 - len(c['lines']))
+        rows.append('\t{ %s, %d, %d, %d, %d, %d, %s, { %s } },' % (
+            c['kind'], len(c['lines']), c['zone'], c['len'], c['first'], c['last'],
+            cstr(c['name']), ', '.join(lines)))
+    return (
+        '\n#include "intro_ps1_logic.h"  // INTRO_SCENE_*\n\n// Cartes du prologue PC (src/title.cpp) : une par replique.\n'
+        'struct IntroCardData {\n'
+        '\tint scene, nlines, zone, len, shipFirst, shipLast;\n'
+        '\tconst char* name;\n'
+        '\tconst char* lines[4];\n'
+        '};\n\n'
+        'static const IntroCardData kIntroCards[] = {\n' + '\n'.join(rows) + '\n};\n\n'
+        'static const int kIntroCardCount = ' + str(len(cards)) + ';\n')
+
+
 def main():
     panels = build_panels()
-    text = format_header(panels)
+    text = format_header(panels) + format_cards(build_cards())
     if '--stdout' in sys.argv[1:]:
         sys.stdout.write(text)
         return 0

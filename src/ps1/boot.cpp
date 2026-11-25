@@ -241,6 +241,7 @@ int main(void) {
 				pfPresent();
 				continue;
 			}
+			loadZoneMap(zone);  // le prologue a charge ses propres fonds
 			audioStreamMusicPS1(themeForZone(zone));
 			mode = kModeGame;
 			armed = false;

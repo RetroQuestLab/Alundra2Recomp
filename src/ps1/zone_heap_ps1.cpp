@@ -49,6 +49,8 @@ const char* zonePath(uint32_t zone) {
 	case 42u: return "\\ZONES\\ZONE042.DAT";
 	case 50u: return "\\ZONES\\ZONE050.DAT";
 	case 86u: return "\\ZONES\\ZONE086.DAT";
+	case 18u: return "\\ZONES\\ZONE018.DAT";    // fond du prologue
+	case 1042u: return "\\ZONES\\INTR042.DAT";  // fond du prologue (042.a1m brut)
 	default:  return 0;
 	}
 }

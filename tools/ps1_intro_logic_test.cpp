@@ -1,8 +1,10 @@
 /*
- * Test hote de la logique d'introduction PS1 (TDD).
- * Compilation : clang++ -std=c++20 -o qa\ps1_intro_logic_test.exe tools\ps1_intro_logic_test.cpp
+ * Test hote de la logique d'introduction PS1 : comportement du prologue PC
+ * (src/title.cpp : FADE = 50, 0,55 caractere par tick, depart automatique
+ * 200 ticks apres la frappe, attaque = completer puis passer).
  */
 #include "../src/ps1/intro_ps1_logic.h"
+#include "../src/ps1/intro_data_ps1.h"
 
 #include <cstdio>
 
@@ -18,98 +20,75 @@ int g_checks = 0;
 		}                                                                   \
 	} while (0)
 
-void advance(IntroState& s, int frames) {
-	for (int i = 0; i < frames; ++i) introStep(&s, 0);
-}
+IntroCardMeta g_meta[16];
 
-// v0.8.18 : les decors doivent changer exactement quand le panneau de texte
-// change. Litteraux volontaires (pas les constantes sous test) pour rester
-// compilable et detecter une frontiere fausse avant le correctif.
-void checkScenePanelSync() {
-	constexpr int kSkyEnd = 648;    // 3 panneaux x 216 frames
-	constexpr int kShipEnd = 1728;  // 8 panneaux x 216 frames
-	constexpr int kFallEnd = 1944;  // 9 panneaux x 216 frames
-	constexpr int kTotal = 2160;
-	constexpr int kPanels = 10;
-	struct Case {
-		int frame;
-		int scene;
-		int panel;
-	};
-	const Case cases[] = {
-		{kSkyEnd - 1, INTRO_SCENE_SKY, 2},
-		{kSkyEnd, INTRO_SCENE_SHIP, 3},
-		{kShipEnd - 1, INTRO_SCENE_SHIP, 7},
-		{kShipEnd, INTRO_SCENE_FALL, 8},
-		{kFallEnd - 1, INTRO_SCENE_FALL, 8},
-		{kFallEnd, INTRO_SCENE_BEACH, 9},
-	};
-	for (const Case& c : cases) {
-		IntroState s;
-		introInit(&s);
-		advance(s, c.frame);
-		CHECK(s.frame == c.frame);
-		CHECK(s.scene == c.scene);
-		CHECK((c.frame * kPanels) / kTotal == c.panel);
+void initFromData(IntroState& s) {
+	for (int i = 0; i < kIntroCardCount; ++i) {
+		g_meta[i].scene = uint8_t(kIntroCards[i].scene);
+		g_meta[i].len = uint16_t(kIntroCards[i].len);
 	}
+	introInit(&s, g_meta, kIntroCardCount);
 }
 }  // namespace
 
 int main() {
-	// --- etat initial ---
-	{
-		IntroState s;
-		introInit(&s);
-		CHECK(s.frame == 0);
-		CHECK(s.scene == INTRO_SCENE_SKY);
-		CHECK(introDone(&s) == 0);
-		CHECK(s.skipped == 0);
+	// Donnees : une carte par replique du prologue, scenes du PC.
+	CHECK(kIntroCardCount == 9);
+	CHECK(kIntroCards[0].scene == INTRO_SCENE_ZONE && kIntroCards[0].zone == 42);
+	CHECK(kIntroCards[1].scene == INTRO_SCENE_ZONE && kIntroCards[1].zone == 18);
+	CHECK(kIntroCards[2].scene == INTRO_SCENE_SHIP && kIntroCards[2].shipFirst == 2 &&
+	      kIntroCards[2].shipLast == 6);
+	CHECK(kIntroCards[3].name[0] == '-');  // "- Zeppo -"
+	CHECK(kIntroCards[7].scene == INTRO_SCENE_FALL);
+	CHECK(kIntroCards[8].scene == INTRO_SCENE_ZONE && kIntroCards[8].zone == 26);
+	for (int i = 0; i < kIntroCardCount; ++i) CHECK(kIntroCards[i].nlines >= 1 && kIntroCards[i].nlines <= 4);
+
+	// Frappe : rien pendant le fondu, puis 0,55 caractere par tick.
+	CHECK(introShown(INTRO_FADE, 100) == 0);
+	CHECK(introShown(INTRO_FADE + 20, 100) == 11);
+	CHECK(introShown(INTRO_FADE + 1000, 100) == 100);
+	CHECK(introTypedAt(11) == INTRO_FADE + 20);
+
+	// Sans appui : depart automatique, fondu de sortie, carte suivante.
+	IntroState s;
+	initFromData(s);
+	CHECK(s.card == 0 && s.scene == INTRO_SCENE_ZONE && !introDone(&s));
+	const int typed = introTypedAt(kIntroCards[0].len);
+	for (int i = 0; i < typed + INTRO_AUTO_WAIT; ++i) introStep(&s, 0);
+	CHECK(s.card == 0 && s.leaving == 0);
+	introStep(&s, 0);
+	CHECK(s.leaving == INTRO_FADE);
+	for (int i = 0; i < INTRO_FADE; ++i) introStep(&s, 0);
+	CHECK(s.card == 1 && s.tick == 0 && s.scene == INTRO_SCENE_ZONE);
+
+	// CROIX : complete le texte, puis passe a la carte suivante.
+	introStep(&s, PF_BTN_CROSS);
+	CHECK(s.tick == introTypedAt(kIntroCards[1].len));
+	introStep(&s, 0);
+	introStep(&s, PF_BTN_CROSS);
+	CHECK(s.leaving == INTRO_FADE);
+	// Un appui maintenu n'avance pas deux fois.
+	introStep(&s, PF_BTN_CROSS);
+	CHECK(s.leaving == INTRO_FADE - 1);
+
+	// START : passe toute l'introduction immediatement.
+	introStep(&s, 0);
+	introStep(&s, PF_BTN_START);
+	CHECK(introDone(&s) && s.skipped == 1);
+	const int f = s.frame;
+	introStep(&s, 0);
+	CHECK(s.frame == f);  // plus rien n'avance une fois terminee
+
+	// Parcours complet sans appui : toutes les cartes, puis fin.
+	initFromData(s);
+	int guard = 0;
+	while (!introDone(&s) && guard++ < 20000) introStep(&s, 0);
+	CHECK(introDone(&s) && s.skipped == 0 && s.card == kIntroCardCount);
+
+	if (g_fail) {
+		std::printf("PS1_INTRO_LOGIC: %d/%d checks FAIL\n", g_checks - g_fail, g_checks);
+		return 1;
 	}
-
-	// --- deroulement borne, sans ressource externe ---
-	{
-		IntroState s;
-		introInit(&s);
-		advance(s, 500);
-		CHECK(s.scene == INTRO_SCENE_SKY);
-		advance(s, 800);  // frame 1300 : texte du navire, decor du navire
-		CHECK(s.scene == INTRO_SCENE_SHIP);
-		advance(s, 500);  // frame 1800 : texte de la chute, decor de la chute
-		CHECK(s.scene == INTRO_SCENE_FALL);
-		advance(s, 200);  // frame 2000 : texte de la plage, decor de la plage
-		CHECK(s.scene == INTRO_SCENE_BEACH);
-		advance(s, INTRO_TOTAL_FRAMES + 10);
-		CHECK(introDone(&s) == 1);
-		CHECK(s.frame == INTRO_TOTAL_FRAMES);
-	}
-
-	// --- START passe l'introduction immediatement, sans double declenchement ---
-	{
-		IntroState s;
-		introInit(&s);
-		introStep(&s, PF_BTN_START);
-		CHECK(s.skipped == 1);
-		CHECK(introDone(&s) == 1);
-		CHECK(s.scene == INTRO_SCENE_DONE);
-		for (int i = 0; i < 30; ++i) introStep(&s, PF_BTN_START);
-		CHECK(introDone(&s) == 1);
-	}
-
-	// --- plusieurs nouvelles parties : reinitialisation complete ---
-	for (int game = 0; game < 3; ++game) {
-		IntroState s;
-		introInit(&s);
-		advance(s, 700);
-		introStep(&s, PF_BTN_START);
-		CHECK(introDone(&s) == 1);
-		introInit(&s);
-		CHECK(s.frame == 0);
-		CHECK(s.scene == INTRO_SCENE_SKY);
-		CHECK(s.skipped == 0);
-	}
-
-	checkScenePanelSync();
-
-	std::printf("PS1_INTRO_LOGIC: %d/%d checks PASS\n", g_checks - g_fail, g_checks);
-	return g_fail == 0 ? 0 : 1;
+	std::printf("PS1_INTRO_LOGIC: %d/%d checks PASS\n", g_checks, g_checks);
+	return 0;
 }

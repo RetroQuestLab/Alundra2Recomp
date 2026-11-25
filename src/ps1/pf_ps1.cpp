@@ -202,6 +202,41 @@ void pfDrawSprite16(int x, int y, int uVram, int vVram, int w, int h, int clutX,
 	g_next += need;
 }
 
+#include "isin_ps1.h"
+
+void pfDrawSpriteRot(int cx, int cy, int uVram, int vVram, int w, int h, int clutX, int clutY,
+                     int scale, int angle4096, int z) {
+	if (w <= 0 || h <= 0) return;
+	const int need = (int)sizeof(POLY_FT4);
+	if (g_next + need > g_prims[g_db] + kPrimBytes) {
+		pfLog("PF_CAP primbuf overflow");
+		return;
+	}
+	if (z < 0) z = 0;
+	if (z >= kOtLength) z = kOtLength - 1;
+	const int pageX = uVram & ~63;
+	const int pageY = vVram & ~255;
+	const int u = (uVram - pageX) * 4;
+	const int v = vVram - pageY;
+	const int s = isin4096(angle4096), c = isin4096(angle4096 + 1024);
+	const int hw = w * scale / 2, hh = h * scale / 2;
+	const int px[4] = {-hw, hw, -hw, hw}, py[4] = {-hh, -hh, hh, hh};
+	int x[4], y[4];
+	for (int i = 0; i < 4; ++i) {
+		x[i] = cx + (px[i] * c - py[i] * s) / 4096;
+		y[i] = cy + (px[i] * s + py[i] * c) / 4096;
+	}
+	POLY_FT4* q = reinterpret_cast<POLY_FT4*>(g_next);
+	setPolyFT4(q);
+	setXY4(q, x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3]);
+	setUV4(q, u, v, u + w - 1, v, u, v + h - 1, u + w - 1, v + h - 1);
+	q->clut = getClut(clutX, clutY);
+	q->tpage = getTPage(0, 0, uVram, vVram);
+	setRGB0(q, 128, 128, 128);
+	addPrim(&g_ot[g_db][z], q);
+	g_next += need;
+}
+
 static void drawRectImpl(int x, int y, int w, int h, uint32_t bgr555, int z, bool semi) {
 	if (g_next + (int)sizeof(TILE) > g_prims[g_db] + kPrimBytes) {
 		pfLog("PF_CAP primbuf overflow");

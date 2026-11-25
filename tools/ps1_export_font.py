@@ -97,6 +97,11 @@ def make_cluts():
         ((210, 232, 225), (210, 232, 225), (210, 232, 225)), # selection menu PC
         # v0.8.37 : sous-titre PC "UNE LEGENDE EST NEE" (190,208,244) (title.cpp:612).
         ((190, 208, 244), (190, 208, 244), (190, 208, 244)), # sous-titre PC
+        # v0.8.37 : prologue PC (src/title.cpp::drawPrologue).
+        ((225, 238, 232), (225, 238, 232), (225, 238, 232)), # texte du prologue
+        ((180, 225, 225), (180, 225, 225), (180, 225, 225)), # nom du locuteur
+        ((8, 8, 8), (8, 8, 8), (8, 8, 8)),                   # ombre noire
+        ((90, 98, 124), (90, 98, 124), (90, 98, 124)),       # invite de passage
     )
     cluts = []
     for base, hi, lo in palettes:

@@ -35,7 +35,7 @@ HERO_CLUTS = (512, 320, 16, 64)
 # (y=260) porte l'orange du "- remake -" du titre depuis v0.8.15, la 6e
 # (y=261) le bleu pale des lignes normales d'options depuis v0.8.16.
 FONT_ATLAS = (0, 256, 64, 256)
-FONT_CLUTS = (128, 256, 16, 9)
+FONT_CLUTS = (128, 256, 16, 13)
 # Atlas WIND.TX de la fenetre de dialogue : meme format, 64x256 demi-mots.
 # Ses 16 banques CLUT occupent 16 lignes a x=320, y=256.
 WIND_ATLAS = (256, 256, 64, 256)
@@ -402,7 +402,7 @@ def main():
     # 5e argument : zone du remake quand la carte A1 differe
     # (data/world.txt : `map 042 028` -> zone042 depuis 028.a1m).
     if len(sys.argv) == 5:
-        zone_name = f'zone{sys.argv[4]}'
+        zone_name = f'zone{sys.argv[4]}' if sys.argv[4].isdigit() else sys.argv[4]
     export(parse_a1m(sys.argv[1]), subset_hero(parse_a1s(sys.argv[2])),
            sys.argv[3], zone_name)
     return 0

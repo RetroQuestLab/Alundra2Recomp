@@ -284,6 +284,23 @@ void heroDraw(int camX, int camY) {
 	               rd16(cr), rd16(cr + 2), z > 0 ? z : 0);
 }
 
+void heroDrawFallPS1(int cx, int cy, int angle4096, int scale, int z) {
+	int count = 0;
+	const uint8_t* steps = dirSteps(0, PF_DIR_DOWN, &count);  // groupe 0 = repos
+	if (count <= 0) return;
+	const int frame = rd16(steps);
+	if (frame < 0 || frame >= g_nFrames || frame >= 128) return;
+	const uint8_t* f = hero_dat + g_frameOff[frame];
+	const int w = rd16(f), h = rd16(f + 2);
+	pfUpload4bpp(PF_HERO_SCRATCH_X, PF_HERO_SCRATCH_Y, g_frameStride[frame],
+	             g_frameUploadH[frame], f + 12);
+	g_lastUploaded = -1;  // le jeu reteleversera sa propre frame
+	const uint16_t ci = rd16(g_frameClut + frame * 2);
+	const uint8_t* cr = g_clutRects + (int)ci * 4;
+	pfDrawSpriteRot(cx, cy, PF_HERO_SCRATCH_X, PF_HERO_SCRATCH_Y, w, h,
+	                rd16(cr), rd16(cr + 2), scale, angle4096, z);
+}
+
 void heroDrawPortraitPS1(int x, int y, int scale) {
 	int count = 0;
 	const uint8_t* steps = dirSteps(g_group, g_dir, &count);

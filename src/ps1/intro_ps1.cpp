@@ -1,195 +1,288 @@
 /*
- * Introduction PS1 native : visuel Alundra 1, narration Alundra 2.
- * Panneaux generes depuis data/dialogues.txt [prologue] (voir ps1_export_intro.py).
- * Aucun STL, aucun SDK direct, aucune ressource chargee a l'execution.
+ * Introduction PS1 : reproduction du prologue PC (src/title.cpp::drawPrologue),
+ * narration A2 de data/dialogues.txt [prologue] (tools/ps1_export_intro.py).
+ *
+ *  - cartes "042", "018", "026" : la carte A1 du meme nom (comme useZone() du
+ *    PC, sans alias de jeu), lue sur le CD, en travelling lent ;
+ *  - "navire" : ciel de nuit, lune, nuages, navire volant en ombre chinoise ;
+ *  - "chute" : ciel de chute et le vrai sprite de Flint, agrandi et tournoyant ;
+ *  - bandes de cinema, texte blanc centre avec ombre, nom en turquoise,
+ *    fleche de suite, invite de passage.
+ * Arithmetique entiere uniquement (pas de FPU sur le R3000A). Adaptations PS1,
+ * imposees par le materiel : alpha remplace par la semi-transparence 50 %
+ * (fondus et degrades en paliers), "C : passer" devient "START : passer".
  */
 #include "intro_ps1.h"
 
 #include "../platform/pf.h"
 #include "a1_font_ps1.h"
+#include "hero_ps1.h"
 #include "intro_data_ps1.h"
 #include "intro_ps1_logic.h"
+#include "isin_ps1.h"
 #include "window_ps1.h"
+#include "zone011.h"
+#include "zone_heap_ps1.h"
 
 namespace {
 
 IntroState g_intro;
+IntroCardMeta g_meta[16];
+int g_loadedCard = -1;
+int g_zoneOk = 0;
 
-// Couleur 15 bits GPU PS1 : rouge en bits 0..4, vert 5..9, bleu 10..14.
-// pfDrawRect() decode cet ordre ; l'ancien helper inversait rouge et bleu.
-inline uint32_t bgr(int r, int g, int b) {
-	const int rr = r < 0 ? 0 : (r > 31 ? 31 : r);
-	const int gg = g < 0 ? 0 : (g > 31 ? 31 : g);
-	const int bb = b < 0 ? 0 : (b > 31 ? 31 : b);
-	return uint32_t(rr) | (uint32_t(gg) << 5) | (uint32_t(bb) << 10);
+inline uint32_t rgb(int r, int g, int b) {
+	return uint32_t(r >> 3) | (uint32_t(g >> 3) << 5) | (uint32_t(b >> 3) << 10);
 }
-uint32_t hash01(unsigned n) {
-	n = (n ^ 61u) ^ (n >> 16);
-	n *= 9u;
-	n ^= n >> 4;
-	n *= 0x27d4eb2du;
-	n ^= n >> 15;
-	return n & 0xffffu;
-}
+inline int mix(int a, int b, int num, int den) { return a + (b - a) * num / den; }
 
-// sin(2*pi*frame/period) approximé en entier, sans FPU (R3000A).
-int intSin(uint32_t frame, uint32_t period) {
-	const uint32_t phase = (frame * 256u / period) & 255u;
-	if (phase < 64u) return int(phase) / 16;
-	if (phase < 128u) return (64 - int(phase)) / 16;
-	if (phase < 192u) return -int(phase - 128) / 16;
-	return -(64 - int(phase - 192)) / 16;
-}
+/* Demi-largeurs floor(sqrt(r^2 - dy^2)) precalculees : le calcul par boucle a
+ * chaque ligne ramenait le prologue a ~17 images/s sur le ciel du navire. */
+constexpr int kMaxRad = 48;
+uint8_t g_halfW[kMaxRad + 1][kMaxRad + 1];
+int g_halfReady = 0;
 
-void disc(int cx, int cy, int rad, uint32_t col, int z) {
-	for (int dy = -rad; dy <= rad; ++dy) {
-		int w = 0;
-		for (int x = 0; x <= rad; ++x) {
-			if (x * x + dy * dy > rad * rad) break;
-			w = x;
+void initHalfWidths() {
+	for (int r = 0; r <= kMaxRad; ++r)
+		for (int dy = 0; dy <= r; ++dy) {
+			int w = 0;
+			while ((w + 1) * (w + 1) + dy * dy <= r * r) ++w;
+			g_halfW[r][dy] = uint8_t(w);
 		}
-		pfDrawRect(cx - w, cy + dy, 2 * w + 1, 1, col, z);
+	g_halfReady = 1;
+}
+
+void disc(int cx, int cy, int rad, uint32_t col, int z, int step = 1) {
+	if (rad > kMaxRad) rad = kMaxRad;
+	for (int dy = -rad; dy <= rad; dy += step) {
+		const int w = g_halfW[rad][dy < 0 ? -dy : dy];
+		pfDrawRect(cx - w, cy + dy, 2 * w + 1, step, col, z);
 	}
 }
 
-int glyphIndex(unsigned char c) { return c >= 32 ? int(c) : int('?'); }
+void glyph(unsigned char c, int x, int y, int bank, int z) {
+	const int idx = c >= 32 ? int(c) : int('?');
+	pfDrawSprite16(x, y, PF_FONT_X + (idx & 15) * 4, PF_FONT_Y + (idx >> 4) * 16, 16, 16,
+	               PF_FONT_CLUT_X, PF_FONT_CLUT_Y + bank, z);
+}
 
-void text(const char* s, int x, int y, int bank, int z) {
-	for (int i = 0; s[i] != '\0'; ++i) {
+int length(const char* s) { int n = 0; while (s[n]) ++n; return n; }
+
+/* PC : x = floor((320 - 8 * taille) / 2), ombre (+1,+1) noire, n caracteres. */
+void centeredShadow(const char* s, int y, int bank, int n, int z) {
+	const int len = length(s);
+	int x = (PF_W - 8 * len) / 2;
+	for (int i = 0; i < len && i < n; ++i) {
 		const unsigned char c = static_cast<unsigned char>(s[i]);
-		const int idx = glyphIndex(c);
-		pfDrawSprite16(x, y, PF_FONT_X + (idx & 15) * 4, PF_FONT_Y + (idx >> 4) * 16,
-		               16, 16, PF_FONT_CLUT_X, PF_FONT_CLUT_Y + bank, z);
-		x += kA1FontAdvance[idx];
+		glyph(c, x, y, bank, z);
+		glyph(c, x + 1, y + 1, PF_FONT_BANK_SHADOW, z + 1);
+		x += kA1FontAdvance[c >= 32 ? c : '?'];
 	}
 }
 
-void drawPanel(int panel) {
-	// Fenetre WIND partagee avec le dialogue : la source des rouleaux est
-	// identique, sinon des rows etrangeres recouvrent les glyphes.
-	a1window::draw(16, 170, 286, 54, 0, 4);
-	if (panel < 0 || panel >= kIntroPanelCount) return;
-	for (int line = 0; line < 3; ++line)
-		text(kIntroLines[panel][line], 32, 174 + line * 16, 0, 2);
-}
-
-// --- Decors -----------------------------------------------------------------------
-void skyBase(int frame, uint32_t top, uint32_t bottom) {
-	const int tr = int(top & 31u), tg = int((top >> 5) & 31u), tb = int((top >> 10) & 31u);
-	const int br = int(bottom & 31u), bg = int((bottom >> 5) & 31u), bb = int((bottom >> 10) & 31u);
-	for (int y = 0; y < PF_H; y += 4) {
-		const int t = y * 32 / PF_H;
-		pfDrawRect(0, y, PF_W, 4,
-		           bgr(tr + (br - tr) * t / 32u,
-		               tg + (bg - tg) * t / 32u,
-		               tb + (bb - tb) * t / 32u), 63);
+// --- Decors (src/title.cpp) ----------------------------------------------------------
+void nightSky(int tick, int shipNum, int shipDen) {
+	for (int y = 0; y < PF_H; y += 4)  // degrade par bandes de 4 lignes (cout CPU)
+		pfDrawRect(0, y, PF_W, 4, rgb(mix(6, 34, y, PF_H), mix(8, 44, y, PF_H), mix(30, 96, y, PF_H)), 63);
+	for (unsigned i = 0; i < 90; ++i) {
+		const int x = int(hash16(i * 3 + 1) * PF_W >> 16), y = int(hash16(i * 3 + 2) * 170 >> 16);
+		const int tw = 2048 + isinTick(tick, 1000 + int(hash16(i) * 2000 >> 16), int(i) * 652) / 2;  // 0..4096
+		const int v = 70 + 170 * tw / 4096;
+		pfDrawRect(x, y, 1, 1, rgb(210 * v / 255, 220 * v / 255, 255 * v / 255), 62);
+		if (i % 11 == 0 && tw > 2400) {
+			pfDrawRect(x - 1, y, 3, 1, rgb(60, 64, 80), 62);
+			pfDrawRect(x, y - 1, 1, 3, rgb(60, 64, 80), 62);
+		}
 	}
-	for (unsigned i = 0; i < 50; ++i) {
-		const int x = int(hash01(i * 3 + 1) * PF_W) % PF_W;
-		const int y = int(hash01(i * 3 + 2) * 150u);
-		pfDrawRect(x, y, ((frame / 20 + int(i)) % 5 == 0) ? 2 : 1, 1, bgr(20, 22, 28), 62);
+	// Lune et halo (le PC additionne 4 disques : paliers equivalents).
+	for (int k = 3; k >= 0; --k) disc(238, 64, 26 + k * 7, rgb(6 + 14 * (4 - k), 8 + 16 * (4 - k), 30 + 26 * (4 - k)), 61, 3);
+	disc(238, 64, 21, rgb(238, 236, 214), 60);
+	disc(231, 58, 4, rgb(214, 212, 190), 59);
+	disc(245, 72, 6, rgb(214, 212, 190), 59);
+	disc(242, 54, 2, rgb(214, 212, 190), 59);
+	for (int layer = 0; layer < 3; ++layer) {
+		const int zl = 50 - layer * 6;
+		if (layer == 1 && shipDen > 0) {  // navire derriere les nuages proches
+			const int sx = 96 + 150 * shipNum / shipDen, sy = 92 - 26 * shipNum / shipDen;
+			const int bob = 2 * isinTick(tick, 1300) / 4096;
+			const uint32_t hull = rgb(8, 9, 24);
+			const int x = sx, y = sy + bob;
+			for (int j = 0; j < 11; ++j) pfDrawRect(x - 34 + j * 16 / 10, y + j, 74 - j * 46 / 10, 1, hull, zl + 3);
+			pfDrawRect(x - 36, y - 7, 16, 7, hull, zl + 3);
+			pfDrawRect(x - 38, y - 9, 20, 2, hull, zl + 3);
+			pfDrawRect(x + 26, y - 3, 12, 3, hull, zl + 3);
+			for (int k = 0; k < 16; ++k) pfDrawRect(x + 38 + k, y - 3 - k / 3, 1, 1, hull, zl + 3);
+			const int masts[2] = {x - 10, x + 14};
+			for (int m = 0; m < 2; ++m) {
+				const int mx = masts[m], h = m ? 30 : 36;
+				pfDrawRect(mx, y - h, 2, h, hull, zl + 3);
+				for (int j = 0; j < 12; ++j) pfDrawRect(mx - 9 - j * 3 / 10, y - h + 3 + j, 22 + j / 2, 1, hull, zl + 3);
+				for (int j = 0; j < 9; ++j) pfDrawRect(mx - 8 - j * 3 / 10, y - h + 18 + j, 19 + j / 2, 1, hull, zl + 3);
+				pfDrawRect(mx + 2, y - h - 1, 6, 2, hull, zl + 3);
+				pfDrawRect(mx + 8, y - h, 3, 1, hull, zl + 3);
+			}
+			for (int j = 0; j < 4; ++j) {
+				pfDrawRect(x - 20 - j * 3, y + 6 + j, 16, 1, hull, zl + 3);
+				pfDrawRect(x + 6 - j * 3, y + 6 + j, 16, 1, hull, zl + 3);
+			}
+			int blade = 7 * isinTick(tick, 18000) / 4096;
+			if (blade < 0) blade = -blade;
+			pfDrawRect(x - 40, y + 4 - blade, 1, 2 * blade + 1, hull, zl + 3);
+			pfDrawRect(x - 42, y + 3, 6, 2, hull, zl + 3);
+			pfDrawRect(x - 30, y - 4, 2, 2, rgb(255, 196, 90), zl + 2);
+			pfDrawRect(x + 4, y + 2, 1, 1, rgb(255, 196, 90), zl + 2);
+			pfDrawRect(x + 20, y + 2, 1, 1, rgb(255, 196, 90), zl + 2);
+		}
+		const int speed = 7 + 11 * layer, baseY = 128 + 34 * layer, span = PF_W + 200;
+		const uint32_t body = rgb(mix(52, 14, layer, 2), mix(62, 16, layer, 2), mix(112, 40, layer, 2));
+		const uint32_t rim = rgb(mix(120, 40, layer, 2), mix(132, 46, layer, 2), mix(180, 86, layer, 2));
+		for (unsigned i = 0; i < 7; ++i) {
+			const unsigned seed = unsigned(layer) * 100u + i;
+			int x = (int(hash16(seed) * span >> 16) - tick * speed / 60) % span;
+			if (x < 0) x += span;
+			x -= 100;
+			const int y = baseY + int(26 * hash16(seed + 40) >> 16) + 2 * isinTick(tick, 400, int(seed) * 652) / 4096;
+			for (unsigned b = 0; b < 6; ++b) {
+				const int rad = 9 + int(12 * hash16(seed * 7 + b) >> 16) + 4 * layer;
+				const int by = y + int(5 * hash16(seed * 13 + b) >> 16);
+				// Bandes de 4 lignes : 64 Kio de primitives par image (~4 000 TILE).
+				disc(x + int(b) * 15, by, rad, body, zl, 4);
+				if (layer < 2) disc(x + int(b) * 15, by - 2, rad, rim, zl + 1, 4);  // plan proche : sans liseré (cout CPU)
+			}
+		}
 	}
 }
 
-void pirateShip(int x, int y, uint32_t frame) {
-	const uint32_t hull = bgr(6, 7, 18);
-	y += int((frame / 18u) % 3u) - 1;
-	for (int j = 0; j < 9; ++j) pfDrawRect(x - 30 + j, y + j, 60 - 2 * j, 1, hull, 30);
-	pfDrawRect(x - 10, y - 34, 2, 34, hull, 30);
-	pfDrawRect(x + 14, y - 28, 2, 28, hull, 30);
-	for (int j = 0; j < 12; ++j) {
-		pfDrawRect(x - 20 - j / 2, y - 30 + j, 20 + j, 1, hull, 30);
-		pfDrawRect(x + 16, y - 24 + j, 17 + j / 2, 1, hull, 30);
-	}
-	pfDrawRect(x - 30, y - 4, 2, 2, bgr(30, 22, 6), 29);
-}
-
-void drawSky(uint32_t frame) {
-	skyBase(frame, bgr(2, 3, 10), bgr(12, 16, 30));
-	disc(236, 56, 20, bgr(28, 27, 24), 60);
-	disc(230, 50, 4, bgr(22, 21, 19), 59);
-	for (int i = 0; i < 3; ++i) {
-		const int cx = ((i * 130 + 40) - int(frame / 2)) % 460 - 60;
-		disc(cx, 130 + i * 22, 12, bgr(10, 12, 30), 50);
-		disc(cx + 20, 132 + i * 22, 14, bgr(10, 12, 30), 50);
-	}
-}
-
-void drawShip(uint32_t frame) {
-	drawSky(frame);
-	const int x = 24 + int((frame / 4u) % 280u);
-	pirateShip(x, 100, frame);
-	// Silhouette de Flint sur le pont, face au navire.
-	const uint32_t dark = bgr(3, 4, 12);
-	pfDrawRect(272, 132, 6, 8, dark, 28);
-	pfDrawRect(273, 140, 4, 12, dark, 28);
-	pfDrawRect(270, 128, 10, 4, dark, 28);
-}
-
-void drawFall(uint32_t frame) {
-	skyBase(frame, bgr(2, 3, 8), bgr(8, 12, 28));
-	for (unsigned i = 0; i < 45; ++i) {
-		const int x = int(hash01(i * 5 + 1) * PF_W) % PF_W;
-		int y = (int(hash01(i * 5 + 2) * 300u) - int(frame * 3)) % 300;
+void fallScene(int tick) {
+	for (int y = 0; y < PF_H; y += 4)
+		pfDrawRect(0, y, PF_W, 4, rgb(mix(4, 22, y, PF_H), mix(6, 34, y, PF_H), mix(24, 78, y, PF_H)), 63);
+	for (unsigned i = 0; i < 60; ++i) {
+		int y = (int(hash16(i * 5 + 2) * 300 >> 16) - tick * (160 + int(120 * hash16(i) >> 16)) / 60) % 300;
 		if (y < 0) y += 300;
-		pfDrawRect(x, y - 30, 1, 8 + int(hash01(i + 7) * 10u), bgr(18, 20, 30), 55);
+		const int v = 60 + int(120 * hash16(i + 77) >> 16);
+		pfDrawRect(int(hash16(i * 5 + 1) * PF_W >> 16), y - 30, 1, 5 + int(9 * hash16(i + 5) >> 16),
+		           rgb(200 * v / 255, 214 * v / 255, 255 * v / 255), 62);
 	}
-	// Flint tournoie en tombant : silhouette alternee, derive laterale.
-	const int cx = 160 + 26 * intSin(frame, 60);
-	const int cy = 90 + 8 * intSin(frame, 37);
-	const uint32_t hero = bgr(10, 12, 28);
-	pfDrawRect(cx - 6, cy - 10, 12, 10, hero, 25);
-	pfDrawRect(cx - 4, cy, 8, 14, hero, 25);
-	pfDrawRect(cx - 10, cy + 2, 4, 10, hero, 25);
-	pfDrawRect(cx + 6, cy + 2, 4, 10, hero, 25);
+	for (int layer = 0; layer < 2; ++layer) {
+		const int speed = 150 + 130 * layer, span = PF_H + 160;
+		const uint32_t body = rgb(mix(46, 16, layer, 2), mix(56, 18, layer, 2), mix(104, 44, layer, 2));
+		const uint32_t rim = rgb(mix(110, 44, layer, 2), mix(124, 50, layer, 2), mix(172, 92, layer, 2));
+		for (unsigned i = 0; i < 5; ++i) {
+			const unsigned seed = 300u + unsigned(layer) * 50u + i;
+			int y = (int(hash16(seed) * span >> 16) - tick * speed / 60) % span;
+			if (y < 0) y += span;
+			y -= 80;
+			const int x = int(hash16(seed + 9) * (PF_W + 80) >> 16) - 40;
+			for (unsigned b = 0; b < 5; ++b) {
+				const int rad = 10 + int(12 * hash16(seed * 7 + b) >> 16) + 3 * layer;
+				const int by = y + int(5 * hash16(seed * 13 + b) >> 16);
+				disc(x + int(b) * 16, by, rad, body, 50 - layer * 4, 3);
+				disc(x + int(b) * 16, by + 2, rad, rim, 51 - layer * 4, 3);
+			}
+		}
+	}
+	// Flint tournoie en derivant (PC : x 2, rotation t*250 deg/s).
+	const int cx = PF_W / 2 + 26 * isinTick(tick, 1100) / 4096;
+	const int cy = 96 + 8 * isinTick(tick, 2300) / 4096;
+	for (int k = 0; k < 6; ++k)
+		pfDrawRectSemi(cx - 14 + k * 11 / 2, cy - 64 - int(14 * hash16(unsigned(k) + unsigned(tick / 3)) >> 16), 1, 34, rgb(220, 230, 255), 40);
+	heroDrawFallPS1(cx, cy, tick * 250 * 4096 / 360 / 60, 2, 30);
 }
 
-void drawBeach(uint32_t frame) {
-	skyBase(frame, bgr(12, 14, 30), bgr(30, 20, 14));
-	const uint32_t sand = bgr(22, 18, 10), sea = bgr(8, 14, 26);
-	pfDrawRect(0, 150, PF_W, 20, sea, 50);
-	pfDrawRect(0, 170, PF_W, 70, sand, 50);
-	for (int i = 0; i < 8; ++i) {
-		const int x = (i * 47 + int(frame / 6)) % (PF_W + 40) - 20;
-		pfDrawRect(x, 166, 22, 2, bgr(18, 20, 30), 49);
-	}
-	const uint32_t hero = bgr(14, 10, 6);
-	pfDrawRect(70, 140, 10, 10, hero, 20);
-	pfDrawRect(72, 150, 6, 16, hero, 20);
-	pfDrawRect(66, 142, 4, 12, hero, 20);
-	pfDrawRect(80, 142, 4, 12, hero, 20);
+void zoneScene(int zone, int tick) {
+	pfDrawRect(0, 0, PF_W, PF_H, rgb(4, 6, 14), 63);
+	if (!g_zoneOk) return;
+	// drawBackdrop(g, -1, -1, t, 46, 10) : case (w/2, 3h/4), derive sinusoidale.
+	const int cellX = zoneW() / 2, cellY = zoneH() * 3 / 4;
+	int camX = cellX * 24 - PF_W / 2 + 46 * isinTick(tick, 110) / 4096;
+	int camY = (16 + cellY - zoneHeight(cellX, cellY)) * 16 - PF_H / 2 + 10 * isinTick(tick, 70, 652) / 4096;
+	const int maxX = zoneW() * 24 - PF_W, maxY = (zoneH() + 16) * 16 - PF_H;
+	camX = camX < 0 ? 0 : (camX > maxX ? maxX : camX);
+	camY = camY < 0 ? 0 : (camY > maxY ? maxY : camY);
+	zoneDraw(camX, camY, 0);
+	(void)zone;
 }
+
+int cdZoneFor(int zone) { return zone == 42 ? 1042 : zone; }  // fond brut 042.a1m
 
 }  // namespace
 
 void introInitPS1(uint32_t padSeed) {
-	introInit(&g_intro);
+	const int n = kIntroCardCount < 16 ? kIntroCardCount : 16;
+	for (int i = 0; i < n; ++i) {
+		g_meta[i].scene = uint8_t(kIntroCards[i].scene);
+		g_meta[i].len = uint16_t(kIntroCards[i].len);
+	}
+	if (!g_halfReady) initHalfWidths();
+	introInit(&g_intro, g_meta, n);
 	g_intro.prevPad = padSeed;  // anti-rebond entre le menu et l'intro
+	g_loadedCard = -1;
+	g_zoneOk = 0;
 }
 
 void introUpdatePS1(uint32_t pad) { introStep(&g_intro, pad); }
 
 void introDrawPS1(void) {
-	const uint32_t frame = uint32_t(g_intro.frame);
-	// Bandes de cinema : l'action reste lisible, le texte A1 en bas.
-	pfDrawRect(0, 0, PF_W, 14, 0x0000u, 6);
-	pfDrawRect(0, 226, PF_W, 14, 0x0000u, 6);
-
-	switch (g_intro.scene) {
-		case INTRO_SCENE_SKY:   drawSky(frame); break;
-		case INTRO_SCENE_SHIP:  drawShip(frame); break;
-		case INTRO_SCENE_FALL:  drawFall(frame); break;
-		case INTRO_SCENE_BEACH: drawBeach(frame); break;
-		case INTRO_SCENE_DONE:
-		default: break;
+	if (introDone(&g_intro)) return;
+	const IntroCardData& c = kIntroCards[g_intro.card];
+	const int t = g_intro.tick;
+	// Fond de carte charge au debut de la carte (pendant le fondu d'entree).
+	if (g_loadedCard != g_intro.card) {
+		g_loadedCard = g_intro.card;
+		if (c.scene == INTRO_SCENE_ZONE) g_zoneOk = zoneLoadFromCdPS1(uint32_t(cdZoneFor(c.zone)));
+	}
+	switch (c.scene) {
+		case INTRO_SCENE_ZONE: zoneScene(c.zone, t); break;
+		case INTRO_SCENE_FALL: fallScene(t); break;
+		case INTRO_SCENE_SHIP: {
+			const int span = c.shipLast - c.shipFirst + 1;
+			int prog = t * 1000 / 540;  // clamp01(t / 9 s) en millioemes
+			if (prog > 1000) prog = 1000;
+			nightSky(t + g_intro.card * 600, (g_intro.card - c.shipFirst) * 1000 + prog, span * 1000);
+			break;
+		}
+		default: nightSky(t + g_intro.card * 600, 0, 0); break;
 	}
 
-	const int panel = (frame * kIntroPanelCount) / INTRO_TOTAL_FRAMES;
-	drawPanel(panel);
+	// Bandes de cinema (PC : 20 px en haut, 62 px en bas, degrade de 16 lignes).
+	pfDrawRect(0, 0, PF_W, 20, 0x0000u, 8);
+	pfDrawRect(0, PF_H - 62, PF_W, 62, 0x0000u, 8);
+	for (int k = 0; k < 8; ++k) {
+		pfDrawRectSemi(0, PF_H - 63 - k, PF_W, 1, 0x0000u, 8);
+		if (k < 4) pfDrawRectSemi(0, PF_H - 63 - k, PF_W, 1, 0x0000u, 8);
+		pfDrawRectSemi(0, 20 + k / 2, PF_W, 1, 0x0000u, 8);
+	}
 
-	// Invite PC identique (src/title.cpp::drawPrologue), en bas de l'ecran.
-	text("C : passer", 6, 6, 1, 1);
-	// Aucun numero de version affiche cote PC : supprime pour la parite.
+	// Texte : machine a ecrire, lignes centrees, nom turquoise au-dessus.
+	const int shown = introShown(t, c.len);
+	int y = PF_H - 54 + (c.nlines < 4 ? (4 - c.nlines) * 5 : 0);
+	if (c.name[0] != '\0') {
+		y = PF_H - 46;
+		if (t > INTRO_FADE / 2) centeredShadow(c.name, PF_H - 59, PF_FONT_BANK_TEAL, 99, 2);
+	}
+	int left = shown;
+	for (int i = 0; i < c.nlines; ++i) {
+		const int len = length(c.lines[i]);
+		centeredShadow(c.lines[i], y, PF_FONT_BANK_WHITE, left, 2);
+		left -= (left < len + 1) ? left : len + 1;
+		y += 11;
+	}
+	if (shown >= c.len && ((g_intro.frame / 24) % 2) != 0)
+		a1window::windRect(PF_W - 22, PF_H - 20, 16, 16, 176, 56, 8, 1);  // fleche de suite
+	const char* hint = "START : passer";
+	int hx = 6;
+	for (int i = 0; hint[i]; ++i) {
+		const unsigned char ch = static_cast<unsigned char>(hint[i]);
+		glyph(ch, hx, 6, PF_FONT_BANK_SKIP, 1);
+		hx += kA1FontAdvance[ch];
+	}
+
+	// Fondus (PC : voile noir d'opacite 1 - tick/FADE, puis leaving/FADE).
+	int veil = 0;
+	if (t < INTRO_FADE) veil = 3 - t * 4 / INTRO_FADE;
+	if (g_intro.leaving > 0) veil = 3 - g_intro.leaving * 4 / INTRO_FADE;
+	for (int k = 0; k < veil; ++k) pfDrawRectSemi(0, 0, PF_W, PF_H, 0x0000u, 0);
+	if (veil >= 3) pfDrawRect(0, 0, PF_W, PF_H, 0x0000u, 0);
 }
 
 int introDonePS1(void) { return introDone(&g_intro); }

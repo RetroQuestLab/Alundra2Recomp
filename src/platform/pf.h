@@ -58,6 +58,10 @@ extern "C" {
 #define PF_FONT_BANK_HINT 6
 #define PF_FONT_BANK_SELECT 7
 #define PF_FONT_BANK_SUBTITLE 8
+#define PF_FONT_BANK_WHITE 9      /* texte du prologue PC (225,238,232) */
+#define PF_FONT_BANK_TEAL 10      /* nom du locuteur du prologue (180,225,225) */
+#define PF_FONT_BANK_SHADOW 11    /* ombre noire (8,8,8 : 0 serait transparent) */
+#define PF_FONT_BANK_SKIP 12      /* invite de passage (90,98,124) */
 
 /* Atlas WIND.TX de la fenetre de dialogue A1 : 256x256 4bpp = 64x256 demi-mots.
  * Ses 16 banques CLUT occupent 16 lignes en x=320, y=256. Ces deux rectangles
@@ -179,6 +183,11 @@ void pfUpload16(int x, int y, int w, int h, const uint16_t* data);
  * (w,h) = taille a l'ecran en pixels, (clutX,clutY) = position de la CLUT.
  * Le mot DR_TPAGE est emis automatiquement. */
 void pfDrawSprite16(int x, int y, int u, int v, int w, int h, int clutX, int clutY, int z);
+/* Sprite 4bpp centre en (cx, cy), agrandi `scale` fois et tourne de
+ * `angle4096` (1/4096 de tour). Utilise par la chute de l'intro (PC :
+ * drawFrameRotated x2). */
+void pfDrawSpriteRot(int cx, int cy, int u, int v, int w, int h, int clutX, int clutY,
+                     int scale, int angle4096, int z);
 
 /* Rectangle opaque, coordonnees ecran 320x240, couleur BGR555 (15 bits).
  * z = priorite de dessin dans l'ordering table : 0 = premier plan,

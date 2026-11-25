@@ -312,7 +312,7 @@ void checkOptionsFooter() {
 void checkMenuHintColor() {
 	constexpr int kHint = 6;  // PF_FONT_BANK_HINT, ajoute a l'etape suivante
 	constexpr int kBanks = int(sizeof(kA1FontCluts) / sizeof(kA1FontCluts[0]));
-	CHECK(kBanks == 9);  // + selection et sous-titre PC (v0.8.37)
+	CHECK(kBanks == 13);  // + menu et prologue PC (v0.8.37)
 	// Evite une lecture hors tableau pendant la phase RED.
 	if (kBanks > kHint)
 		CHECK(kA1FontCluts[kHint][1] == parityColor(15, 16, 21));  // (120,132,166) -> (120,128,168)
