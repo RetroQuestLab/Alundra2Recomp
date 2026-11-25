@@ -628,6 +628,18 @@ int main() {
 		CHECK((s.gates & QST_GATE_CRISTAL) != 0);
 		questDialogueDone(&s);
 		CHECK(questChestTake(&s, QST_CHEST_CRISTAL) == QST_DLG_NONE);
+		// Zeppo (47,26) : acteur parlant (sprite capitaine trop large pour un PNJ).
+		int zx = 0, zy = 0;
+		questActorPos(QST_ACTOR_ZEPPO, &zx, &zy);
+		CHECK(zx == 47 * 24 + 12 && zy == 26 * 16 + 8);
+		CHECK(questActorAvailable(&s, QST_ACTOR_ZEPPO) == 1);
+		tap(s, PF_BTN_CROSS, zx, zy + QST_FWD_Y, PF_DIR_UP);
+		CHECK(s.dialogueId == QST_DLG_ZEPPO);
+		questDialogueDone(&s);
+		CHECK((s.gates & QST_FLAG_ZEPPO_VU) != 0);
+		CHECK(questActorAvailable(&s, QST_ACTOR_ZEPPO) == 1);  // reste parlable
+		questSetZone(&s, QST_ZONE_EDEN);
+		CHECK(questActorAvailable(&s, QST_ACTOR_ZEPPO) == 0);
 	}
 	// --- Manoir de Milena : Diaz, Milena, Alexia -----------------------------
 	{
@@ -668,6 +680,27 @@ int main() {
 		CHECK(questNpcAvailable(&s, QST_NPC_DIAZ) == 1);
 		questSetZone(&s, QST_ZONE_MEDUSA);
 		CHECK(questNpcAvailable(&s, QST_NPC_DIAZ) == 0);
+	}
+	// --- Paco : figurants PC et coffre d'herbe -------------------------------
+	{
+		QuestState s;
+		questInit(&s);
+		CHECK(questNpcAvailable(&s, QST_NPC_VILLAGEOISE) == 1);
+		CHECK(questNpcAvailable(&s, QST_NPC_ENFANTS_PACO) == 1);
+		CHECK(questNpcAvailable(&s, QST_NPC_FORGERON) == 1);
+		CHECK(questNpcDialogue(&s, QST_NPC_VILLAGEOISE) == QST_DLG_VILLAGEOISE);
+		CHECK(questNpcDialogue(&s, QST_NPC_ENFANTS_PACO) == QST_DLG_ENFANTS);
+		s.chestLettre = 1;
+		CHECK(questNpcDialogue(&s, QST_NPC_VILLAGEOISE) == QST_DLG_VILLAGEOISE_LETTRE);
+		CHECK(questNpcDialogue(&s, QST_NPC_ENFANTS_PACO) == QST_DLG_ENFANTS_LETTRE);
+		s.gates |= QST_FLAG_ORDRE;
+		CHECK(questNpcDialogue(&s, QST_NPC_ENFANTS_PACO) == QST_DLG_ENFANTS_ORDRE);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_HERBE) == 1);
+		CHECK(questActorInteract(&s, QST_ACTOR_CHEST_HERBE) == QST_DLG_OBJET_HERBE);
+		questDialogueDone(&s);
+		CHECK(questActorAvailable(&s, QST_ACTOR_CHEST_HERBE) == 0);
+		questSetZone(&s, QST_ZONE_KINDRA);
+		CHECK(questNpcAvailable(&s, QST_NPC_VILLAGEOISE) == 0);
 	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{

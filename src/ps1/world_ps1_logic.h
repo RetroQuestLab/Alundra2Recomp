@@ -41,6 +41,9 @@
 #define QST_FLAG_DIAZ_CRISTAL_VU (1u << 23)
 #define QST_FLAG_MILENA_VU    (1u << 24)
 #define QST_FLAG_ALEXIA_MANOIR_VU (1u << 25)
+#define QST_FLAG_ZEPPO_VU     (1u << 26)
+#define QST_FLAG_HERBE        (1u << 27)  // coffre d'herbe de Paco ouvert
+#define QST_FLAG_PACO_PNJ_VU  (1u << 28)  // villageoise / enfants / forgeron (bulle)
 #define QST_GATE_TRONE_MASK   (QST_GATE_EPEE_SUPREME | QST_GATE_LAMPE | \
                                QST_GATE_PRISME | QST_GATE_BOSS_MEDUSA | \
                                QST_GATE_CRISTAL)

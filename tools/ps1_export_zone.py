@@ -45,7 +45,11 @@ WIND_CLUTS = (320, 256, 16, 16)
 NPC0_TEX = (640, 256, 16, 48)
 NPC1_TEX = (656, 256, 16, 48)
 NPC2_TEX = (672, 256, 16, 48)
-NPC_CLUTS = (640, 304, 16, 3)
+# v0.8.37 : Paco compte 5 PNJ sur PC ; deux emplacements de plus, en VRAM
+# libre (entre NPC2 et les acteurs ; apres l'atlas d'icones).
+NPC3_TEX = (688, 256, 16, 48)
+NPC4_TEX = (968, 256, 16, 48)
+NPC_CLUTS = (640, 304, 16, 5)
 # Acteurs du jalon boss (ogre 40x49, coffres 25x33) et du trone (Mephisto
 # 40x49, Alexia 24x43, Roi 25x47) : plus larges qu'un slot PNJ.
 # Six textures 32 demi-mots x 64 lignes, CLUT sur six lignes consecutives.
@@ -76,7 +80,7 @@ ICON_CLUT = (896, 480, 16, 1)
 RESERVED_RECTS = ((0, 0, 320, 240), (320, 0, 320, 240), HERO_SCRATCH,
                   HUD2_ATLAS, HUD2_CLUTS,
                   HERO_CLUTS, FONT_ATLAS, FONT_CLUTS, WIND_ATLAS, WIND_CLUTS,
-                  NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC_CLUTS,
+                  NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC3_TEX, NPC4_TEX, NPC_CLUTS,
                   ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,
                   ACTOR3_TEX, ACTOR4_TEX, ACTOR5_TEX, ACTOR_CLUTS,
                   HUD_ATLAS, HUD_CLUTS, ENEMY_TEX, ENEMY_CLUT, ICON_ATLAS, ICON_CLUT)

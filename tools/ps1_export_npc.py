@@ -24,7 +24,7 @@ import os
 import struct
 import sys
 
-from ps1_export_zone import (NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC_CLUTS,
+from ps1_export_zone import (NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC3_TEX, NPC4_TEX, NPC_CLUTS,
                              pad_rows, parse_a1s, quantize)
 
 # (fichier A1SP, index de frame IDLE, zone, slot VRAM)
@@ -52,9 +52,14 @@ SOURCE = {
     'diaz_manoir': ('assets/sprites/diaz.a1s', 0, 86, 0),
     'milena': ('assets/sprites/milena.a1s', 0, 86, 1),
     'alexia_manoir': ('assets/sprites/alexia.a1s', 10, 86, 2),
+    # Paco (data/world.txt) : villageoise (38,50), enfants (32,52) et Orvan le
+    # forgeron (36,47, ajout du remake rm_forgeron).
+    'villageoise': ('assets/sprites/villageoise.a1s', 0, 11, 2),
+    'enfants_paco': ('assets/sprites/villageoise.a1s', 0, 11, 3),
+    'rm_forgeron': ('assets/sprites/villageois.a1s', 0, 11, 4),
 }
 DEST = 'npc.dat'
-SLOT_RECTS = (NPC0_TEX, NPC1_TEX, NPC2_TEX)
+SLOT_RECTS = (NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC3_TEX, NPC4_TEX)
 
 
 def select_frame(bank, frame_index):

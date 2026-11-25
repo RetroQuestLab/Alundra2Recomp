@@ -279,7 +279,7 @@ def test_npc_vram_reserved():
     """Les sprites PNJ A1 et leurs CLUT ne doivent pas ecraser les tuiles de
     zone, le scratch heros, la police ou la fenetre."""
     import ps1_export_npc as pn
-    for rect in (pn.NPC0_TEX, pn.NPC1_TEX, pn.NPC2_TEX, pn.NPC_CLUTS):
+    for rect in (pn.NPC0_TEX, pn.NPC1_TEX, pn.NPC2_TEX, pn.NPC3_TEX, pn.NPC4_TEX, pn.NPC_CLUTS):
         assert rect in px.RESERVED_RECTS, f"rectangle PNJ non reserve: {rect}"
     assert pn.NPC0_TEX[0] + pn.NPC0_TEX[2] <= pn.NPC1_TEX[0]
     assert pn.NPC1_TEX[0] + pn.NPC1_TEX[2] <= pn.NPC2_TEX[0]
@@ -301,7 +301,7 @@ def test_npc_blob_header_uploadable():
     b = open(os.path.join(out, 'npc.dat'), 'rb').read()
     assert len(b) == size and b[:4] == b'P1NP'
     count, _ = struct.unpack_from('<HH', b, 4)
-    assert count == len(pn.SOURCE) == 18
+    assert count == len(pn.SOURCE) == 21
     assert list(pn.SOURCE)[9] == 'guide_vallee' and pn.SOURCE['guide_vallee'][2] == 26
     by_zone = {}
     p = 8
@@ -311,7 +311,7 @@ def test_npc_blob_header_uploadable():
         tex_x, tex_y, clut_x, clut_y, zone, slot = struct.unpack_from('<HHHHHH', b, p)
         p += 12
         assert w > 0 and h > 0 and stride >= 8 and upload_h >= h
-        rect = (pn.NPC0_TEX, pn.NPC1_TEX, pn.NPC2_TEX)[slot]
+        rect = (pn.NPC0_TEX, pn.NPC1_TEX, pn.NPC2_TEX, pn.NPC3_TEX, pn.NPC4_TEX)[slot]
         assert (tex_x, tex_y) == (rect[0], rect[1])
         assert stride <= rect[2] and upload_h <= rect[3]
         assert (clut_x, clut_y) == (pn.NPC_CLUTS[0], pn.NPC_CLUTS[1] + slot)
@@ -320,7 +320,7 @@ def test_npc_blob_header_uploadable():
     assert p == len(b)
     assert set(by_zone) == {11, 13, 19, 26, 42, 50, 86, 119}, f'zones PNJ inattendues : {sorted(by_zone)}'
     for zone, slots in by_zone.items():
-        assert len(slots) <= 3 and len(set(slots)) == len(slots), \
+        assert len(slots) <= len(pn.SLOT_RECTS) and len(set(slots)) == len(slots), \
             f'slots PNJ en conflit dans la zone {zone} : {slots}'
     print("test_npc_blob_header_uploadable: PASS")
 
@@ -339,7 +339,7 @@ def test_actor_vram_and_blob_uploadable():
     expected = {'ogre', 'coffre_strange_key', 'coffre_lettre',
                 'mephisto', 'alexia_trone', 'roi_trone', 'coffre_ordre',
                 'golem', 'coffre_lampe', 'golem_eden', 'coffre_prisme',
-                'capitaine', 'coffre_cristal'}
+                'capitaine', 'coffre_cristal', 'zeppo', 'coffre_herbe'}
     assert set(pa.SOURCE) == expected, f"acteurs PS1 incomplets : {sorted(pa.SOURCE)}"
     for name in ('mephisto', 'alexia_trone', 'roi_trone'):
         assert pa.SOURCE[name][2] == 120, f"{name} hors de la zone 120"
@@ -359,7 +359,7 @@ def test_actor_vram_and_blob_uploadable():
     b = open(os.path.join(out, 'actor.dat'), 'rb').read()
     assert len(b) == size and b[:4] == b'P1AC'
     count, _ = struct.unpack_from('<HH', b, 4)
-    assert count == len(pa.SOURCE) == 13
+    assert count == len(pa.SOURCE) == 15
     p = 8
     zones = set()
     for i in range(count):
@@ -374,7 +374,7 @@ def test_actor_vram_and_blob_uploadable():
         zones.add(zone)
         p += 32 + stride * 2 * upload_h
     assert p == len(b)
-    assert zones == {13, 19, 26, 42, 50, 119, 120}, f"zones acteur inattendues : {sorted(zones)}"
+    assert zones == {11, 13, 19, 26, 42, 50, 119, 120}, f"zones acteur inattendues : {sorted(zones)}"
     print("test_actor_vram_and_blob_uploadable: PASS")
 
 
@@ -556,7 +556,10 @@ def test_dialogue_header_is_pod_and_uploadable():
                 'roswell_objet_prisme', 'ome', 'boss_042', 'objet_prisme',
                 'medusa_arrivee', 'ruby_puerto', 'albert_puerto', 'zach_fort',
                 'boss_medusa', 'objet_cristal', 'manoir_arrivee', 'diaz_manoir',
-                'diaz_manoir_objet_cristal', 'milena_boss_medusa', 'alexia_manoir')
+                'diaz_manoir_objet_cristal', 'milena_boss_medusa', 'alexia_manoir',
+                'zeppo_puerto', 'villageoise', 'villageoise_objet_lettre',
+                'enfants_paco', 'enfants_paco_objet_lettre', 'enfants_paco_objet_ordre',
+                'rm_forgeron', 'objet_herbe')
     assert dlg.DIALOGUE_IDS == expected, f'identifiants de dialogue incomplets : {dlg.DIALOGUE_IDS}'
     assert 'kDlgLines_garde' in text, "le dialogue du garde doit etre exporte"
     # Aucune touche clavier PC ne doit apparaitre dans un texte PS1.

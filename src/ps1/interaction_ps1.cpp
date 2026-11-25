@@ -309,6 +309,8 @@ void grantQuestItems(const QuestState* a, const QuestState* b) {
 		inventoryAddPS1("prisme", 1);
 	if (!(a->gates & QST_GATE_CRISTAL) && (b->gates & QST_GATE_CRISTAL))
 		inventoryAddPS1("cristal", 1);
+	if (!(a->gates & QST_FLAG_HERBE) && (b->gates & QST_FLAG_HERBE))
+		inventoryAddPS1("herbe", 1);
 }
 
 /* Nom du lieu a l'entree d'une zone, comme le PC (world.cpp : 200 ticks,

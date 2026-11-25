@@ -45,6 +45,10 @@ SOURCE = {
     # Puerto Medusa : capitaine (spawn 050 34 28) et coffre du Cristal (34,29).
     'capitaine': ('assets/sprites/capitaine.a1s', 0, 50, 0),
     'coffre_cristal': ('assets/sprites/coffre.a1s', 0, 50, 1),
+    # Zeppo (npc 050 47 26 capitaine) : sprite trop large pour un emplacement PNJ.
+    'zeppo': ('assets/sprites/capitaine.a1s', 0, 50, 2),
+    # Paco : coffre d'herbe (chest 011 29 50 herbe).
+    'coffre_herbe': ('assets/sprites/coffre.a1s', 0, 11, 0),
 }
 DEST = 'actor.dat'
 SLOT_RECTS = (ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,

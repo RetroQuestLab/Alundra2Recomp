@@ -58,7 +58,10 @@
 #define QST_NPC_DIAZ              15  // zone 086, case (40,30)
 #define QST_NPC_MILENA            16  // zone 086, case (26,8)
 #define QST_NPC_ALEXIA_MANOIR     17  // zone 086, case (25,8)
-#define QST_NPC_COUNT             18
+#define QST_NPC_VILLAGEOISE       18  // zone 011, case (38,50)
+#define QST_NPC_ENFANTS_PACO      19  // zone 011, case (32,52)
+#define QST_NPC_FORGERON          20  // zone 011, case (36,47), ajout du remake
+#define QST_NPC_COUNT             21
 
 /* Coffres portes depuis data/world.txt (centres en pixels, cases 24x16). */
 #define QST_CHEST_STRANGE_KEY      0  // zone 019, case (7,16)
@@ -83,7 +86,9 @@
 #define QST_ACTOR_CHEST_PRISME     10  // zone 042, case (26,31)
 #define QST_ACTOR_CAPITAINE       11  // zone 050, spawn (34,28)
 #define QST_ACTOR_CHEST_CRISTAL   12  // zone 050, case (34,29)
-#define QST_ACTOR_COUNT           13
+#define QST_ACTOR_ZEPPO           13  // zone 050, npc (47,26), sprite capitaine (39 px)
+#define QST_ACTOR_CHEST_HERBE     14  // zone 011, case (29,50)
+#define QST_ACTOR_COUNT           15
 
 #define QST_DLG_NONE               (-1)
 #define QST_DLG_PRUNWELL            0
@@ -132,6 +137,14 @@
 #define QST_DLG_DIAZ_CRISTAL       42  // [diaz_manoir_objet_cristal]
 #define QST_DLG_MILENA             43  // [milena_boss_medusa] (gate deja pose a l'entree)
 #define QST_DLG_ALEXIA_MANOIR      44  // [alexia_manoir]
+#define QST_DLG_ZEPPO              45  // [zeppo_puerto]
+#define QST_DLG_VILLAGEOISE        46  // [villageoise]
+#define QST_DLG_VILLAGEOISE_LETTRE 47  // [villageoise_objet_lettre]
+#define QST_DLG_ENFANTS            48  // [enfants_paco]
+#define QST_DLG_ENFANTS_LETTRE     49  // [enfants_paco_objet_lettre]
+#define QST_DLG_ENFANTS_ORDRE      50  // [enfants_paco_objet_ordre]
+#define QST_DLG_FORGERON           51  // [rm_forgeron] (ajout du remake)
+#define QST_DLG_OBJET_HERBE        52  // [objet_herbe]
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -227,6 +240,18 @@ inline void questNpcPos(int npc, int* x, int* y) {
 		if (x) *x = 23 * 24 + 12;  // 564, zone 119
 		if (y) *y = 12 * 16 + 8;   // 200
 		break;
+	case QST_NPC_VILLAGEOISE:
+		if (x) *x = 38 * 24 + 12;
+		if (y) *y = 50 * 16 + 8;
+		break;
+	case QST_NPC_ENFANTS_PACO:
+		if (x) *x = 32 * 24 + 12;
+		if (y) *y = 52 * 16 + 8;
+		break;
+	case QST_NPC_FORGERON:
+		if (x) *x = 36 * 24 + 12;
+		if (y) *y = 47 * 16 + 8;
+		break;
 	case QST_NPC_DIAZ:
 		if (x) *x = 40 * 24 + 12;
 		if (y) *y = 30 * 16 + 8;
@@ -309,7 +334,8 @@ inline int questZoneArrival(QuestState* s) {
 inline int questNpcAvailable(const QuestState* s, int npc) {
 	switch (s->zone) {
 	case QST_ZONE_PACO:
-		if (npc == QST_NPC_PRUNWELL) return 1;
+		if (npc == QST_NPC_PRUNWELL || npc == QST_NPC_VILLAGEOISE ||
+		    npc == QST_NPC_ENFANTS_PACO || npc == QST_NPC_FORGERON) return 1;
 		return npc == QST_NPC_GARDE && s->stage >= QST_STAGE_MONT_EPERVIER ? 1 : 0;
 	case QST_ZONE_KINDRA:
 		return npc == QST_NPC_FINROD || npc == QST_NPC_MARCHAND_KINDRA ||
@@ -344,6 +370,10 @@ inline int questNpcBubble(const QuestState* s, int npc) {
 	case QST_NPC_GUIDE_VALLEE: return (s->gates & QST_FLAG_GUIDE_VU) == 0 ? 1 : 0;
 	case QST_NPC_OME: return (s->gates & QST_FLAG_OME_VU) == 0 ? 1 : 0;
 	case QST_NPC_RUBY: return (s->gates & QST_FLAG_RUBY_VU) == 0 ? 1 : 0;
+	case QST_NPC_VILLAGEOISE:
+	case QST_NPC_ENFANTS_PACO:
+	case QST_NPC_FORGERON:
+		return 0;  // pas de bulle : figurants (le PC n'en affiche pas non plus)
 	case QST_NPC_MILENA: return (s->gates & QST_FLAG_MILENA_VU) == 0 ? 1 : 0;
 	case QST_NPC_ALEXIA_MANOIR: return (s->gates & QST_FLAG_ALEXIA_MANOIR_VU) == 0 ? 1 : 0;
 	case QST_NPC_DIAZ:
@@ -400,6 +430,14 @@ inline int questNpcDialogue(const QuestState* s, int npc) {
 	case QST_NPC_GUIDE_VALLEE: return QST_DLG_GUIDE_VALLEE;
 	case QST_NPC_OME: return QST_DLG_OME;
 	case QST_NPC_RUBY: return QST_DLG_RUBY;
+	// main.cpp tryInteract : le dernier variant d'evenement disponible gagne
+	// (objet_lettre puis objet_ordre).
+	case QST_NPC_VILLAGEOISE:
+		return s->chestLettre ? QST_DLG_VILLAGEOISE_LETTRE : QST_DLG_VILLAGEOISE;
+	case QST_NPC_ENFANTS_PACO:
+		if (s->gates & QST_FLAG_ORDRE) return QST_DLG_ENFANTS_ORDRE;
+		return s->chestLettre ? QST_DLG_ENFANTS_LETTRE : QST_DLG_ENFANTS;
+	case QST_NPC_FORGERON: return QST_DLG_FORGERON;
 	case QST_NPC_DIAZ:
 		return (s->gates & QST_GATE_CRISTAL) ? QST_DLG_DIAZ_CRISTAL : QST_DLG_DIAZ;
 	case QST_NPC_MILENA: return QST_DLG_MILENA;
@@ -593,6 +631,14 @@ inline void questActorPos(int actor, int* x, int* y) {
 		if (x) *x = 13 * 24 + 12;  // 324, zone 120
 		if (y) *y = 42 * 16 + 8;   // 680
 		break;
+	case QST_ACTOR_CHEST_HERBE:
+		if (x) *x = 29 * 24 + 12;
+		if (y) *y = 50 * 16 + 8;
+		break;
+	case QST_ACTOR_ZEPPO:
+		if (x) *x = 47 * 24 + 12;
+		if (y) *y = 26 * 16 + 8;
+		break;
 	case QST_ACTOR_CAPITAINE:
 		if (x) *x = 34 * 24 + 12;
 		if (y) *y = 28 * 16 + 8;
@@ -650,6 +696,10 @@ inline int questActorAvailable(const QuestState* s, int actor) {
 		return s->zone == QST_ZONE_MEDUSA && (s->gates & QST_GATE_BOSS_MEDUSA) == 0 ? 1 : 0;
 	case QST_ACTOR_CHEST_CRISTAL:
 		return questChestAvailable(s, QST_CHEST_CRISTAL);
+	case QST_ACTOR_ZEPPO:
+		return s->zone == QST_ZONE_MEDUSA ? 1 : 0;
+	case QST_ACTOR_CHEST_HERBE:
+		return s->zone == QST_ZONE_PACO && (s->gates & QST_FLAG_HERBE) == 0 ? 1 : 0;
 	case QST_ACTOR_MEPHISTO:
 		return s->zone == QST_ZONE_TRONE && s->talkedMephistoArrivee == 1 &&
 		       s->mephistoDown == 0 ? 1 : 0;
@@ -706,6 +756,13 @@ inline int questActorInteract(QuestState* s, int actor) {
 		return QST_DLG_NONE;  // se combat (CARRE)
 	case QST_ACTOR_CHEST_CRISTAL:
 		return questChestTake(s, QST_CHEST_CRISTAL);
+	case QST_ACTOR_ZEPPO:
+		s->dialogueId = QST_DLG_ZEPPO;
+		return s->dialogueId;
+	case QST_ACTOR_CHEST_HERBE:
+		s->gates |= QST_FLAG_HERBE;
+		s->dialogueId = QST_DLG_OBJET_HERBE;
+		return s->dialogueId;
 	case QST_ACTOR_MEPHISTO:
 		if (!s->talkedMephistoTrone) {
 			s->dialogueId = QST_DLG_MEPHISTO_TONE;
@@ -833,6 +890,9 @@ inline void questDialogueDoneAfter(QuestState* s, int dialogueId) {
 		break;
 	case QST_DLG_ALEXIA_MANOIR:
 		s->gates |= QST_FLAG_ALEXIA_MANOIR_VU;
+		break;
+	case QST_DLG_ZEPPO:
+		s->gates |= QST_FLAG_ZEPPO_VU;
 		break;
 	case QST_DLG_ALBERT:
 		s->gates |= QST_FLAG_ALBERT_VU;
