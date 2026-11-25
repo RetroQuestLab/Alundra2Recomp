@@ -35,7 +35,7 @@ HERO_CLUTS = (512, 320, 16, 64)
 # (y=260) porte l'orange du "- remake -" du titre depuis v0.8.15, la 6e
 # (y=261) le bleu pale des lignes normales d'options depuis v0.8.16.
 FONT_ATLAS = (0, 256, 64, 256)
-FONT_CLUTS = (128, 256, 16, 7)
+FONT_CLUTS = (128, 256, 16, 9)
 # Atlas WIND.TX de la fenetre de dialogue : meme format, 64x256 demi-mots.
 # Ses 16 banques CLUT occupent 16 lignes a x=320, y=256.
 WIND_ATLAS = (256, 256, 64, 256)

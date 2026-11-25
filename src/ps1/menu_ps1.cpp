@@ -222,7 +222,9 @@ void drawBranding() {
 	drawLogo();  // masques 12x16 en primitives : aucun etirement de SPRT.
 	// Sous-titre PC : y = ly(26) + LOGO_H(58) + 4 = 88, deux filets lateraux
 	// a y+3 et "- remake -" a y+13. Aucun "APPUYEZ SUR START" cote PC.
-	centered("UNE LEGENDE EST NEE", 88, 1, 1, 1);
+	// PC : foldAccents("UNE LEGENDE EST NEE" accentue) en (190,208,244). FONT3
+	// est un atlas Latin-1 : \311 = E accent aigu majuscule.
+	centered("UNE L\311GENDE EST N\311E", 88, 1, PF_FONT_BANK_SUBTITLE, 1);
 	pfDrawRect(40, 91, 34, 1, bgr(24, 18, 6), 2);
 	pfDrawRect(246, 91, 34, 1, bgr(24, 18, 6), 2);
 	// v0.8.15 : le PC ecrit "- remake -" en (226,150,110). La banque 0 olive
@@ -249,7 +251,8 @@ void drawMain(uint32_t frame) {
 	for (int i = 0; i < count; ++i) {
 		const int y = top + i * 15;
 		const char* label = menuMainLabel(i, g_menu.hasSave);
-		const int bank = i == g_menu.cursor ? 0 : 1;  // or / ivoire FONT3
+		// PC (title.cpp:565) : selection (210,232,225), autres (150,164,196).
+		const int bank = i == g_menu.cursor ? PF_FONT_BANK_SELECT : PF_FONT_BANK_PALE;
 		centered(label, y, 1, bank, 1);
 		if (i == g_menu.cursor) selectionMark(y, frame, textWidth(label, 1));
 	}
@@ -337,7 +340,9 @@ void menuDrawPS1(void) {
 		// FONT3 etait cyan (120,216,216). Seules ces deux aides changent de
 		// banque : drawLoadMessage() garde la banque 2.
 		if (g_menu.screen == MENU_SCR_MAIN)
-			centered("Fl\350ches : choisir    Espace : valider", PF_H - 14, 1, PF_FONT_BANK_HINT, 1);
+			// Meme style et place que l'aide PC (title.cpp), touches de la manette PS1 :
+	// 'Fleches'/'Espace' n'existent pas sur la console (adaptation de plateforme).
+	centered("Haut / Bas : choisir    Croix : valider", PF_H - 14, 1, PF_FONT_BANK_HINT, 1);
 		else if (g_menu.screen == MENU_SCR_OPTIONS)
 			centered("Gauche / Droite : r\351gler    C : retour", PF_H - 14, 1, PF_FONT_BANK_HINT, 1);
 	}

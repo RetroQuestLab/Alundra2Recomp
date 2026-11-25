@@ -102,10 +102,15 @@ void zone119Init(void) { zoneLoadFromCdPS1(119u); }
 void zone120Init(void) { zoneLoadFromCdPS1(120u); }
 
 void zoneDraw(int camX, int camY, int /*z*/) {
-	// Meme ordre que Map::draw : rangees du haut vers le bas, priorite decroissante.
+	// Meme rendu que Map::draw : rangees du haut vers le bas (z decroissant).
+	// Dans une rangee, toutes les tuiles ont le meme z, et addPrim insere en
+	// tete : l'ordre de DESSIN est l'inverse de l'ordre d'AJOUT. Pour dessiner
+	// comme le PC (gauche -> droite, murs puis dessus), on ajoute donc de
+	// droite a gauche, le dessus avant les murs, et les murs du dernier au
+	// premier. Avant v0.8.37, l'herbe des murs recouvrait les paves de Paco.
 	for (int y = 0; y < g_h; ++y) {
 		const int rowZ = 63 - (y & 63);
-		for (int x = 0; x < g_w; ++x) {
+		for (int x = g_w - 1; x >= 0; --x) {
 			const int sx = x * kTileW - camX;
 			if (sx + kTileW < 0 || sx >= PF_W) continue;
 
@@ -118,13 +123,13 @@ void zoneDraw(int camX, int camY, int /*z*/) {
 			const uint16_t firstWall = rd16(c + 6);
 			const int sy = (kMarginRows + y - height) * kTileH - camY;
 
-			for (int i = 0; i < wallCount; ++i) {
+			if (sy + kTileH >= 0 && sy < PF_H) drawTile(top, sx, sy, rowZ);
+			for (int i = wallCount - 1; i >= 0; --i) {
 				const int wy = sy + (i + 1 - wallOffset) * kTileH;
 				if (wy + kTileH < 0 || wy >= PF_H) continue;
 				if ((uint32_t)firstWall + i >= g_nWalls) continue;
 				drawTile(rd16(g_walls + ((uint32_t)firstWall + i) * 2), sx, wy, rowZ);
 			}
-			if (sy + kTileH >= 0 && sy < PF_H) drawTile(top, sx, sy, rowZ);
 		}
 	}
 }

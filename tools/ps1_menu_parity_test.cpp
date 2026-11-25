@@ -148,7 +148,7 @@ void checkMainNoSave() {
 	CHECK(hasLine(lines, "Nouvelle partie"));
 	CHECK(hasLine(lines, "Options"));
 	CHECK(hasLine(lines, "Quitter"));
-	CHECK(hasLine(lines, "Fl\350ches : choisir    Espace : valider"));
+	CHECK(hasLine(lines, "Haut / Bas : choisir    Croix : valider"));  // touches manette (v0.8.37)
 	CHECK(!hasLine(lines, "NOUVELLE PARTIE"));
 	CHECK(!hasLine(lines, "CHARGER UNE PARTIE"));
 	CHECK(!hasLine(lines, "HAUT/BAS : CHOISIR   CROIX : VALIDER"));
@@ -217,8 +217,11 @@ void checkSelectionParity() {
 	// l'absence de la banque 1 ivoire sur cette meme ligne.
 	const int top = 143;  // g_menu.hasSave == 1
 	const int labelLen = 9;  // strlen("Continuer")
-	CHECK(countFontSprites(top, 0) >= labelLen);
-	CHECK(countFontSprites(top, 1) == 0);
+	// v0.8.37 : la banque 0 (encre olive) etait invisible sur le bandeau ; le PC
+	// ecrit la selection en (210,232,225) (title.cpp:565) -> banque SELECT.
+	CHECK(countFontSprites(top, PF_FONT_BANK_SELECT) >= labelLen);
+	CHECK(countFontSprites(top, 0) == 0);
+	CHECK(kA1FontCluts[PF_FONT_BANK_SELECT][1] == parityColor(26, 29, 28));
 	// 12 bandes semi-transparentes bgr(5,7,7) : 12 passes saturant sur F,
 	// F est la couleur finale visee au centre (~(40,54,53) cote PC). On
 	// verifie les 12 largeurs exactes, en z=2, pour eviter un faux positif
@@ -309,14 +312,14 @@ void checkOptionsFooter() {
 void checkMenuHintColor() {
 	constexpr int kHint = 6;  // PF_FONT_BANK_HINT, ajoute a l'etape suivante
 	constexpr int kBanks = int(sizeof(kA1FontCluts) / sizeof(kA1FontCluts[0]));
-	CHECK(kBanks == 7);
+	CHECK(kBanks == 9);  // + selection et sous-titre PC (v0.8.37)
 	// Evite une lecture hors tableau pendant la phase RED.
 	if (kBanks > kHint)
 		CHECK(kA1FontCluts[kHint][1] == parityColor(15, 16, 21));  // (120,132,166) -> (120,128,168)
 
 	// src/title.cpp:568 ecrit l'aide en (120,132,166), pas en cyan (120,216,216).
 	drawScreen(0, MENU_SCR_MAIN);
-	CHECK(countFontSprites(PF_H - 14, kHint) == 37);  // "Fl\350ches : choisir    Espace : valider"
+	CHECK(countFontSprites(PF_H - 14, kHint) == 39);  // "Haut / Bas : choisir    Croix : valider"
 	CHECK(countFontSprites(PF_H - 14, 2) == 0);
 
 	menuInitPS1(0, 0);

@@ -259,8 +259,8 @@ def test_font_vram_reserved():
     sinon le convertisseur de zone ecrase les glyphes du titre."""
     from ps1_export_zone import RESERVED_RECTS
     font = (0, 256, 64, 256)       # 256 px 4bpp = 64 demi-mots
-    clut = px.FONT_CLUTS           # 7 banques depuis v0.8.17 (bleu pale + bleu aide)
-    assert clut == (128, 256, 16, 7)
+    clut = px.FONT_CLUTS           # 9 banques depuis v0.8.37 (selection + sous-titre PC)
+    assert clut == (128, 256, 16, 9)
     wind = (256, 256, 64, 256)
     wind_clut = (320, 256, 16, 16)
     for rect in (font, clut, wind, wind_clut):

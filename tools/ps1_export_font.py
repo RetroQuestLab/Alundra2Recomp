@@ -92,6 +92,11 @@ def make_cluts():
         # bgr555() tronque : 166>>3 = 20, mais 170>>3 = 21 donne (120,128,168),
         # plus proche en 5 bits (ecart 0/4/2). Ne pas arrondir toutes les CLUT.
         ((120, 132, 170), (120, 132, 170), (120, 132, 170)), # bleu aide (pied de page PC)
+        # v0.8.37 : libelle selectionne du menu PC (210,232,225) (title.cpp:565) ;
+        # la banque 0 olive le rendait invisible sur le bandeau.
+        ((210, 232, 225), (210, 232, 225), (210, 232, 225)), # selection menu PC
+        # v0.8.37 : sous-titre PC "UNE LEGENDE EST NEE" (190,208,244) (title.cpp:612).
+        ((190, 208, 244), (190, 208, 244), (190, 208, 244)), # sous-titre PC
     )
     cluts = []
     for base, hi, lo in palettes:

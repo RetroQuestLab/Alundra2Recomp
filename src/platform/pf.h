@@ -56,6 +56,8 @@ extern "C" {
 #define PF_FONT_BANK_ORANGE 4
 #define PF_FONT_BANK_PALE 5
 #define PF_FONT_BANK_HINT 6
+#define PF_FONT_BANK_SELECT 7
+#define PF_FONT_BANK_SUBTITLE 8
 
 /* Atlas WIND.TX de la fenetre de dialogue A1 : 256x256 4bpp = 64x256 demi-mots.
  * Ses 16 banques CLUT occupent 16 lignes en x=320, y=256. Ces deux rectangles
