@@ -702,6 +702,17 @@ int main() {
 		questSetZone(&s, QST_ZONE_KINDRA);
 		CHECK(questNpcAvailable(&s, QST_NPC_VILLAGEOISE) == 0);
 	}
+	// --- Fin de l'intro : [intro] comme le PC, une seule fois -------------
+	{
+		QuestState s;
+		questInit(&s);
+		CHECK(questAfterIntro(&s) == 1);
+		CHECK(s.dialogueId == QST_DLG_INTRO);
+		questDialogueDone(&s);
+		CHECK(s.stage == QST_STAGE_ARRIVEE);
+		s.stage = QST_STAGE_MONT_EPERVIER;
+		CHECK(questAfterIntro(&s) == 0);
+	}
 	// Ordre inverse : les ordres trouves avant la premiere visite a Jeehan.
 	{
 		QuestState s;

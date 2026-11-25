@@ -332,7 +332,12 @@ listener = PCSX.Events.createEventListener('GPU::Vsync', function()
 	elseif phase == 'game' and gameFrame >= phaseFrame + 40 and
 	       enemyFrames() == 6 and duelSteps() > 0 then
 		phase = 'ogre'
-		waitFrames(20, ogreAvant)
+		-- v0.8.37 : la replique d'ouverture [intro] (comme le PC) est refermee par START.
+		local function closeOpening(n)
+			if (not dlgIsActive() and dialogueId() == 4294967295) or n <= 0 then waitFrames(20, ogreAvant) return end
+			tap(B.START, function() waitFrames(6, function() closeOpening(n - 1) end) end)
+		end
+		closeOpening(10)
 	end
 	if gameFrame > 20000 then fail('timeout phase=' .. phase) end
 end)

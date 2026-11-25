@@ -108,6 +108,10 @@ extern "C" {
  * A1 restent en RAM dans enemy_anim.dat, seule la frame courante est televerse
  * ici (et sa CLUT sur une ligne), comme pour le heros. Synchronise avec
  * ENEMY_TEX / ENEMY_CLUT de tools/ps1_export_zone.py. */
+#define PF_PORTRAIT_TEX_X 144
+#define PF_PORTRAIT_TEX_Y 256
+#define PF_PORTRAIT_CLUT_X 144
+#define PF_PORTRAIT_CLUT_Y 320
 #define PF_HUD2_TEX_X 112
 #define PF_HUD2_TEX_Y 256
 #define PF_HUD2_TEX_H 128

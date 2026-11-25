@@ -13,6 +13,11 @@
 #include "dialogue_data_ps1.h"
 #include "window_ps1.h"
 
+extern "C" {
+extern const uint8_t portrait_dat[];
+extern const uint32_t portrait_dat_size;
+}
+
 namespace {
 
 // Geometrie mesuree sur la capture A1 lp11_21 et verrouillee par les tests PC
@@ -36,6 +41,36 @@ int g_prevStart = 0;
 int g_active = 0;
 int g_dialogueId = 0;
 int g_finished = 0;
+int g_portraitLoaded = -1;  // buste actuellement en VRAM (PF_PORTRAIT_*)
+
+inline uint16_t rdu16(const uint8_t* p) { return (uint16_t)(p[0] | (p[1] << 8)); }
+
+/* Televerse le buste `index` de portrait.dat (P1PT) ; 0 si absent. */
+int loadPortrait(int index) {
+	if (index == g_portraitLoaded) return 1;
+	if (portrait_dat_size < 8u || portrait_dat[0] != 'P' || portrait_dat[3] != 'T') return 0;
+	const int count = rdu16(portrait_dat + 4);
+	if (index < 0 || index >= count) return 0;
+	const uint8_t* p = portrait_dat + 8;
+	const uint8_t* end = portrait_dat + portrait_dat_size;
+	for (int i = 0; i <= index; ++i) {
+		if (p + 40 > end) return 0;
+		const int stride = rdu16(p + 4);
+		const int uploadH = rdu16(p + 6);
+		const uint8_t* clut = p + 8;
+		const uint8_t* pixels = p + 40;
+		const uint8_t* next = pixels + stride * 2 * uploadH;
+		if (next > end) return 0;
+		if (i == index) {
+			pfUpload16(PF_PORTRAIT_CLUT_X, PF_PORTRAIT_CLUT_Y, 16, 1,
+			           reinterpret_cast<const uint16_t*>(clut));
+			pfUpload4bpp(PF_PORTRAIT_TEX_X, PF_PORTRAIT_TEX_Y, stride, uploadH, pixels);
+		}
+		p = next;
+	}
+	g_portraitLoaded = index;
+	return 1;
+}
 
 int validId(int id) {
 	return id >= 0 && id < kDlgDialogueCount ? id : 0;
@@ -134,6 +169,24 @@ void dlgUpdate(uint32_t pad) {
 void dlgDraw(void) {
 	if (!g_active) return;
 	a1window::draw(kBX, kBY, kBW, kBH, kWindBank, kZWindow);
+
+	// Buste (7,117) 48x56 et cartouche (64,139,112,28) : src/dialogue.cpp,
+	// uniquement quand une banque de portrait existe pour le locuteur.
+	const unsigned char* spk = kDlgSpeakers[g_dialogueId][g_panel];
+	if (spk[0] != 0xFF && loadPortrait(spk[0])) {
+		pfDrawSprite16(7, 117, PF_PORTRAIT_TEX_X, PF_PORTRAIT_TEX_Y, 48, 56,
+		               PF_PORTRAIT_CLUT_X, PF_PORTRAIT_CLUT_Y, kZArrow);
+		a1window::draw(64, 139, 112, 28, kWindBank, kZWindow);
+		const char* name = kDlgSpeakerNames[spk[1]];
+		int tw = 0;
+		for (int i = 0; name[i] != '\0'; ++i) tw += kA1FontAdvance[static_cast<unsigned char>(name[i])];
+		int nx = 64 + (112 - tw) / 2;
+		for (int i = 0; name[i] != '\0'; ++i) {
+			const unsigned char c = static_cast<unsigned char>(name[i]);
+			drawGlyph(c, nx, 139 + 6);
+			nx += kA1FontAdvance[c >= 32 ? c : '?'];
+		}
+	}
 
 	const char (*lines)[64] = kDlgTable[g_dialogueId].lines[g_panel];
 	int remaining = g_shown;

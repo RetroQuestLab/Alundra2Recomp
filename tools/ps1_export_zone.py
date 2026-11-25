@@ -73,12 +73,16 @@ ENEMY_TEX = (80, 256, 32, 64)
 # l'ennemi et les CLUT de police. Synchronise avec PF_HUD2_* de pf.h.
 HUD2_ATLAS = (112, 256, 16, 128)
 HUD2_CLUTS = (112, 384, 16, 8)
+# Buste du locuteur (48x56, un seul a la fois) et sa CLUT. Synchronise avec
+# PF_PORTRAIT_* de pf.h.
+PORTRAIT_TEX = (144, 256, 24, 64)
+PORTRAIT_CLUT = (144, 320, 16, 1)
 ENEMY_CLUT = (80, 320, 16, 1)
 # Atlas d'icones d'inventaire A1 : grille 12x7 de cellules 6x32 demi-mots.
 ICON_ATLAS = (896, 256, 72, 224)
 ICON_CLUT = (896, 480, 16, 1)
 RESERVED_RECTS = ((0, 0, 320, 240), (320, 0, 320, 240), HERO_SCRATCH,
-                  HUD2_ATLAS, HUD2_CLUTS,
+                  HUD2_ATLAS, HUD2_CLUTS, PORTRAIT_TEX, PORTRAIT_CLUT,
                   HERO_CLUTS, FONT_ATLAS, FONT_CLUTS, WIND_ATLAS, WIND_CLUTS,
                   NPC0_TEX, NPC1_TEX, NPC2_TEX, NPC3_TEX, NPC4_TEX, NPC_CLUTS,
                   ACTOR0_TEX, ACTOR1_TEX, ACTOR2_TEX,

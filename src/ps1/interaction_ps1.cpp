@@ -229,12 +229,8 @@ void drawNpc(int npc, int camX, int camY) {
 	pfDrawSprite16(nx - camX - s.ox, ny + zoneElevAt(nx, ny) - camY - s.oy,
 	               s.texX, s.texY, s.w, s.h, s.clutX, s.clutY, npcZ(ny));
 
-	if (!questNpcBubble(&g_quest, npc)) return;
-	// Cadre WIND.TX + glyphe FONT3 : le '!' est un vrai glyphe, pas un carre.
-	const int bx = nx - camX - 36;
-	const int by = ny + zoneElevAt(nx, ny) - camY - 56;
-	a1window::draw(bx, by, 72, 26, kWindBank, kZWindow);
-	drawGlyph('!', bx + 28, by + 5);
+	// v0.8.37 : plus de bulle '!' au-dessus des PNJ. Le PC (reference visuelle)
+	// n'en dessine aucune ; questNpcBubble() reste disponible pour la logique.
 }
 
 /* Boss de la zone courante : une seule zone est active, donc un seul duel.
@@ -365,6 +361,8 @@ void interactionInitPS1(void) {
 	g_bannerZone = -1;
 	bannerEnter(g_quest.zone);
 }
+
+void interactionAfterIntroPS1(void) { questAfterIntro(&g_quest); }
 
 void interactionSetZonePS1(int zone) {
 	questSetZone(&g_quest, zone);

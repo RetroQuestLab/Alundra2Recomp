@@ -12,6 +12,9 @@
 /* A appeler apres heroInit()/dlgInit(), et a chaque nouvelle partie. */
 void interactionInitPS1(void);
 
+/* Nouvelle partie, fin de l'intro : ouvre [intro] comme le PC (afterIntro). */
+void interactionAfterIntroPS1(void);
+
 /* Change la zone active : met a jour la quete et televerse les sprites PNJ
  * de la nouvelle zone dans les trois emplacements VRAM partages. */
 void interactionSetZonePS1(int zone);

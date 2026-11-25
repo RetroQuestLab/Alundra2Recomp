@@ -40,7 +40,7 @@ DIALOGUE_IDS = ('prunewell', 'garde', 'finrod', 'marchand_kindra',
                  'diaz_manoir_objet_cristal', 'milena_boss_medusa', 'alexia_manoir',
                  'zeppo_puerto', 'villageoise', 'villageoise_objet_lettre',
                  'enfants_paco', 'enfants_paco_objet_lettre', 'enfants_paco_objet_ordre',
-                 'rm_forgeron', 'objet_herbe')
+                 'rm_forgeron', 'objet_herbe', 'intro')
 # Indications de commandes propres au clavier PC, adaptees a la manette PS1.
 PS1_CONTROL_HINTS = (
     (' Touche Q pour la sortir.', ' Equipe-la avec START.'),
@@ -156,17 +156,60 @@ def source_lines(dialogue_id=DIALOGUE_ID):
     return out
 
 
-def build_panels(dialogue_id=DIALOGUE_ID):
+# Bustes : meme correspondance et meme ordre que portraitBank() de
+# src/dialogue.cpp (premier fragment trouve dans le nom du locuteur).
+PORTRAITS = (
+    ('Flint', 'flint_essai_formes'), ('Alexia', 'alexia'), ('Mephisto', 'mephisto'),
+    ('M\u00e9phisto', 'mephisto'), ('Milena', 'milena'), ('Natasha', 'natasha'),
+    ('Ruby', 'ruby'), ('Zach', 'zach'), ('Belgar', 'belgar'), ('Jeehan', 'jeehan'),
+    ('Diaz', 'diaz'), ('Albert', 'albert'), ('Roi', 'roi'),
+)
+PORTRAIT_BANKS = tuple(dict.fromkeys(bank for _n, bank in PORTRAITS))
+
+
+def portrait_index(speaker):
+    for needle, bank in PORTRAITS:
+        if needle in speaker:
+            return PORTRAIT_BANKS.index(bank)
+    return -1
+
+
+def source_pages(dialogue_id=DIALOGUE_ID):
+    """(locuteur, texte) par replique, comme les pages PC (data/dialogues.txt)."""
+    text = open(SOURCE, encoding='utf-8').read().splitlines()
+    inside = False
+    out = []
+    for raw in text:
+        line = raw.strip()
+        if line.startswith('['):
+            inside = line == '[' + dialogue_id + ']'
+            continue
+        if inside and line and not line.startswith(('#', '!', '?')):
+            speaker, body = line.split(': ', 1) if ': ' in line else ('', line)
+            for pc, ps1 in PS1_CONTROL_HINTS:
+                body = body.replace(pc, ps1)
+            out.append((speaker, body))
+    return out
+
+
+def build_panels_with_speakers(dialogue_id=DIALOGUE_ID):
+    """Pagination PC (src/dialogue.cpp paginate) : chaque replique est
+    decoupee en panneaux de 3 lignes ; un panneau ne melange jamais deux
+    locuteurs (avant v0.8.37 les repliques etaient concatenees)."""
     adv = advances()
-    lines = []
-    for line in source_lines(dialogue_id):
-        lines.extend(wrap(fold(line), adv))
-    panels = []
-    for i in range(0, len(lines), LINES_PER_PANEL):
-        panel = lines[i:i + LINES_PER_PANEL]
-        panel += [b''] * (LINES_PER_PANEL - len(panel))
-        panels.append(tuple(panel))
-    return panels
+    panels, speakers = [], []
+    for speaker, body in source_pages(dialogue_id):
+        lines = wrap(fold(body), adv)
+        for i in range(0, max(len(lines), 1), LINES_PER_PANEL):
+            panel = lines[i:i + LINES_PER_PANEL]
+            panel += [b''] * (LINES_PER_PANEL - len(panel))
+            panels.append(tuple(panel))
+            speakers.append(speaker)
+    return panels, speakers
+
+
+def build_panels(dialogue_id=DIALOGUE_ID):
+    return build_panels_with_speakers(dialogue_id)[0]
 
 
 def cstr(bs):
@@ -229,7 +272,32 @@ def format_header(panels_by_id):
     out.append('static const char* const kDlgNames[] = {\n'
                + '\n'.join('\t"' + i + '",' for i in DIALOGUE_IDS)
                + '\n};\n\n')
-    out.append('static const int kDlgDialogueCount = ' + str(len(DIALOGUE_IDS)) + ';\n')
+    out.append('static const int kDlgDialogueCount = ' + str(len(DIALOGUE_IDS)) + ';\n\n')
+    # Buste et cartouche (PC : drawPortrait/cartouche, seulement si une banque
+    # de portrait existe pour le locuteur). Un octet par panneau : index du
+    # buste (0xFF = aucun) et index du nom dans kDlgSpeakerNames.
+    names = []
+    rows = []
+    for dialogue_id in DIALOGUE_IDS:
+        _p, speakers = build_panels_with_speakers(dialogue_id)
+        cells = []
+        for sp in speakers:
+            pi = portrait_index(sp)
+            if pi < 0:
+                cells.append('0xFF, 0xFF')
+                continue
+            nm = fold(sp)
+            if nm not in names:
+                names.append(nm)
+            cells.append(f'{pi}, {names.index(nm)}')
+        rows.append('static const unsigned char kDlgSpk_' + dialogue_id + '[][2] = { '
+                    + (', '.join('{ ' + c + ' }' for c in cells) or '{ 0xFF, 0xFF }') + ' };\n')
+    out.extend(rows)
+    out.append('\nstatic const unsigned char (*const kDlgSpeakers[])[2] = {\n'
+               + '\n'.join('\tkDlgSpk_' + i + ',' for i in DIALOGUE_IDS) + '\n};\n\n')
+    out.append('static const char* const kDlgSpeakerNames[] = {\n'
+               + '\n'.join('\t' + cstr(n) + ',' for n in names) + '\n};\n')
+    out.append('static const int kDlgPortraitCount = ' + str(len(PORTRAIT_BANKS)) + ';\n')
     return ''.join(out)
 
 

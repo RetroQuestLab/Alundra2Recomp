@@ -559,7 +559,7 @@ def test_dialogue_header_is_pod_and_uploadable():
                 'diaz_manoir_objet_cristal', 'milena_boss_medusa', 'alexia_manoir',
                 'zeppo_puerto', 'villageoise', 'villageoise_objet_lettre',
                 'enfants_paco', 'enfants_paco_objet_lettre', 'enfants_paco_objet_ordre',
-                'rm_forgeron', 'objet_herbe')
+                'rm_forgeron', 'objet_herbe', 'intro')
     assert dlg.DIALOGUE_IDS == expected, f'identifiants de dialogue incomplets : {dlg.DIALOGUE_IDS}'
     assert 'kDlgLines_garde' in text, "le dialogue du garde doit etre exporte"
     # Aucune touche clavier PC ne doit apparaitre dans un texte PS1.

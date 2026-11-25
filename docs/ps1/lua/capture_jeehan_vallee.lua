@@ -575,7 +575,9 @@ listener = PCSX.Events.createEventListener('GPU::Vsync', function()
 		pulse(B.START, function() end)
 	elseif phase == 'game' and gameFrame >= phaseFrame + 60 then
 		phase = 'route'
-		route()
+		if dialogueId() ~= 53 then fail('replique d ouverture [intro] absente: dlg=' .. dialogueId()) return end
+		print('INTRO_DIALOGUE_OUVERT dlg=53')
+		closeDialogue(10, route)
 	elseif phase == 'reload_title' and read32(menuAddr + 20) == 1 and read32(menuAddr) == 0 then
 		phase = 'reload_wait'
 		phaseFrame = gameFrame

@@ -43,6 +43,7 @@ psn00bsdk_target_incbin(alundra2 PRIVATE actor_dat ${CMAKE_CURRENT_SOURCE_DIR}/a
 psn00bsdk_target_incbin(alundra2 PRIVATE enemy_anim_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/enemy_anim.dat)
 psn00bsdk_target_incbin(alundra2 PRIVATE hud_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/hud.dat)
 psn00bsdk_target_incbin(alundra2 PRIVATE hud2_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/hud2.dat)
+psn00bsdk_target_incbin(alundra2 PRIVATE portrait_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/portrait.dat)
 psn00bsdk_target_incbin(alundra2 PRIVATE icons_dat ${CMAKE_CURRENT_SOURCE_DIR}/assets/icons.dat)
 
 # Fichiers VAGi du streaming musical : sans DEPENDS, une VAG modifiee ne

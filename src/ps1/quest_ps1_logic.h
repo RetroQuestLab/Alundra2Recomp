@@ -145,6 +145,7 @@
 #define QST_DLG_ENFANTS_ORDRE      50  // [enfants_paco_objet_ordre]
 #define QST_DLG_FORGERON           51  // [rm_forgeron] (ajout du remake)
 #define QST_DLG_OBJET_HERBE        52  // [objet_herbe]
+#define QST_DLG_INTRO              53  // [intro] (data/world.txt : intro intro)
 
 #define QST_FWD_X   14
 #define QST_FWD_Y   10
@@ -300,6 +301,14 @@ inline void questNpcPos(int npc, int* x, int* y) {
 }
 
 inline void questSetZone(QuestState* s, int zone) { s->zone = zone; }
+
+/* Fin de l'introduction d'une nouvelle partie : le PC ouvre afterIntro
+ * (data/world.txt `intro intro`), la replique de reveil de Flint. */
+inline int questAfterIntro(QuestState* s) {
+	if (s->dialogueId != QST_DLG_NONE || s->stage != QST_STAGE_ARRIVEE) return 0;
+	s->dialogueId = QST_DLG_INTRO;
+	return 1;
+}
 
 inline int questJeehanAwaitsOrdre(const QuestState* s) {
 	return (s->gates & QST_FLAG_ORDRE) != 0 &&

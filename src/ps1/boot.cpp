@@ -245,6 +245,7 @@ int main(void) {
 			mode = kModeGame;
 			armed = false;
 			prevPad = pad;
+			interactionAfterIntroPS1();  // replique de reveil de Flint (PC)
 		}
 
 		// Inventaire armes / objets / equipement (START en jeu, CERCLE pour fermer).
