@@ -9,6 +9,8 @@
  */
 #include "../platform/pf.h"
 
+#include <psxgpu.h>
+
 #include "audio_ps1.h"
 #include "diag_ps1.h"
 #include "dialogue_ps1.h"
@@ -107,6 +109,21 @@ int loadZoneMap(int zone) {
 	}
 }
 
+/* Temoin de demarrage pour la console reelle (v0.8.42) : chaque etape
+ * d'initialisation peint les deux framebuffers d'une couleur unie. Si le
+ * jeu se fige, l'ecran garde la couleur de la DERNIERE etape reussie ;
+ * aucun ecran colore = blocage avant pfInit (ou EXE jamais lance). */
+void bootMark(int r, int g, int b) {
+	FILL f;
+	setFill(&f);
+	setRGB0(&f, r, g, b);
+	setXY0(&f, 0, 0);
+	setWH(&f, 640, 240);
+	DrawSync(0);
+	DrawPrim(reinterpret_cast<const uint32_t*>(&f));
+	DrawSync(0);
+}
+
 }  // namespace
 
 int main(void) {
@@ -114,13 +131,18 @@ int main(void) {
 	vramDiagInitPS1();  // table VRAM passive, avant tout televersement
 	spuDiagInitPS1();   // table SPU passive, avant tout transfert DMA
 	pfInit();
+	bootMark(255, 0, 0);      // 1 ROUGE : affichage pret
 	diagInitPS1();      // peinture de pile + etat heap, avant tout appel de jeu
 	saveEarlyInitPS1(); // BIOS carte avant le premier VSync de psxgpu
+	bootMark(255, 255, 0);    // 2 JAUNE : carte memoire (BIOS) initialisee
 	audioInitPS1();     // SPU materiel : banque VAG televersee une seule fois
+	bootMark(0, 255, 0);      // 3 VERT : SPU initialise
 	// Jingle resident demarre puis immediatement relaye par le flux CD sur la
 	// meme voix 23 : preserve le marqueur audioPlayMusicPS1 de la sonde v0.8.1.
 	audioPlayMusicPS1(0);
+	bootMark(0, 255, 255);    // 4 CYAN : avant CdInit + lecture musique CD
 	audioStreamMusicPS1(1);  // theme du titre, flux CD VAGi
+	bootMark(255, 0, 255);    // 5 MAGENTA : lecture CD reussie
 	zoneInit();
 	heroInit();
 	dlgInit();          // televerse FONT3.TIM et WIND.TX/WIND.CL en VRAM
@@ -129,6 +151,7 @@ int main(void) {
 	menuInitPS1(saveHasGamePS1(), 0);
 	inventoryInitPS1(); // objets A2 + icones A1 natives du menu
 	introInitPS1(0);    // reinitialisee a chaque nouvelle partie
+	bootMark(255, 255, 255);  // 6 BLANC : tout initialise, menu imminent
 
 	int mode = kModeMenu;
 	int zone = QST_ZONE_PACO;
@@ -150,14 +173,18 @@ int main(void) {
 
 		/* Le BIOS carte avance par VBlank : une commande par image, sans
 		 * bloquer la manette ni le compteur de capture. */
+		const bool mark = bootFrames <= 120;  // ~2 s de repere a l'allumage
+		if (mark) bootMark(255, 128, 0);  // 7 ORANGE : carte memoire (pompe)
 		savePumpPS1();
 		diagSamplePS1();
 		zoneHeapSamplePS1();  // au plus une commande capture par image
+		if (mark) bootMark(128, 128, 128);  // 8 GRIS : flux musique CD
 		audioPumpPS1();
 
 		if (mode == kModeMenu) {
 			/* La detection carte est asynchrone : on attend sa fin avant de
 			 * figer l'etat du menu (entree "LOAD GAME"). */
+			if (mark) bootMark(255, 128, 0);  // 7 ORANGE : detection carte
 			if (!saveChecked && bootFrames >= 2 && saveInitPS1()) {
 				menuSetHasSavePS1(saveHasGamePS1());
 				saveChecked = 1;
@@ -169,6 +196,7 @@ int main(void) {
 			const uint32_t menuNav = PF_BTN_UP | PF_BTN_DOWN | PF_BTN_LEFT |
 			                         PF_BTN_RIGHT | PF_BTN_START | PF_BTN_CROSS;
 			if (menuEdge & menuNav) audioPlaySfxIdPS1(1);
+			if (mark) bootMark(0, 128, 0);  // 9 VERT FONCE : dessin du menu
 			menuUpdatePS1(pad);
 			if (menuScreenPS1() != MENU_SCR_DONE) {
 				menuDrawPS1();
