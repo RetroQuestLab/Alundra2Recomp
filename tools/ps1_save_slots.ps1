@@ -28,7 +28,7 @@ param(
 	[string]$Iso,
 	[string]$ExpectedSha256,
 	[string]$ExpectedElfSha256,
-	[string]$ExpectedDigest = '46f25a9f',
+	[string]$ExpectedDigest = '06b561ee',
 	[ValidateRange(1, 3)]
 	[int]$SaveCount = 2,
 	[int]$ExpectedSeq1 = 1,

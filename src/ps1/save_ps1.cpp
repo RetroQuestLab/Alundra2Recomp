@@ -38,7 +38,8 @@ enum CardState {
 	kWriteSector,
 	kWriteInfo,
 	kVerifySector,
-	kWriteDone
+	kWriteDone,
+	kWriteReset  // relance apres abandon : _card_info puis ecriture complete
 };
 
 int g_ready = 0;
@@ -50,6 +51,7 @@ PS1SaveBlock g_slots[PS1_SAVE_SLOTS];
 
 CardState g_state = kIdle;
 int g_pendingWrite = 0;  // ecriture demandee pendant une operation en cours
+int g_writeRetries = 0;  // relances apres abandon BIOS de l'ecriture courante
 int g_pzone = 0, g_px = 0, g_py = 0, g_pdir = 0;
 int g_wait = 0;
 int g_sub = 0;
@@ -88,7 +90,9 @@ int cardIdle(void) {
 		return 0;
 	}
 	g_readyFrames = 0;
-	if (st == 0x11 || st == 0x21 || g_waitFrames > 600) {
+	// Un statut d'erreur lu juste apres l'emission peut etre celui de l'operation
+	// precedente : on ne conclut a l'abandon qu'apres quelques images (v0.8.37).
+	if (((st == 0x11 || st == 0x21) && g_waitFrames > 3) || g_waitFrames > 600) {
 		volatile uint32_t* istat = reinterpret_cast<volatile uint32_t*>(0x1f801070u);
 		volatile uint32_t* imask = reinterpret_cast<volatile uint32_t*>(0x1f801074u);
 		volatile uint16_t* sstat = reinterpret_cast<volatile uint16_t*>(0x1f801044u);
@@ -102,8 +106,17 @@ int cardIdle(void) {
 		       static_cast<unsigned>(*smode), static_cast<unsigned>(*sbaud));
 		g_wait = 0;
 		g_waitFrames = 0;
-		g_state = kIdle;
 		ChangeClearPAD(0);
+		// Abandon BIOS (0x11) pendant une ecriture : la sequence complete est
+		// relancee (au plus 3 fois) au lieu de perdre la sauvegarde (v0.8.37).
+		if (g_state >= kWriteNewCard && g_state <= kWriteReset && g_writeRetries < 3) {
+			++g_writeRetries;
+			printf("PS1_SAVE_RETRY %d\n", g_writeRetries);
+			g_sub = 0;
+			g_state = kWriteReset;  // _card_info d'abord, comme l'initialisation
+		} else {
+			g_state = kIdle;
+		}
 	}
 	return 0;
 }
@@ -315,6 +328,15 @@ void savePumpPS1(void) {
 	case kWriteDone:
 		finishWrite();
 		return;
+
+	case kWriteReset: {
+		_new_card();
+		armCardOp();
+		if (_card_info(kCardChan) != 1) { g_state = kIdle; return; }
+		g_wait = 1;
+		g_state = kWriteNewCard;
+		return;
+	}
 	}
 }
 
@@ -337,6 +359,7 @@ int saveWriteGamePS1(int zone, int hx, int hy, int dir) {
 
 static int startWrite(int zone, int hx, int hy, int dir) {
 	g_pendingWrite = 0;
+	g_writeRetries = 0;
 
 	PS1SavePayload payload;
 	QuestState quest;

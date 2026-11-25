@@ -23,6 +23,7 @@
 #include "window_ps1.h"
 #include "zone011.h"
 #include "zone_heap_ps1.h"
+#include "audio_ps1.h"
 
 namespace {
 
@@ -229,7 +230,12 @@ void introDrawPS1(void) {
 	// Fond de carte charge au debut de la carte (pendant le fondu d'entree).
 	if (g_loadedCard != g_intro.card) {
 		g_loadedCard = g_intro.card;
-		if (c.scene == INTRO_SCENE_ZONE) g_zoneOk = zoneLoadFromCdPS1(uint32_t(cdZoneFor(c.zone)));
+		if (c.scene == INTRO_SCENE_ZONE) {
+			g_zoneOk = zoneLoadFromCdPS1(uint32_t(cdZoneFor(c.zone)));
+			// La lecture CD arrete le flux musical (meme lecteur) : le PC garde le
+			// theme du titre pendant tout le prologue, on le relance.
+			audioStreamMusicPS1(1);
+		}
 	}
 	switch (c.scene) {
 		case INTRO_SCENE_ZONE: zoneScene(c.zone, t); break;

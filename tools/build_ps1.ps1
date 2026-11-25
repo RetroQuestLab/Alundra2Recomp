@@ -84,9 +84,9 @@ if ($LASTEXITCODE -ne 0) { throw 'tests export animation ogre PS1' }
 
 # Le HUD utilise les vraies gemmes A1 (a1_hud.a1s) au lieu de rectangles rouges.
 & py -3.12 (Join-Path $repo 'tools\ps1_export_hud.py') $assetsDir
+if ($LASTEXITCODE -ne 0) { throw 'generation des gemmes du HUD PS1' }
 & py -3.12 (Join-Path $repo 'tools\ps1_export_portrait.py') $assetsDir
 if ($LASTEXITCODE -ne 0) { throw 'generation des bustes PS1' }
-if ($LASTEXITCODE -ne 0) { throw 'generation des gemmes du HUD PS1' }
 
 # Les panneaux de dialogue A2 sont generes depuis data/dialogues.txt (pagination A1).
 & py -3.12 (Join-Path $repo 'tools\ps1_export_dialogue.py')

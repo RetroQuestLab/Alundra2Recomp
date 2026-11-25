@@ -466,7 +466,7 @@ local function openChest()
 	local x, y = tileCenter(25, 1)
 	teleport(x, y + 10, 0)  -- PF_DIR_UP : point d'interaction = centre du coffre
 	waitFrames(10, function()
-		tap(B.CROSS, function() waitFrames(6, function()
+		tap(B.CROSS, function() waitFrames(20, function()
 			if dialogueId() ~= 21 then fail('coffre des ordres: dlg=' .. dialogueId()) return end
 			state('ORDRES_TROUVES')
 			shot('ordres_diaz')
@@ -482,7 +482,7 @@ local function openChest()
 					talkJeehan()
 				end) end)
 			end)
-		end) end)
+		end) end, 4)  -- appui de 4 VSync
 	end)
 end
 
@@ -575,9 +575,12 @@ listener = PCSX.Events.createEventListener('GPU::Vsync', function()
 		pulse(B.START, function() end)
 	elseif phase == 'game' and gameFrame >= phaseFrame + 60 then
 		phase = 'route'
-		if dialogueId() ~= 53 then fail('replique d ouverture [intro] absente: dlg=' .. dialogueId()) return end
-		print('INTRO_DIALOGUE_OUVERT dlg=53')
-		closeDialogue(10, route)
+		-- La carte de Paco est relue sur le CD apres le prologue : attendre la replique.
+		waitUntil(function() return dialogueId() == 53 and dlgIsActive() end, 600, function()
+			if dialogueId() ~= 53 then fail('replique d ouverture [intro] absente: dlg=' .. dialogueId()) return end
+			print('INTRO_DIALOGUE_OUVERT dlg=53')
+			closeDialogue(10, route)
+		end)
 	elseif phase == 'reload_title' and read32(menuAddr + 20) == 1 and read32(menuAddr) == 0 then
 		phase = 'reload_wait'
 		phaseFrame = gameFrame

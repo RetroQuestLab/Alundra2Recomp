@@ -44,8 +44,11 @@ local function stateDigest()
 		h = math.fmod(h * 16777619, 4294967296)
 		h = bit.bxor(h, b)
 	end
-	for _, o in ipairs({0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44,
-	                    48, 52, 56, 68, 72, 76, 80, 84, 88, 92}) do
+	-- v0.8.39 : sans les champs transitoires (4 activeNpc, 8 dialogueId : un
+	-- dialogue ouvert n'est pas restaure) et AVEC les gates (64), qui portent
+	-- desormais la progression (reliques, boss, PNJ ecoutes).
+	for _, o in ipairs({0, 12, 16, 20, 24, 28, 32, 36, 40, 44,
+	                    48, 52, 56, 64, 68, 72, 76, 80, 84, 88, 92}) do
 		for i = 0, 3 do byte(read8(questAddr + o + i)) end
 	end
 	for i = 0, 63 do
@@ -55,7 +58,7 @@ local function stateDigest()
 		byte(read8(e + 3))      -- qty haut
 	end
 	for _, o in ipairs({256, 257, 258}) do byte(read8(invStateAddr + o)) end
-	return string.format('%08x', h)
+	return bit.tohex(h, 8)  -- 32 bits (string.format etendait le signe : ffffffff...)
 end
 
 -- Marqueur capture-only : une quantité possédée passe à 7 avant la sauvegarde.
