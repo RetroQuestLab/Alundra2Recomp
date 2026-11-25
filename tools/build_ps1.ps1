@@ -28,6 +28,28 @@ $src = Join-Path $repo 'ps1'
 $build = Join-Path $src 'build'
 if ($Clean -and (Test-Path $build)) { Remove-Item -Recurse -Force $build }
 
+# Licence du disque (secteurs 0-15 : texte "Licensed by Sony Computer
+# Entertainment ..." et logo). Une vraie PS1 se bloque sur le logo sans elles
+# (essai materiel v0.8.40). Elles sont lues sur le disque ORIGINAL de
+# l'utilisateur (image brute 2352), jamais telechargees ni publiees.
+$licenseOut = Join-Path $src 'assets\license_scee.dat'
+$licenseSrc = $env:ALUNDRA_LICENSE_DISC
+if (-not $licenseSrc) {
+	$cand = Get-ChildItem -LiteralPath $repo -Filter '*SLES*.bin' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+	if ($cand) { $licenseSrc = $cand.FullName }
+}
+if ($licenseSrc -and (Test-Path -LiteralPath $licenseSrc)) {
+	$fs = [IO.File]::OpenRead($licenseSrc)
+	try { $buf = New-Object byte[] (16 * 2352); [void]$fs.Read($buf, 0, $buf.Length) } finally { $fs.Close() }
+	$lic = [Text.Encoding]::ASCII.GetString($buf, 4 * 2352 + 24, 60)
+	if ($lic -notmatch 'Licensed\s+by') { throw "secteur de licence introuvable dans $licenseSrc" }
+	if (-not (Test-Path (Split-Path $licenseOut))) { New-Item -ItemType Directory -Path (Split-Path $licenseOut) | Out-Null }
+	[IO.File]::WriteAllBytes($licenseOut, $buf)
+	Write-Host ('Licence du disque : ' + ($lic -replace '\s+', ' ').Trim())
+} elseif (-not (Test-Path $licenseOut)) {
+	throw 'licence de disque absente : definir ALUNDRA_LICENSE_DISC (image brute 2352 de votre disque)'
+}
+
 # Les blobs 4bpp sont generes depuis assets/ (non publie) avant chaque build.
 $assetsDir = Join-Path $src 'assets'
 if (-not (Test-Path $assetsDir)) { New-Item -ItemType Directory -Path $assetsDir | Out-Null }

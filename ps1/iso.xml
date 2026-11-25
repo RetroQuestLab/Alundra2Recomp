@@ -12,6 +12,11 @@
 			copyright		="README.TXT;1"
 		/>
 
+		<!-- Secteurs 0-15 (licence + logo) : sans eux, une vraie PS1 reste bloquee
+		     sur le logo PlayStation (essai materiel v0.8.40). Extraits du disque
+		     original de l'utilisateur par tools/build_ps1.ps1, jamais publies. -->
+		<license file="${PROJECT_SOURCE_DIR}/assets/license_scee.dat"/>
+
 		<directory_tree>
 			<file name="SYSTEM.CNF"	type="data" source="${PROJECT_SOURCE_DIR}/system.cnf" />
 			<file name="ALUNDRA2.EXE"	type="data" source="alundra2.exe" />
